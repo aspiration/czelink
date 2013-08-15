@@ -1,0 +1,22 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.czelink</groupId>
+		<artifactId>com-czelink-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+  <artifactId>com-czelink-client-ide</artifactId>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>../com-czelink-parent</module>
+		
+		<module>../com-czelink-client-base</module>
+		<module>../com-czelink-infomgmt-client</module>
+		<module>../com-czelink-usermgmt-client</module>
+		
+		<module>../com-czelink-client-aggregate</module>
+		
+	</modules>
+</project>
