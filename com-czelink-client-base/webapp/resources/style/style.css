@@ -1,0 +1,217 @@
+.navbar-fixed-top {
+	margin-bottom: 0px;
+}
+
+.jumbotron {
+	position: relative;
+	padding: 40px 0;
+	color: #fff;
+	text-align: center;
+	text-shadow: 0 1px 3px rgba(0, 0, 0, .4), 0 0 30px rgba(0, 0, 0, .075);
+	background: #020031;
+	background: -moz-linear-gradient(45deg, #020031 0%, #6d3353 100%);
+	background: -webkit-gradient(linear, left bottom, right top, color-stop(0%, #020031),
+		color-stop(100%, #6d3353) );
+	background: -webkit-linear-gradient(45deg, #020031 0%, #6d3353 100%);
+	background: -o-linear-gradient(45deg, #020031 0%, #6d3353 100%);
+	background: -ms-linear-gradient(45deg, #020031 0%, #6d3353 100%);
+	background: linear-gradient(45deg, #020031 0%, #6d3353 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient(            
+		                     
+		                     
+		                     
+		                     startColorstr='#020031', endColorstr='#6d3353',
+		GradientType=1 );
+	-webkit-box-shadow: inset 0 3px 7px rgba(0, 0, 0, .2), inset 0 -3px 7px
+		rgba(0, 0, 0, .2);
+	-moz-box-shadow: inset 0 3px 7px rgba(0, 0, 0, .2), inset 0 -3px 7px
+		rgba(0, 0, 0, .2);
+	box-shadow: inset 0 3px 7px rgba(0, 0, 0, .2), inset 0 -3px 7px
+		rgba(0, 0, 0, .2);
+}
+
+.jumbotron { /*@media (max-width: 980px) {
+		margin-top: 50px;
+	}*/
+	overflow: hidden;
+	position: relative;
+	padding: 60px 0 0;
+	color: #fff;
+	text-align: center;
+	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 0, 0, 0.075);
+	background: #f7f7f7 url("images/background.jpg");
+	background-size: cover;
+	background-position: 50% 30%;
+	-webkit-box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.2), inset 0 -3px 7px
+		rgba(0, 0, 0, 0.2);
+	-moz-box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.2), inset 0 -3px 7px
+		rgba(0, 0, 0, 0.2);
+	box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.2), inset 0 -3px 7px
+		rgba(0, 0, 0, 0.2);
+}
+
+.jumbotron:after {
+	display: block;
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	opacity: .15;
+	background: none;
+}
+
+.jumbotron h1 {
+	font-size: 80px;
+	font-weight: bold;
+	letter-spacing: -1px;
+	line-height: 1;
+}
+
+.jumbotron p {
+	font-weight: 300;
+	line-height: 1.25;
+	margin-bottom: 30px;
+}
+
+.subhead {
+	text-align: left;
+	border-bottom: 1px solid #ddd;
+}
+
+.subhead h1 {
+	font-size: 60px;
+}
+
+.subhead p {
+	margin-bottom: 20px;
+}
+
+.carousel-caption {
+	padding: 15px 0 0 0;
+}
+
+.carousel-caption p {
+	text-align: center;
+}
+
+@media ( max-width : 979px) {
+	.jumbotron {
+		background-position: 50% 20%;
+	}
+	.carousel-caption {
+		padding: 10px 0 0 0;
+	}
+	.carousel-caption p {
+		text-align: center;
+		margin-bottom: 12px;
+	}
+}
+
+@media ( max-width : 767px) { /* Remove any padding from the body */
+	body {
+		padding-top: 0;
+	}
+
+	/* Widen masthead and social buttons to fill body padding */
+	.jumbotron {
+		padding: 40px 20px;
+		margin-right: -20px;
+		margin-left: -20px;
+	}
+	.subhead {
+		text-align: center;
+	}
+	.carousel-caption {
+		padding: 10px 0 0 0;
+	}
+	.carousel-caption p {
+		text-align: center;
+		margin-bottom: 12px;
+	}
+}
+
+@media ( min-width : 768px) and (max-width: 980px) {
+	/* Remove any padding from the body */
+	body {
+		padding-top: 0;
+	}
+	.carousel-caption {
+		padding: 10px 0 0 0;
+	}
+	.carousel-caption p {
+		text-align: center;
+		margin-bottom: 12px;
+	}
+}
+
+.footer {
+	text-align: center;
+	padding: 30px 0;
+	margin-top: 70px;
+	border-top: 1px solid #e5e5e5;
+	background-color: #000;
+}
+
+.footer-links {
+	margin: 10px 0;
+}
+
+.footer-links li {
+	display: inline;
+	padding: 0 2px;
+}
+
+.footer p {
+	color: #fff;
+}
+
+body {
+	position: relative;
+	background-color: #ddd;
+}
+
+.sideNav {
+	margin: 30px 0 0;
+}
+
+.panel {
+	background-color: rgb(247, 248, 248);
+	min-height: 250px;
+	min-width: 250px;
+	border: 1px solid #e1e1e8;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	border-radius: 15px;
+}
+
+.panel h3 {
+	color: #fff;
+	text-align: center;
+	margin: 0;
+	font-family: "Microsoft YaHei", ΢���ź�, "Microsoft JhengHei", ����ϸ��,
+		STHeiti, MingLiu;
+	font-size: 20px;
+	background-color: rgb(59, 59, 59);
+	border-top-right-radius: 10px;
+	border-top-left-radius: 10px;
+}
+
+.panel div {
+	text-align: left;
+	padding: 10px;
+	margin-left: 5px;
+}
+
+.panel-hr {
+	margin-top: 0px;
+}
+
+.line-separator {
+	margin: 20px 0 10px;
+}
+
+.status-management-btn {
+	margin-top: -10px;
+	margin-bottom: 15px;
+}
