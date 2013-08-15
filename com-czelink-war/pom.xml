@@ -1,0 +1,75 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>com-czelink-war</artifactId>
+	<packaging>war</packaging>
+
+	<parent>
+		<artifactId>com-czelink-parent</artifactId>
+		<groupId>com.czelink</groupId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+
+	<dependencies>
+		<!-- Application Specific -->
+		<dependency>
+			<groupId>com.czelink</groupId>
+			<artifactId>com-czelink-client-aggregate</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.czelink</groupId>
+			<artifactId>com-czelink-server-base</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.czelink</groupId>
+			<artifactId>com-czelink-infomgmt-server</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.czelink</groupId>
+									<artifactId>com-czelink-client-aggregate</artifactId>
+									<type>jar</type>
+									<overWrite>true</overWrite>
+									<excludes>META-INF/**</excludes>
+									<outputDirectory>${basedir}/src/main/webapp</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+							<excludes>META-INF/**</excludes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${basedir}/src/main/webapp</directory>
+							<excludes>
+								<exclude>WEB-INF/**</exclude>
+								<exclude>META-INF/**</exclude>
+							</excludes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
