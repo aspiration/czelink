@@ -87,7 +87,7 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 			this.serviceRepository.put(serviceName, serviceInterfaceRepository);
 		}
 
-		final Object serviceImplementation = (String) serviceInterfaceRepository
+		final Object serviceImplementation = serviceInterfaceRepository
 				.get(serviceInterfaceName);
 
 		if (serviceImplementation instanceof String) {
@@ -188,7 +188,6 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 		this.mongoConverter = mongoConverter;
 	}
 
-	@Override
 	public void setServletContext(ServletContext servletContext) {
 		String realPath = servletContext.getRealPath("/").replace('\\', '/');
 
