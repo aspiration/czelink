@@ -3,7 +3,10 @@ define(function() {
 
 		$.getJSON('infomgmt/simple', function(data) {
 			$scope.contents = data.contents;
-		});
 
+			if (!$scope.$$phase) {
+				$scope.$apply();
+			}
+		});
 	};
 });
