@@ -18,10 +18,10 @@ public class InformationManagementServiceImpl implements
 
 	public List<InfoArticle> retrieveLatestInformationList(final Integer amount) {
 		// TODO dummy implementation.
-		System.out
-				.println("print MongoOperations from InformationManagementServiceImpl: "
-						+ this.mongoOperations);
-		return this.mongoOperations.findAll(InfoArticle.class);
+		final List<InfoArticle> infoArticles = this.mongoOperations
+				.findAll(InfoArticle.class);
+
+		return infoArticles;
 	}
 
 	public void setMongoOperations(final MongoOperations pMongoOperations) {

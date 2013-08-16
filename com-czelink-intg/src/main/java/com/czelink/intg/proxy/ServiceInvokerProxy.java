@@ -118,15 +118,6 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 			final Object dbAccessAppContext = dbAccessServletContext
 					.getAttribute(ServiceInvokerProxy.SPRING_WEBCONTEXT_ROOT);
 
-			final Enumeration attributeNames = dbAccessServletContext
-					.getAttributeNames();
-			while (attributeNames.hasMoreElements()) {
-				System.out.println("attributeName: "
-						+ attributeNames.nextElement());
-			}
-
-			System.out.println("dbAccessAppContext: " + dbAccessAppContext);
-
 			final ClassLoader dbAccessClassLoader = dbAccessAppContext
 					.getClass().getClassLoader();
 

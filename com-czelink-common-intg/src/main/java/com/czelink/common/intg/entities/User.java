@@ -3,6 +3,7 @@ package com.czelink.common.intg.entities;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -118,6 +119,23 @@ public class User implements Serializable {
 
 	public void setRegisterDate(Date registerDate) {
 		this.registerDate = registerDate;
+	}
+
+	public String toString() {
+		final ToStringBuilder tsb = new ToStringBuilder(this);
+		tsb.append("id", this.id);
+		tsb.append("username", this.username);
+		tsb.append("password", this.password);
+		tsb.append("gender", this.gender);
+		tsb.append("mailAddress", this.mailAddress);
+		tsb.append("company", this.company);
+		tsb.append("jobTitle", this.jobTitle);
+		tsb.append("experiences", this.experiences);
+		tsb.append("interests", this.interests);
+		tsb.append("otherDescriptions", this.otherDescriptions);
+		tsb.append("registerDate", this.registerDate);
+
+		return tsb.toString();
 	}
 
 }

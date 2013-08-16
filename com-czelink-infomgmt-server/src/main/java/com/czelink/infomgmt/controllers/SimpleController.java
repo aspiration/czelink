@@ -4,6 +4,9 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -23,11 +26,19 @@ public class SimpleController {
 		final List<InfoArticle> infoArticle = this.informationManagementService
 				.retrieveLatestInformationList(5);
 
+		final JSONObject result = new JSONObject();
+
+		final JSONArray array = new JSONArray();
 		for (int i = 0; i < infoArticle.size(); i++) {
-			System.out.println(infoArticle.get(i).getTitle());
+			final JSONObject infoContent = new JSONObject();
+			infoContent.put("url", "#");
+			infoContent.put("title", infoArticle.get(i).getTitle());
+			array.add(infoContent);
 		}
 
-		return "From infomgmt!";
+		result.put("contents", array);
+
+		return result.toString();
 	}
 
 	public InformationManagementService getInformationManagementService() {

@@ -20,7 +20,7 @@ import org.springframework.web.context.ServletContextAware;
 import com.czelink.dbaccess.GridFsOperationsAware;
 import com.czelink.dbaccess.MongoOperationsAware;
 import com.czelink.dbaccess.handler.DbAccessInvocationHandler;
-import com.czelink.dbaccess.loader.ComponentClassLoader;
+import com.czelink.dbaccess.loader.ReloadableComponentClassLoader;
 
 /**
  * Services holder registry.
@@ -90,49 +90,47 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 		final Object serviceImplementation = serviceInterfaceRepository
 				.get(serviceInterfaceName);
 
-		if (serviceImplementation instanceof String) {
-			try {
-				final Object serviceImplObject_inner = this.componentClassLoader
-						.loadClass((String) serviceImplementation)
-						.newInstance();
+		try {
 
-				final MongoTemplate mongoTemplate = new MongoTemplate(
-						this.mongoDbFactory);
+			System.out
+					.println("Calling DbAccessServiceRegistry for serviceImpl.");
 
-				// set MongoOperations
-				if (serviceImplObject_inner instanceof MongoOperationsAware) {
-					final MongoOperationsAware mongoOperator = (MongoOperationsAware) serviceImplObject_inner;
-					mongoOperator.setMongoOperations(mongoTemplate);
-				}
+			final Object serviceImplObject_inner = this.componentClassLoader
+					.loadClass((String) serviceImplementation).newInstance();
 
-				// set GridFsOperations
-				if (serviceImplObject_inner instanceof GridFsOperationsAware) {
-					final GridFsOperationsAware gridFsOperator = (GridFsOperationsAware) serviceImplObject_inner;
-					gridFsOperator.setGridFsOperations(new GridFsTemplate(
-							this.mongoDbFactory, this.mongoConverter));
-				}
+			final MongoTemplate mongoTemplate = new MongoTemplate(
+					this.mongoDbFactory);
 
-				final InvocationHandler dbAccessInvocationHandler = new DbAccessInvocationHandler(
-						serviceImplObject_inner);
-
-				final Class serviceInterfaceClass = this.componentClassLoader
-						.loadClass(serviceInterfaceName);
-
-				serviceImplObject = Proxy.newProxyInstance(
-						serviceInterfaceClass.getClassLoader(),
-						new Class[] { serviceInterfaceClass },
-						dbAccessInvocationHandler);
-
-				serviceInterfaceRepository.put(serviceInterfaceName,
-						serviceImplObject);
-
-			} catch (Exception e) {
-				throw new IllegalStateException(
-						"fail creating instance of class: "
-								+ serviceImplementation + ".", e);
+			// set MongoOperations
+			if (serviceImplObject_inner instanceof MongoOperationsAware) {
+				final MongoOperationsAware mongoOperator = (MongoOperationsAware) serviceImplObject_inner;
+				mongoOperator.setMongoOperations(mongoTemplate);
 			}
-		} else {
-			serviceImplObject = serviceImplementation;
+
+			// set GridFsOperations
+			if (serviceImplObject_inner instanceof GridFsOperationsAware) {
+				final GridFsOperationsAware gridFsOperator = (GridFsOperationsAware) serviceImplObject_inner;
+				gridFsOperator.setGridFsOperations(new GridFsTemplate(
+						this.mongoDbFactory, this.mongoConverter));
+			}
+
+			final InvocationHandler dbAccessInvocationHandler = new DbAccessInvocationHandler(
+					serviceImplObject_inner);
+
+			System.out
+					.println("Calling DbAccessServiceRegistry for serviceInterface.");
+
+			final Class serviceInterfaceClass = this.componentClassLoader
+					.loadClass(serviceInterfaceName);
+
+			serviceImplObject = Proxy.newProxyInstance(
+					serviceInterfaceClass.getClassLoader(),
+					new Class[] { serviceInterfaceClass },
+					dbAccessInvocationHandler);
+
+		} catch (Exception e) {
+			throw new IllegalStateException("fail creating instance of class: "
+					+ serviceImplementation + ".", e);
 		}
 
 		return serviceImplObject;
@@ -201,8 +199,8 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 
 		this.componentRepositoryPath = realPath + "/components";
 
-		this.componentClassLoader = ComponentClassLoader.getInstance(this
-				.getClass().getClassLoader(),
+		this.componentClassLoader = ReloadableComponentClassLoader.getInstance(
+				this.getClass().getClassLoader(),
 				new String[] { this.componentRepositoryPath }, 5 * 1000);
 	}
 }

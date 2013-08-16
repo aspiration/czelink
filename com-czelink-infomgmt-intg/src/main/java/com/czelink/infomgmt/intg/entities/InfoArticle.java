@@ -3,6 +3,7 @@ package com.czelink.infomgmt.intg.entities;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -57,4 +58,15 @@ public class InfoArticle implements Serializable {
 	public void setAuther(User auther) {
 		this.auther = auther;
 	}
+
+	public String toString() {
+		final ToStringBuilder tsb = new ToStringBuilder(this);
+		tsb.append("id", this.id);
+		tsb.append("auther", this.auther);
+		tsb.append("date", this.date);
+		tsb.append("paragraphs", this.paragraphs);
+		tsb.append("title", this.title);
+		return tsb.toString();
+	}
+
 }
