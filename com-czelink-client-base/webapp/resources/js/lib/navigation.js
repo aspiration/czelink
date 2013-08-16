@@ -97,11 +97,11 @@ define([ 'jquery', 'require', 'orchestration' ], function(jquery, require,
 				$scope.$apply();
 			}
 
-			if (flashObjs !== null || flashObjs !== undefined) {
+			if (flashObjs !== null && flashObjs !== undefined) {
 				flashParams = flashObj;
 			}
 
-			if (siteObjs !== null || siteObjs !== undefined) {
+			if (siteObjs !== null && siteObjs !== undefined) {
 				angular.extend({}, siteParams, siteObjs);
 			}
 
