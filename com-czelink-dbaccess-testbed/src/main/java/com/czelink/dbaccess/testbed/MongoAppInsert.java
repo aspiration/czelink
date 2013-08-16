@@ -1,9 +1,13 @@
 package com.czelink.dbaccess.testbed;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 import org.springframework.data.authentication.UserCredentials;
 import org.springframework.data.mongodb.MongoDbFactory;
@@ -15,7 +19,7 @@ import com.czelink.infomgmt.intg.entities.InfoArticle;
 import com.czelink.common.intg.entities.User;
 import com.mongodb.Mongo;
 
-public class MongoApp {
+public class MongoAppInsert {
 
 	/**
 	 * @param args
@@ -38,10 +42,20 @@ public class MongoApp {
 		user.setPassword("123");
 		user.setRegisterDate(new Date());
 
-		mongoOps.insert(user);
+//		final Properties props = new Properties();
+//		final InputStream inputStream = MongoAppInsert.class.getClassLoader()
+//				.getResourceAsStream("title.properties");
+//		try {
+//			props.load(inputStream);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		
+//		System.out.println(props.getProperty("text1"));
 
-		final String[] infoTitle = new String[] { "text1", "text2", "text3",
-				"text4" };
+		final String[] infoTitle = new String[] { "第三届财智远见论坛",
+				"特别关注：财政部规范企...", "我国将加快房产税改革试...",
+				"七大战略新兴产业规划详解" };
 		final List articleList = new ArrayList(infoTitle.length);
 		for (int i = 0; i < infoTitle.length; i++) {
 			final InfoArticle articleInfo = new InfoArticle();
@@ -51,6 +65,7 @@ public class MongoApp {
 			articleList.add(articleInfo);
 		}
 
+		mongoOps.insert(user);
 		mongoOps.insert(articleList, InfoArticle.class);
 	}
 }

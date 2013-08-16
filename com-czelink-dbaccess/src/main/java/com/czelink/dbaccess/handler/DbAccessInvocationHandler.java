@@ -28,7 +28,6 @@ public class DbAccessInvocationHandler implements InvocationHandler {
 		this.targetServiceImpl = pTargetServiceImpl;
 	}
 
-	@Override
 	public Object invoke(Object proxy, Method method, Object[] args)
 			throws Throwable {
 
