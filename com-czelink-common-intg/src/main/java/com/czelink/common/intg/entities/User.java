@@ -1,4 +1,4 @@
-package com.czelink.intg.entities;
+package com.czelink.common.intg.entities;
 
 import java.io.Serializable;
 import java.util.Date;

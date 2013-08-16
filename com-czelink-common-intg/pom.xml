@@ -1,30 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>com-czelink-dbaccess-testbed</artifactId>
-
 	<parent>
 		<groupId>com.czelink</groupId>
 		<artifactId>com-czelink-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
+	<artifactId>com-czelink-common-intg</artifactId>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.czelink</groupId>
-			<artifactId>com-czelink-common-intg</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.czelink</groupId>
-			<artifactId>com-czelink-dbaccess</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.czelink</groupId>
-			<artifactId>com-czelink-infomgmt-intg</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.czelink</groupId>
-			<artifactId>com-czelink-infomgmt-dbaccess</artifactId>
+			<artifactId>com-czelink-intg</artifactId>
 		</dependency>
 	</dependencies>
 </project>

@@ -105,6 +105,11 @@
 			</dependency>
 			<dependency>
 				<groupId>com.czelink</groupId>
+				<artifactId>com-czelink-common-intg</artifactId>
+				<version>${com.czelink-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.czelink</groupId>
 				<artifactId>com-czelink-infomgmt-intg</artifactId>
 				<version>${com.czelink-version}</version>
 			</dependency>

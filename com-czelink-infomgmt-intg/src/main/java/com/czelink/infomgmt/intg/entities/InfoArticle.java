@@ -7,7 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.czelink.intg.entities.User;
+import com.czelink.common.intg.entities.User;
 
 @Document(collection = "InfoArticles")
 public class InfoArticle implements Serializable {

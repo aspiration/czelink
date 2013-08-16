@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 
 import com.czelink.infomgmt.intg.entities.InfoArticle;
-import com.czelink.intg.entities.User;
+import com.czelink.common.intg.entities.User;
 import com.mongodb.Mongo;
 
 public class MongoApp {
