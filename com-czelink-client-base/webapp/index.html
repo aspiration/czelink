@@ -23,36 +23,41 @@
 					data-target=".navbar-responsive-collapse"> <span
 					class="icon-bar"></span> <span class="icon-bar"></span><span
 					class="icon-bar"></span>
-				</a><a class="brand" href="#home" ng-click="navigate('home.html')">财智网</a>
+				</a><a class="brand" href="#home"
+					ng-click="navigate({location:'home.html'})">财智网</a>
 				<div class="nav-collapse collapse navbar-responsive-collapse">
 					<ul class="nav">
 						<li ng-class="{'active' : activityCheck('#home')}"><a
-							href="#home" ng-click="navigate('home.html')">首页</a></li>
+							href="#home" ng-click="navigate({location:'home.html'})">首页</a></li>
 						<li class="divider-vertical"></li>
 						<li ng-class="{'active':activityCheck('#information')}"><a
-							href="#information" ng-click="navigate('information.html')">资讯</a></li>
+							href="#information"
+							ng-click="navigate({location:'information.html'})">资讯</a></li>
 						<li class="divider-vertical"></li>
 						<li ng-class="{'active':activityCheck('#weibo')}"><a
-							href="#weibo" ng-click="navigate('weibo.html')">微博</a></li>
+							href="#weibo" ng-click="navigate({location:'weibo.html'})">微博</a></li>
 						<li class="divider-vertical"></li>
 						<li ng-class="{'active':activityCheck('#blog')}"><a
-							href="#blog" ng-click="navigate('blog.html')">博客 </a></li>
+							href="#blog" ng-click="navigate({location : 'blog.html'})">博客
+						</a></li>
 						<li class="divider-vertical"></li>
 						<li ng-class="{'active':activityCheck('#group')}"><a
-							href="#group" ng-click="navigate('group.html')">圈子</a></li>
+							href="#group" ng-click="navigate({location:'group.html'})">圈子</a></li>
 						<li class="divider-vertical"></li>
 						<li ng-class="{'active':activityCheck('#recruitment')}"><a
-							href="#recruitment" ng-click="navigate('recruitment.html')">招聘</a></li>
+							href="#recruitment"
+							ng-click="navigate({location:'recruitment.html'})">招聘</a></li>
 						<li class="divider-vertical"></li>
 						<li ng-class="{'active':activityCheck('#community')}"><a
-							href="#community" ng-click="navigate('community.html')">社区 </a></li>
+							href="#community"
+							ng-click="navigate({location:'community.html'})">社区 </a></li>
 						<li class="divider-vertical"></li>
 						<li ng-class="{'active':activityCheck('#photo')}"><a
-							href="#photo" ng-click="navigate('photo.html')">图片</a></li>
+							href="#photo" ng-click="navigate({location:'photo.html'})">图片</a></li>
 						<li class="divider-vertical"></li>
 						<li ng-class="{'active':activityCheck('#business_school')}"><a
 							href="#business_school"
-							ng-click="navigate('business_school.html')">商学院</a></li>
+							ng-click="navigate({location:'business_school.html'})">商学院</a></li>
 					</ul>
 					<ul class="nav pull-right">
 						<li ng-class="{'active':activityCheck('#help')}"><a

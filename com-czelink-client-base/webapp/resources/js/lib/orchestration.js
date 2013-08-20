@@ -15,8 +15,6 @@ define(
 							'orchestrationCtrl',
 							function($scope) {
 
-								window.test = $scope;
-
 								$scope.registery = {};
 								$scope.lookupMap = {};
 

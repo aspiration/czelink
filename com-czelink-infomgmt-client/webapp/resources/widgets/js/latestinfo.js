@@ -8,5 +8,15 @@ define(function() {
 				$scope.$apply();
 			}
 		});
+
+		$scope.showDetails = function(infoParam) {
+			var options = {
+				location : 'information.html',
+				flashObjs : {
+					infoParam : infoParam
+				}
+			};
+			orchestration.invoke("navigation", "navigateTo", options);
+		};
 	};
 });
