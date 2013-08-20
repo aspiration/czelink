@@ -61,10 +61,10 @@
 							<includeArtifacIds>com-czelink-client-base,com-czelink-usermgmt-client,com-czelink-infomgmt-client</includeArtifacIds>
 							<includeGroupIds>${project.groupId}</includeGroupIds>
 							<includeTypes>zip</includeTypes>
-							<excludeTransitive>false</excludeTransitive>
-							<overWriteIfNewer>false</overWriteIfNewer>
-							<overWriteReleases>false</overWriteReleases>
-							<overWriteSnapshots>false</overWriteSnapshots>
+							<excludeTransitive>true</excludeTransitive>
+							<overWriteIfNewer>true</overWriteIfNewer>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
 					</execution>
 				</executions>
