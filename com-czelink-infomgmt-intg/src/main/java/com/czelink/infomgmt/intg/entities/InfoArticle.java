@@ -61,7 +61,7 @@ public class InfoArticle implements Serializable {
 
 	public String toString() {
 		final ToStringBuilder tsb = new ToStringBuilder(this);
-		tsb.append("id", this.id);
+		tsb.append("id", this.getId());
 		tsb.append("auther", this.auther);
 		tsb.append("date", this.date);
 		tsb.append("paragraphs", this.paragraphs);
@@ -69,4 +69,7 @@ public class InfoArticle implements Serializable {
 		return tsb.toString();
 	}
 
+	public String getId() {
+		return id;
+	}
 }

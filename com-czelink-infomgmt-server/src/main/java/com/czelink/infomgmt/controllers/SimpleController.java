@@ -31,7 +31,7 @@ public class SimpleController {
 		final JSONArray array = new JSONArray();
 		for (int i = 0; i < infoArticle.size(); i++) {
 			final JSONObject infoContent = new JSONObject();
-			infoContent.put("url", "#");
+			infoContent.put("id", infoArticle.get(i).getId());
 			infoContent.put("title", infoArticle.get(i).getTitle());
 			array.add(infoContent);
 		}
