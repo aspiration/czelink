@@ -1,6 +1,11 @@
 define([ 'jquery', 'require', 'orchestration' ],
 		function(jquery, require, orchestration) {
 
+			// flash repository.
+			var flashParams = {};
+			// site repository.
+			var siteParams = {};
+
 			// prepare loadpath:
 			var location = window.location.hash;
 			var candidates = [ '#home', '#information', '#weibo', '#blog',
@@ -59,18 +64,31 @@ define([ 'jquery', 'require', 'orchestration' ],
 				var widgets = document.querySelectorAll('div[widget]');
 
 				angular.forEach(widgets, function(widget) {
-					// get widget template
+
 					var widgetName = widget.getAttribute('widget');
-					// attach controller
-					widget.setAttribute('ng-controller', widgetName + 'Ctrl');
-					var widgetPath = 'text!widgets/views/' + widgetName
-							+ ".html!strip";
-					require([ widgetPath ],
-							function(widgetTemplate) {
-								widget.innerHTML = widgetTemplate;
-								initWidgetApplication(widgetName, widget,
-										orchestration);
-							});
+
+					// get widget render condition.
+					var renderOnlyKey = widget.getAttribute('renderOnly');
+					var renderOnlyValue = flashParams[renderOnlyKey];
+					if (renderOnlyValue === null
+							|| renderOnlyValue === undefined) {
+						renderOnlyValue = siteParams[renderOnlyKey];
+					}
+
+					// get widget template
+					if (renderOnlyValue === true || renderOnlyValue === null
+							|| renderOnlyValue === undefined) {
+						// attach controller
+						widget.setAttribute('ng-controller', widgetName
+								+ 'Ctrl');
+						var widgetPath = 'text!widgets/views/' + widgetName
+								+ ".html!strip";
+						require([ widgetPath ], function(widgetTemplate) {
+							widget.innerHTML = widgetTemplate;
+							initWidgetApplication(widgetName, widget,
+									orchestration);
+						});
+					}
 				});
 
 			};
@@ -96,9 +114,6 @@ define([ 'jquery', 'require', 'orchestration' ],
 						return false;
 					}
 				};
-
-				var flashParams = {};
-				var siteParams = {};
 
 				// options: location, flashObjs, siteObjs
 				$scope.navigate = function(options) {
