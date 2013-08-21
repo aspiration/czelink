@@ -42,26 +42,27 @@ public class MongoAppInsert {
 		user.setPassword("123");
 		user.setRegisterDate(new Date());
 
-//		final Properties props = new Properties();
-//		final InputStream inputStream = MongoAppInsert.class.getClassLoader()
-//				.getResourceAsStream("title.properties");
-//		try {
-//			props.load(inputStream);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//		
-//		System.out.println(props.getProperty("text1"));
+		// final Properties props = new Properties();
+		// final InputStream inputStream = MongoAppInsert.class.getClassLoader()
+		// .getResourceAsStream("title.properties");
+		// try {
+		// props.load(inputStream);
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
+		//
+		// System.out.println(props.getProperty("text1"));
 
 		final String[] infoTitle = new String[] { "第三届财智远见论坛",
-				"特别关注：财政部规范企...", "我国将加快房产税改革试...",
-				"七大战略新兴产业规划详解" };
+				"特别关注：财政部规范企...", "我国将加快房产税改革试...", "七大战略新兴产业规划详解" };
 		final List articleList = new ArrayList(infoTitle.length);
 		for (int i = 0; i < infoTitle.length; i++) {
 			final InfoArticle articleInfo = new InfoArticle();
 			articleInfo.setAuther(user);
 			articleInfo.setDate(new Date());
 			articleInfo.setTitle(infoTitle[i]);
+			articleInfo.setParagraphs(new String[] { "这是华丽的开头", "这是丰满的第二自然段",
+					"这是没用的第三自然段", "这是基本没有内容的第四自然段", "绚丽地结尾。" });
 			articleList.add(articleInfo);
 		}
 

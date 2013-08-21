@@ -9,11 +9,12 @@ define(function() {
 			}
 		});
 
-		$scope.showDetails = function(infoParam) {
+		$scope.showDetails = function(articleId) {
 			var options = {
 				location : 'information.html',
 				flashObjs : {
-					infoParam : infoParam
+					articleId : articleId,
+					info_details : true
 				}
 			};
 			orchestration.invoke("navigation", "navigateTo", options);

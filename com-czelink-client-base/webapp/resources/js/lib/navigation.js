@@ -69,15 +69,19 @@ define([ 'jquery', 'require', 'orchestration' ],
 
 					// get widget render condition.
 					var renderOnlyKey = widget.getAttribute('renderOnly');
-					var renderOnlyValue = flashParams[renderOnlyKey];
-					if (renderOnlyValue === null
-							|| renderOnlyValue === undefined) {
-						renderOnlyValue = siteParams[renderOnlyKey];
+					var renderOnlyValue = false;
+
+					if (renderOnlyKey !== null && renderOnlyKey !== undefined) {
+						renderOnlyValue = flashParams[renderOnlyKey];
+						if (renderOnlyValue === null
+								|| renderOnlyValue === undefined) {
+							renderOnlyValue = siteParams[renderOnlyKey];
+						}
 					}
 
 					// get widget template
-					if (renderOnlyValue === true || renderOnlyValue === null
-							|| renderOnlyValue === undefined) {
+					if (renderOnlyValue === true || renderOnlyKey === null
+							|| renderOnlyKey === undefined) {
 						// attach controller
 						widget.setAttribute('ng-controller', widgetName
 								+ 'Ctrl');
@@ -130,11 +134,11 @@ define([ 'jquery', 'require', 'orchestration' ],
 						$scope.$apply();
 					}
 
-					if (flashObjs !== null || flashObjs !== undefined) {
+					if (flashObjs !== null && flashObjs !== undefined) {
 						flashParams = flashObjs;
 					}
 
-					if (siteObjs !== null || siteObjs !== undefined) {
+					if (siteObjs !== null && siteObjs !== undefined) {
 						angular.extend({}, siteParams, siteObjs);
 					}
 

@@ -6,6 +6,7 @@ import com.czelink.infomgmt.intg.entities.InfoArticle;
 
 public interface InformationManagementService {
 
-	// return type to be defined.
 	public List<InfoArticle> retrieveLatestInformationList(final Integer amount);
+
+	public InfoArticle retrieveInformationById(final String objectId);
 }

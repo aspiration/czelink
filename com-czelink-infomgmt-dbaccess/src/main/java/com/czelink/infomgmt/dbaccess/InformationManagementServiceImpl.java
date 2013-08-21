@@ -24,6 +24,10 @@ public class InformationManagementServiceImpl implements
 		return infoArticles;
 	}
 
+	public InfoArticle retrieveInformationById(String objectId) {
+		return this.mongoOperations.findById(objectId, InfoArticle.class);
+	}
+
 	public void setMongoOperations(final MongoOperations pMongoOperations) {
 		this.mongoOperations = pMongoOperations;
 	}

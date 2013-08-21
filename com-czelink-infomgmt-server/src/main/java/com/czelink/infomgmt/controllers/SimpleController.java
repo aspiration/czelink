@@ -9,6 +9,7 @@ import net.sf.json.JSONObject;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.czelink.infomgmt.intg.entities.InfoArticle;
@@ -39,6 +40,31 @@ public class SimpleController {
 		result.put("contents", array);
 
 		return result.toString();
+	}
+
+	@RequestMapping("/searchById")
+	public @ResponseBody
+	String searchById(
+			@RequestParam(value = "articleId", required = true) String articleId) {
+
+		final InfoArticle infoArticle = this.informationManagementService
+				.retrieveInformationById(articleId);
+
+		final JSONObject infoContent = new JSONObject();
+
+		infoContent.put("id", infoArticle.getId());
+		infoContent.put("title", infoArticle.getTitle());
+
+		final String[] paragraphs = infoArticle.getParagraphs();
+		final JSONArray paraArray = new JSONArray();
+		for (int j = 0; j < paragraphs.length; j++) {
+			paraArray.add(paragraphs[j]);
+		}
+		infoContent.put("paragraphs", paraArray);
+		infoContent.put("author", infoArticle.getAuther());
+		infoContent.put("date", infoArticle.getDate());
+
+		return infoContent.toString();
 	}
 
 	public InformationManagementService getInformationManagementService() {
