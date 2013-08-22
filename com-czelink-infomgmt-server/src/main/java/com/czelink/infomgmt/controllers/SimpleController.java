@@ -1,5 +1,6 @@
 package com.czelink.infomgmt.controllers;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -7,6 +8,7 @@ import javax.annotation.Resource;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +19,9 @@ import com.czelink.infomgmt.intg.services.InformationManagementService;
 
 @Controller
 public class SimpleController {
+
+	@Resource(name = "baseDateTimeDisplayConverter")
+	private Converter<Date, String> dateTimeDisplayConverter;
 
 	@Resource(name = "infomgmtService")
 	private InformationManagementService informationManagementService;
@@ -62,7 +67,8 @@ public class SimpleController {
 		}
 		infoContent.put("paragraphs", paraArray);
 		infoContent.put("author", infoArticle.getAuther());
-		infoContent.put("date", infoArticle.getDate());
+		infoContent.put("date",
+				this.dateTimeDisplayConverter.convert(infoArticle.getDate()));
 
 		return infoContent.toString();
 	}
@@ -74,6 +80,15 @@ public class SimpleController {
 	public void setInformationManagementService(
 			InformationManagementService informationManagementService) {
 		this.informationManagementService = informationManagementService;
+	}
+
+	public Converter<Date, String> getDateTimeDisplayConverter() {
+		return dateTimeDisplayConverter;
+	}
+
+	public void setDateTimeDisplayConverter(
+			Converter<Date, String> dateTimeDisplayConverter) {
+		this.dateTimeDisplayConverter = dateTimeDisplayConverter;
 	}
 
 }
