@@ -23,6 +23,8 @@ define([ 'jquery', 'require', 'orchestration' ],
 					orchestration) {
 				var widgetModule = angular.module(widgetName, []);
 
+				var outerNgAppCallback = undefined;
+
 				var widgetControllerPath = 'widgets/js/' + widgetName;
 				require([ widgetControllerPath ], function(widgetController) {
 					// define controller
@@ -53,10 +55,16 @@ define([ 'jquery', 'require', 'orchestration' ],
 						};
 
 						// handled by consumer.
-						widgetController($scope, jquery, require,
-								orchestrationManager);
+						outerNgAppCallback = widgetController($scope, jquery,
+								require, orchestrationManager);
 					});
 					angular.bootstrap(widgetElement, [ widgetName ]);
+
+					// outer angular application call - usually for dom
+					// manipulate.
+					if (outerNgAppCallback !== undefined) {
+						outerNgAppCallback(widgetElement);
+					}
 				});
 			};
 
