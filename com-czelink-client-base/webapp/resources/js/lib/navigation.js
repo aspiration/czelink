@@ -72,10 +72,21 @@ define([ 'jquery', 'require', 'orchestration' ],
 					var renderOnlyValue = false;
 
 					if (renderOnlyKey !== null && renderOnlyKey !== undefined) {
-						renderOnlyValue = flashParams[renderOnlyKey];
-						if (renderOnlyValue === null
-								|| renderOnlyValue === undefined) {
-							renderOnlyValue = siteParams[renderOnlyKey];
+						if (renderOnlyKey.indexOf("!") === 0) {
+							renderOnlyKey = renderOnlyKey.slice(1,
+									renderOnlyKey.length);
+							renderOnlyValue = flashParams[renderOnlyKey];
+							if (renderOnlyValue === null
+									|| renderOnlyValue === undefined) {
+								renderOnlyValue = siteParams[renderOnlyKey];
+							}
+							renderOnlyValue = !renderOnlyValue;
+						} else {
+							renderOnlyValue = flashParams[renderOnlyKey];
+							if (renderOnlyValue === null
+									|| renderOnlyValue === undefined) {
+								renderOnlyValue = siteParams[renderOnlyKey];
+							}
 						}
 					}
 
