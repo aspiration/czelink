@@ -13,6 +13,12 @@ requirejs.config({
 		},
 		"bootstrap" : {
 			exports : "bootstrap"
+		},
+		"rangy-core" : {
+			exports : "rangy"
+		},
+		"rangy-cssclassapplier" : {
+			exports : "cssclassapplier"
 		}
 	}
 });
