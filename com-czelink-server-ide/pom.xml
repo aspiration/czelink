@@ -10,6 +10,14 @@
 	<packaging>pom</packaging>
 
 	<modules>
+		<module>../com-czelink-intg</module>
+
+		<module>../com-czelink-common-intg</module>
+
+		<module>../com-czelink-uploadrepo-intg</module>
+
+		<module>../com-czelink-infomgmt-intg</module>
+
 		<module>../com-czelink-server-base</module>
 
 		<module>../com-czelink-infomgmt-server</module>

@@ -15,6 +15,10 @@
 			<groupId>com.czelink</groupId>
 			<artifactId>com-czelink-intg</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.czelink</groupId>
+			<artifactId>com-czelink-uploadrepo-intg</artifactId>
+		</dependency>
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
