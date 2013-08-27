@@ -18,7 +18,7 @@ import com.czelink.infomgmt.intg.entities.InfoArticle;
 import com.czelink.infomgmt.intg.services.InformationManagementService;
 
 @Controller
-public class SimpleController {
+public class InfomgmtController {
 
 	@Resource(name = "baseDateTimeDisplayConverter")
 	private Converter<Date, String> dateTimeDisplayConverter;
@@ -26,9 +26,9 @@ public class SimpleController {
 	@Resource(name = "infomgmtService")
 	private InformationManagementService informationManagementService;
 
-	@RequestMapping("/simple")
+	@RequestMapping("/latestInfo")
 	public @ResponseBody
-	String simple() {
+	String latestInfo() {
 		final List<InfoArticle> infoArticle = this.informationManagementService
 				.retrieveLatestInformationList(5);
 
