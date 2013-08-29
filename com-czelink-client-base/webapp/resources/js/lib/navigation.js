@@ -1,4 +1,5 @@
-define([ 'jquery', 'require', 'orchestration' ],
+define(
+		[ 'jquery', 'require', 'orchestration' ],
 		function(jquery, require, orchestration) {
 
 			// flash repository.
@@ -18,6 +19,32 @@ define([ 'jquery', 'require', 'orchestration' ],
 			} else {
 				window.location.hash = "#home";
 			}
+
+			var evalRenderOnlyExpr = function(renderOnlyKey) {
+				var renderOnlyValue = false;
+
+				if (renderOnlyKey.indexOf("!") === 0) {
+					renderOnlyKey = renderOnlyKey
+							.slice(1, renderOnlyKey.length);
+					renderOnlyValue = flashParams[renderOnlyKey];
+					if (renderOnlyValue === null
+							|| renderOnlyValue === undefined) {
+						renderOnlyValue = siteParams[renderOnlyKey];
+					}
+					if (renderOnlyValue === null
+							|| renderOnlyValue === undefined) {
+						renderOnlyValue = false;
+					}
+					renderOnlyValue = !renderOnlyValue;
+				} else {
+					renderOnlyValue = flashParams[renderOnlyKey];
+					if (renderOnlyValue === null
+							|| renderOnlyValue === undefined) {
+						renderOnlyValue = siteParams[renderOnlyKey];
+					}
+				}
+				return renderOnlyValue;
+			};
 
 			var initWidgetApplication = function(widgetName, widgetElement,
 					orchestration) {
@@ -71,48 +98,52 @@ define([ 'jquery', 'require', 'orchestration' ],
 			var handleWidgets = function(orchestration) {
 				var widgets = document.querySelectorAll('div[widget]');
 
-				angular.forEach(widgets, function(widget) {
+				angular
+						.forEach(
+								widgets,
+								function(widget) {
 
-					var widgetName = widget.getAttribute('widget');
+									var widgetName = widget
+											.getAttribute('widget');
 
-					// get widget render condition.
-					var renderOnlyKey = widget.getAttribute('renderOnly');
-					var renderOnlyValue = false;
+									// get widget render condition.
+									var renderOnlyKey = widget
+											.getAttribute('renderOnly');
+									var renderOnlyValue = false;
 
-					if (renderOnlyKey !== null && renderOnlyKey !== undefined) {
-						if (renderOnlyKey.indexOf("!") === 0) {
-							renderOnlyKey = renderOnlyKey.slice(1,
-									renderOnlyKey.length);
-							renderOnlyValue = flashParams[renderOnlyKey];
-							if (renderOnlyValue === null
-									|| renderOnlyValue === undefined) {
-								renderOnlyValue = siteParams[renderOnlyKey];
-							}
-							renderOnlyValue = !renderOnlyValue;
-						} else {
-							renderOnlyValue = flashParams[renderOnlyKey];
-							if (renderOnlyValue === null
-									|| renderOnlyValue === undefined) {
-								renderOnlyValue = siteParams[renderOnlyKey];
-							}
-						}
-					}
+									if (renderOnlyKey !== null
+											&& renderOnlyKey !== undefined) {
+										var renderOnlyParamKeys = renderOnlyKey
+												.split("&&");
+										renderOnlyValue = true;
 
-					// get widget template
-					if (renderOnlyValue === true || renderOnlyKey === null
-							|| renderOnlyKey === undefined) {
-						// attach controller
-						widget.setAttribute('ng-controller', widgetName
-								+ 'Ctrl');
-						var widgetPath = 'text!widgets/views/' + widgetName
-								+ ".html!strip";
-						require([ widgetPath ], function(widgetTemplate) {
-							widget.innerHTML = widgetTemplate;
-							initWidgetApplication(widgetName, widget,
-									orchestration);
-						});
-					}
-				});
+										renderOnlyParamKeys
+												.forEach(function(
+														renderOnlyParamKey) {
+													renderOnlyParamKey = renderOnlyParamKey
+															.trim();
+													renderOnlyValue = renderOnlyValue
+															&& evalRenderOnlyExpr(renderOnlyParamKey);
+												});
+									}
+
+									// get widget template
+									if (renderOnlyValue === true
+											|| renderOnlyKey === null
+											|| renderOnlyKey === undefined) {
+										// attach controller
+										widget.setAttribute('ng-controller',
+												widgetName + 'Ctrl');
+										var widgetPath = 'text!widgets/views/'
+												+ widgetName + ".html!strip";
+										require([ widgetPath ], function(
+												widgetTemplate) {
+											widget.innerHTML = widgetTemplate;
+											initWidgetApplication(widgetName,
+													widget, orchestration);
+										});
+									}
+								});
 
 			};
 

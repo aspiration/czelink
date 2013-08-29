@@ -28,9 +28,9 @@ requirejs([ 'angular', 'jquery', 'domReady', 'require', 'uuid' ], function(
 
 	domReady(function() {
 		// require bootstrap
-		require([ 'bootstrap', 'orchestration', 'navigation' ], function(
-				bootstrap, orchestration, navigation) {
-			// no-operation.
-		});
+		require([ 'bootstrap', 'rangy-core', 'orchestration', 'navigation' ],
+				function(bootstrap, rangy, orchestration, navigation) {
+					// no-operation.
+				});
 	});
 });

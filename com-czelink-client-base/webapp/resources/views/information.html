@@ -1,4 +1,5 @@
 <div>
-	<div widget="info_abstract" renderOnly="!info_details"></div>
-	<div widget="info_details" renderOnly="info_details"></div>
+	<div widget="info_abstract" renderOnly="!info_details && !info_new"></div>
+	<div widget="info_details" renderOnly="info_details && !info_new"></div>
+	<div widget="info_new" renderOnly="info_new && !info_details"></div>
 </div>
