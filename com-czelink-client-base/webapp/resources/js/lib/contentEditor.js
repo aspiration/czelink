@@ -1,51 +1,104 @@
-define([ 'rangy-cssclassapplier' ], function() {
-	rangy.init();
-	rangy.modules.CssClassApplier;
+define(
+		[ 'rangy-cssclassapplier' ],
+		function() {
+			rangy.init();
+			rangy.modules.CssClassApplier;
 
-	var textItalicDecorator = rangy.createCssClassApplier("text-italic", {
-		tagNames : [ 'span' ]
-	});
-	var textBoldDecorator = rangy.createCssClassApplier("text-bold", {
-		tagNames : [ 'span' ]
-	});
-	var textUnderlineDecorator = rangy.createCssClassApplier("text-underline",
-			{
+			var textItalicDecorator = rangy.createCssClassApplier(
+					"text-italic", {
+						tagNames : [ 'span' ]
+					});
+			var textBoldDecorator = rangy.createCssClassApplier("text-bold", {
 				tagNames : [ 'span' ]
 			});
-	var textLineThroughDecorator = rangy
-			.createCssClassApplier("text-line-through");
+			var textUnderlineDecorator = rangy.createCssClassApplier(
+					"text-underline", {
+						tagNames : [ 'span' ]
+					});
+			var textLineThroughDecorator = rangy.createCssClassApplier(
+					"text-line-through", {
+						tagNames : [ 'span' ]
+					});
 
-	return (function() {
-		var editor = {};
-
-		editor.italicText = function() {
-			textItalicDecorator.toggleSelection();
-		};
-
-		editor.boldText = function() {
-			textBoldDecorator.toggleSelection();
-		};
-
-		editor.underlineText = function() {
-			textUnderlineDecorator.toggleSelection();
-		};
-
-		editor.lineThroughText = function() {
-			textLineThroughDecorator.toggleSelection();
-		};
-
-		editor.createLink = function(linkTitle, linkUrl) {
-			var linkApplier = rangy.createCssClassApplier("text-link", {
-				elementTagName : "a",
-				elementProperties : {
-					href : linkUrl,
-					title : linkTitle
+			var checkSelectedItemRange = function(rootElement, landmark,
+					targetElement) {
+				var result = false;
+				if (targetElement === null || targetElement === undefined) {
+					result = false;
+				} else if (rootElement.isEqualNode(targetElement)) {
+					result = false;
+				} else if (targetElement.getAttribute(landmark) === undefined
+						|| targetElement.getAttribute(landmark) === null) {
+					result = checkSelectedItemRange(rootElement, landmark,
+							targetElement.parentElement);
+				} else {
+					result = true;
 				}
-			});
-			linkApplier.toggleSelection();
-			return linkApplier;
-		};
+				return result;
+			};
 
-		return editor;
-	})();
-});
+			return (function() {
+				var editor = {};
+
+				editor.isSelectedValid = function(rootElement, landmark) {
+					var result = false;
+					var htmlText = rangy.getSelection().toHtml();
+					if (htmlText === "") {
+						result = false;
+					} else {
+						result = checkSelectedItemRange(rootElement, landmark,
+								rangy.getSelection().anchorNode.parentElement);
+					}
+					return result;
+				};
+
+				editor.italicText = function() {
+					textItalicDecorator.toggleSelection();
+				};
+
+				editor.boldText = function() {
+					textBoldDecorator.toggleSelection();
+				};
+
+				editor.isUnderlineApplied = function() {
+					return textUnderlineDecorator.isAppliedToSelection(rangy);
+				};
+
+				editor.underlineText = function() {
+					if (textUnderlineDecorator.isAppliedToSelection(rangy)) {
+						textUnderlineDecorator.undoToSelection();
+					} else {
+						textLineThroughDecorator.undoToSelection();
+						textUnderlineDecorator.applyToSelection();
+					}
+				};
+
+				editor.isLineThroughApplied = function() {
+					return textLineThroughDecorator.isAppliedToSelection(rangy);
+				};
+
+				editor.lineThroughText = function() {
+					if (textLineThroughDecorator.isAppliedToSelection(rangy)) {
+						textLineThroughDecorator.undoToSelection();
+					} else {
+						textUnderlineDecorator.undoToSelection();
+						textLineThroughDecorator.applyToSelection();
+					}
+				};
+
+				editor.createLink = function(linkTitle, linkUrl) {
+					var linkApplier = rangy.createCssClassApplier("text-link",
+							{
+								elementTagName : "a",
+								elementProperties : {
+									href : linkUrl,
+									title : linkTitle
+								}
+							});
+					linkApplier.toggleSelection();
+					return linkApplier;
+				};
+
+				return editor;
+			})();
+		});

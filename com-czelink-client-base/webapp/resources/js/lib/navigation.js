@@ -83,7 +83,7 @@ define(
 
 						// handled by consumer.
 						outerNgAppCallback = widgetController($scope, jquery,
-								require, orchestrationManager);
+								require, orchestrationManager, widgetElement);
 					});
 					angular.bootstrap(widgetElement, [ widgetName ]);
 

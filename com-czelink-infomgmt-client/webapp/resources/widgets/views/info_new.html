@@ -8,20 +8,22 @@
 					<tbody>
 						<tr>
 							<td style="text-align: center;">
-								<button class="btn btn-info" type="button"
+								<button class="btn btn-info"
+									ng-class="{disabled : isInsertParagraphDisabled}" type="button"
 									ng-click="insertNewParagraph()">
-									<span>新段落</span><i class="icon-leaf icon-white pull-right"></i>
+									<span>新段落({{restParagraphNum}})</span><i
+										class="icon-leaf icon-white pull-right"></i>
 								</button>
 							</td>
 							<td style="text-align: center;">
 								<button ng-class="{disabled: isInsertPicDisabled}"
 									ng-click="insertNewPicture()" class="btn btn-info"
-									type="button"{{isInsertPicDisabledAttr}}>
+									type="button">
 									<span>插入图片</span><i class="icon-picture icon-white pull-right"></i>
 								</button>
 							</td>
 						</tr>
-						<tr>
+						<tr ng-class="{'hidden' : !fontEditStart()}">
 							<td style="text-align: center;">
 								<button class="btn btn-info" type="button" ng-click="italic()">
 									<span>斜体</span><i class="icon-italic icon-white pull-right"></i>
@@ -33,16 +35,16 @@
 								</button>
 							</td>
 						</tr>
-						<tr>
+						<tr ng-class="{'hidden' : !fontEditStart()}">
 							<td style="text-align: center;">
-								<button class="btn btn-info" type="button"
+								<button underline-btn="true" class="btn btn-info" type="button"
 									ng-click="underline()">
 									<span>下划线</span><i class="icon-underline icon-white pull-right"></i>
 								</button>
 							</td>
 							<td style="text-align: center;">
-								<button class="btn btn-info" type="button"
-									ng-click="lineThrough()">
+								<button linethrough-btn="true" class="btn btn-info"
+									type="button" ng-click="lineThrough()">
 									<span>删除线</span><i
 										class="icon-strikethrough icon-white pull-right"></i>
 								</button>
@@ -53,12 +55,18 @@
 			</div>
 		</div>
 		<div class="span9">
-			<div class="panel">
+			<div ng-mouseleave="fontEditStart()" ng-mouseenter="fontEditStart()"
+				ng-mouseup="fontEditStart()" class="panel">
 				<h3>预览</h3>
 				<hr class="panel-hr">
 				<div class="preview">
 					<h1 style="text-align: center;">{{article.title.text}}</h1>
-					<div class="articleContentArea"></div>
+					<div class="articleContentArea">
+						<div articleeditable="{{$index}}"
+							ng-repeat="paragraph in initParagraphContent" hidden="true">
+							<p contenteditable="{{paragraph.contentEditable}}">{{paragraph.text}}</p>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
