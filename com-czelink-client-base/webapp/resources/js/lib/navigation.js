@@ -92,6 +92,9 @@ define(
 					if (outerNgAppCallback !== undefined) {
 						outerNgAppCallback(widgetElement);
 					}
+
+					// show the widget element after rendering.
+					widgetElement.removeAttribute("hidden");
 				});
 			};
 
@@ -102,6 +105,8 @@ define(
 						.forEach(
 								widgets,
 								function(widget) {
+									// hidden the widget during rendering.
+									widget.setAttribute("hidden", true);
 
 									var widgetName = widget
 											.getAttribute('widget');

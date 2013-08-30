@@ -79,10 +79,5 @@ define([ 'contentEditor' ], function(contentEditor) {
 			$scope.links[linkTitle] = createLink.lineThroughText(linkTitle,
 					linkUrl);
 		};
-
-		return function(widgetElement) {
-			var previewArea = widgetElement.querySelector("div.preview");
-			previewArea.removeAttribute("hidden");
-		};
 	};
 });
