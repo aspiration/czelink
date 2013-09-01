@@ -1,16 +1,6 @@
 define([ 'contentEditor' ],
 		function(contentEditor) {
 
-			var initParagraphItem = {
-				text : "请在这里替换内容",
-				contentEditable : true
-			};
-			var initParagraphContent = [];
-
-			for ( var i = 0; i < 10; i++) {
-				initParagraphContent.push(initParagraphItem);
-			}
-
 			return function($scope, jquery, require, orchestration,
 					widgetElement) {
 
@@ -22,7 +12,12 @@ define([ 'contentEditor' ],
 							"articleeditable");
 				};
 
-				var paragraphHolder = null;
+				var getSelectedParagraph = function() {
+					return contentEditor.getLandMarkLocation(
+							articleContentArea, "articleeditable");
+				};
+
+				// var paragraphHolder = null;
 
 				var underlineBtn = null;
 				var linethroughBtn = null;
@@ -71,9 +66,9 @@ define([ 'contentEditor' ],
 					picUrls : []
 				};
 
-				$scope.initParagraphContent = initParagraphContent;
+				$scope.initParagraphContent = [];
 
-				$scope.restParagraphNum = initParagraphContent.length;
+				$scope.restParagraphNum = 10;
 
 				$scope.contentEditable = true;
 
@@ -94,13 +89,37 @@ define([ 'contentEditor' ],
 					if ($scope.restParagraphNum > 0) {
 						$scope.isInsertPicDisabled = false;
 						structureStack.push(true);
-						var pIndex = initParagraphContent.length
-								- $scope.restParagraphNum;
-						paragraphHolder[pIndex].removeAttribute("hidden");
+
+						var selectedParagraph = getSelectedParagraph();
+
+						window.test = selectedParagraph;
+
+						if (selectedParagraph === undefined) {
+							var newParagraph = {
+								text : '请在这里替换内容',
+								contentEditable : true
+							};
+							$scope.initParagraphContent.push(newParagraph);
+						} else {
+							var index = parseInt(selectedParagraph
+									.getAttribute("articleeditable"));
+
+							var newParagraph = {
+								text : '请在这里替换内容',
+								contentEditable : true
+							};
+							$scope.initParagraphContent.splice(index + 1, 0,
+									newParagraph);
+						}
+
 						$scope.restParagraphNum--;
 					}
 					if ($scope.restParagraphNum === 0) {
 						$scope.isInsertParagraphDisabled = true;
+					}
+
+					if (!$scope.$$phase) {
+						$scope.$apply();
 					}
 				};
 
@@ -155,8 +174,6 @@ define([ 'contentEditor' ],
 				};
 
 				return function(widgetElement) {
-					paragraphHolder = widgetElement
-							.querySelectorAll("div[articleeditable]");
 					underlineBtn = widgetElement
 							.querySelector("button[underline-btn]");
 					linethroughBtn = widgetElement

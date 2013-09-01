@@ -63,8 +63,8 @@
 					<h1 style="text-align: center;">{{article.title.text}}</h1>
 					<div class="articleContentArea">
 						<div articleeditable="{{$index}}"
-							ng-repeat="paragraph in initParagraphContent" hidden="true">
-							<p contenteditable="{{paragraph.contentEditable}}">{{paragraph.text}}</p>
+							ng-repeat="paragraph in initParagraphContent">
+							<p contenteditable="{{paragraph.contentEditable}}" ng-bind-html-unsafe="paragraph.text">{{paragraph.text}}</p>
 						</div>
 					</div>
 				</div>

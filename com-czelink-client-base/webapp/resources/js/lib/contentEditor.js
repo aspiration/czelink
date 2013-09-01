@@ -37,6 +37,23 @@ define(
 				return result;
 			};
 
+			var getSelectedItemLandMarkElement = function(rootElement,
+					landmark, targetElement) {
+				var result = undefined;
+				if (targetElement === null || targetElement === undefined) {
+					result = undefined;
+				} else if (rootElement.isEqualNode(targetElement)) {
+					result = undefined;
+				} else if (targetElement.getAttribute(landmark) === undefined
+						|| targetElement.getAttribute(landmark) === null) {
+					result = getSelectedItemLandMarkElement(rootElement,
+							landmark, targetElement.parentElement);
+				} else {
+					result = targetElement;
+				}
+				return result;
+			};
+
 			return (function() {
 				var editor = {};
 
@@ -48,6 +65,21 @@ define(
 					} else {
 						result = checkSelectedItemRange(rootElement, landmark,
 								rangy.getSelection().anchorNode.parentElement);
+					}
+					return result;
+				};
+
+				editor.isLocationValid = function(rootElement, landmark) {
+					return checkSelectedItemRange(rootElement, landmark, rangy
+							.getSelection().anchorNode.parentElement);
+				};
+
+				editor.getLandMarkLocation = function(rootElement, landmark) {
+					var result = undefined;
+					var anchorNode = rangy.getSelection().anchorNode;
+					if (anchorNode !== undefined && anchorNode !== null) {
+						result = getSelectedItemLandMarkElement(rootElement,
+								landmark, anchorNode.parentElement);
 					}
 					return result;
 				};
