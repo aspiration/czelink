@@ -1,4 +1,5 @@
-<div class="container">
+<div class="container" ng-mousemove="fontEditStart();"
+	ng-mouseup="fontEditStart();selectParagraph(-1, $event)">
 	<div class="row">
 		<div class="span3">
 			<div class="panel">
@@ -19,7 +20,8 @@
 								<button ng-class="{disabled: isInsertPicDisabled}"
 									ng-click="insertNewPicture()" class="btn btn-info"
 									type="button">
-									<span>插入图片</span><i class="icon-picture icon-white pull-right"></i>
+									<span>新图片({{restPicNum}})</span><i
+										class="icon-picture icon-white pull-right"></i>
 								</button>
 							</td>
 						</tr>
@@ -53,18 +55,33 @@
 					</tbody>
 				</table>
 			</div>
+			<div class="panel">
+				<h3>说明</h3>
+				<hr class="panel-hr">
+				说明文字在这里出现
+			</div>
 		</div>
 		<div class="span9">
-			<div ng-mouseleave="fontEditStart()" ng-mouseenter="fontEditStart()"
-				ng-mouseup="fontEditStart()" class="panel">
+			<div class="panel">
 				<h3>预览</h3>
 				<hr class="panel-hr">
 				<div class="preview">
 					<h1 style="text-align: center;">{{article.title.text}}</h1>
-					<div class="articleContentArea">
+					<div class="articleContentArea"
+						ng-mouseup="selectParagraph(-1, $event)">
 						<div articleeditable="{{$index}}"
+							ng-mouseenter="enterParagraph($index);picInsertStatus()"
+							ng-mouseleave="leaveParagraph();picInsertStatus()"
+							ng-mouseup="selectParagraph($index, $event);picInsertStatus()"
+							ng-class="{'panel': checkOverParagrahIndex($index), 'panel-black': checkSelectPanel($index)}"
 							ng-repeat="paragraph in initParagraphContent">
-							<p contenteditable="{{paragraph.contentEditable}}" ng-bind-html-unsafe="paragraph.text">{{paragraph.text}}</p>
+							<i ng-show="checkOverParagrahIndex($index)"
+								ng-mouseenter="enterCross()" ng-mouseleave="leaveCross()"
+								class="pull-right" ng-class="enterCrossClass"
+								ng-click="removeParagraph($index)"></i><span>&nbsp</span>
+							<hr ng-show="checkOverParagrahIndex($index)" class="panel-hr">
+
+							<p contenteditable="true" ng-bind-html-unsafe="paragraph.text">{{paragraph.text}}</p>
 						</div>
 					</div>
 				</div>

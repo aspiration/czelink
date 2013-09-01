@@ -70,8 +70,13 @@ define(
 				};
 
 				editor.isLocationValid = function(rootElement, landmark) {
-					return checkSelectedItemRange(rootElement, landmark, rangy
-							.getSelection().anchorNode.parentElement);
+					var result = false;
+					var anchorNode = rangy.getSelection().anchorNode;
+					if (anchorNode !== undefined && anchorNode !== null) {
+						result = checkSelectedItemRange(rootElement, landmark,
+								anchorNode.parentElement);
+					}
+					return result;
 				};
 
 				editor.getLandMarkLocation = function(rootElement, landmark) {

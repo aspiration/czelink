@@ -1,4 +1,5 @@
-define([ 'contentEditor' ],
+define(
+		[ 'contentEditor' ],
 		function(contentEditor) {
 
 			return function($scope, jquery, require, orchestration,
@@ -12,12 +13,15 @@ define([ 'contentEditor' ],
 							"articleeditable");
 				};
 
+				var isLocationValid = function() {
+					return contentEditor.isLocationValid(articleContentArea,
+							"articleeditable");
+				};
+
 				var getSelectedParagraph = function() {
 					return contentEditor.getLandMarkLocation(
 							articleContentArea, "articleeditable");
 				};
-
-				// var paragraphHolder = null;
 
 				var underlineBtn = null;
 				var linethroughBtn = null;
@@ -37,20 +41,21 @@ define([ 'contentEditor' ],
 					}
 				};
 
-				/**
-				 * consist by: true, false. 1. true: paragraph, which can follow
-				 * by paragraph or picture. 2. false: picture, which can only
-				 * follow by paragraph.
-				 */
-				var structureStack = [];
-
-				var isIntentedItemValid = function(intentedItem) {
-					var lastItem = structureStack[structureStack.length - 1];
-					if (lastItem === undefined || lastItem === null) {
-						lastItem = true;
-					}
-					return (intentedItem || lastItem);
-				};
+				// /**
+				// * consist by: true, false. 1. true: paragraph, which can
+				// follow
+				// * by paragraph or picture. 2. false: picture, which can only
+				// * follow by paragraph.
+				// */
+				// var structureStack = [];
+				//
+				// var isIntentedItemValid = function(intentedItem) {
+				// var lastItem = structureStack[structureStack.length - 1];
+				// if (lastItem === undefined || lastItem === null) {
+				// lastItem = true;
+				// }
+				// return (intentedItem || lastItem);
+				// };
 
 				/*
 				 * 1. each element in paragraph will also consists with: text,
@@ -82,22 +87,15 @@ define([ 'contentEditor' ],
 					return result;
 				};
 
-				$scope.isInsertPicDisabled = false;
 				$scope.isInsertParagraphDisabled = false;
 
 				$scope.insertNewParagraph = function() {
 					if ($scope.restParagraphNum > 0) {
-						$scope.isInsertPicDisabled = false;
-						structureStack.push(true);
-
 						var selectedParagraph = getSelectedParagraph();
-
-						window.test = selectedParagraph;
 
 						if (selectedParagraph === undefined) {
 							var newParagraph = {
-								text : '请在这里替换内容',
-								contentEditable : true
+								text : '请在这里替换内容'
 							};
 							$scope.initParagraphContent.push(newParagraph);
 						} else {
@@ -105,8 +103,7 @@ define([ 'contentEditor' ],
 									.getAttribute("articleeditable"));
 
 							var newParagraph = {
-								text : '请在这里替换内容',
-								contentEditable : true
+								text : '请在这里替换内容'
 							};
 							$scope.initParagraphContent.splice(index + 1, 0,
 									newParagraph);
@@ -117,18 +114,57 @@ define([ 'contentEditor' ],
 					if ($scope.restParagraphNum === 0) {
 						$scope.isInsertParagraphDisabled = true;
 					}
+				};
 
-					if (!$scope.$$phase) {
-						$scope.$apply();
+				var titlePicUrl = undefined;
+				var totalPicNum = 11;
+
+				var paraPicInsertStatus = [];
+				for ( var i = 0; i < (totalPicNum - 1); i++) {
+					paraPicInsertStatus.push(false);
+				}
+
+				$scope.isInsertPicDisabled = false;
+				$scope.restPicNum = totalPicNum;
+
+				$scope.picInsertStatus = function() {
+
+					$scope.isInsertPicDisabled = true;
+
+					if (titlePicUrl === undefined || titlePicUrl === null) {
+						$scope.isInsertPicDisabled = false;
+					} else {
+						var selectedParagraph = getSelectedParagraph();
+
+						if (selectedParagraph === undefined) {
+							$scope.isInsertPicDisabled = true;
+						} else {
+							var index = parseInt(selectedParagraph
+									.getAttribute("articleeditable"));
+							$scope.isInsertPicDisabled = paraPicInsertStatus[index];
+						}
 					}
 				};
 
 				$scope.insertNewPicture = function() {
-					$scope.isInsertPicDisabled = true;
+					if (titlePicUrl === undefined || titlePicUrl === null) {
+						titlePicUrl = ""; // TODO: to add real implementation.
+						console.log("instert new title pic!");
+						$scope.restPicNum--;
+					} else {
+						var selectedParagraph = getSelectedParagraph();
 
-					if (isIntentedItemValid(false)) {
-						structureStack.push(false);
-						alert("inserted image!");
+						if (selectedParagraph !== undefined) {
+							var index = parseInt(selectedParagraph
+									.getAttribute("articleeditable"));
+							paraPicInsertStatus[index] = true;
+							// TODO: to add real implementation.
+							console.log("insert pic for pargraph: " + index);
+							$scope.restPicNum--;
+						}
+					}
+					if ($scope.restPicNum <= 0) {
+						$scope.isInsertPicDisabled = true;
 					}
 				};
 
@@ -171,6 +207,68 @@ define([ 'contentEditor' ],
 					// TODO: to finish.
 					$scope.links[linkTitle] = createLink.lineThroughText(
 							linkTitle, linkUrl);
+				};
+
+				$scope.overParagraphPanelIndex = -1;
+				$scope.selectedParagraph = -1;
+
+				$scope.checkOverParagrahIndex = function(index) {
+					return $scope.overParagraphPanelIndex === index;
+				};
+
+				$scope.selectParagraph = function(index, $event) {
+					$scope.selectedParagraph = index;
+
+					// disable pic insert button.
+					if (index === -1) {
+						$scope.isInsertPicDisabled = true;
+					}
+
+					// stop event bubble up.
+					if ($event.stopPropagation) {
+						$event.stopPropagation();
+					}
+					if ($event.preventDefault) {
+						$event.preventDefault();
+					}
+					$event.cancelBubble = true;
+					$event.returnValue = false;
+				};
+
+				$scope.checkSelectPanel = function(index) {
+					return ($scope.selectedParagraph === index);
+				};
+
+				$scope.displayParapgrahPanel = function(index) {
+					return (checkSelectPanel(index) || checkOverParagrahIndex(index));
+				};
+
+				$scope.enterParagraph = function(index) {
+					$scope.overParagraphPanelIndex = index;
+				};
+
+				$scope.leaveParagraph = function() {
+					$scope.overParagraphPanelIndex = -1;
+				};
+
+				$scope.enterCrossClass = "icon-remove-circle";
+
+				$scope.enterCross = function() {
+					$scope.enterCrossClass = "icon-remove-sign";
+				};
+
+				$scope.leaveCross = function() {
+					$scope.enterCrossClass = "icon-remove-circle";
+				};
+
+				$scope.removeParagraph = function(index) {
+					$scope.initParagraphContent.splice(index, 1);
+					if ($scope.restParagraphNum < 10) {
+						$scope.restParagraphNum++;
+						$scope.isInsertParagraphDisabled = false;
+
+						// TODO: to add remove picture function.
+					}
 				};
 
 				return function(widgetElement) {
