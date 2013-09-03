@@ -1,6 +1,36 @@
 define(
-		[ 'contentEditor' ],
-		function(contentEditor) {
+		[ 'contentEditor', 'dropzone', 'uuid' ],
+		function(contentEditor, dropzone, uuid) {
+
+			dropzone.autoDiscover = false;
+			var imgDropzones = [];
+			var initImgDropzones = function(widgetElement, fileParamName,
+					fileHash) {
+				var targetElement = widgetElement
+						.querySelector("p[img-dropzone=" + fileParamName + "]");
+				var options = {
+					url : "/file/post", // TODO: to change
+					dictDefaultMessage : "将图片拖入该区域上传 / 点击这里上传图片",
+					maxFilesize : 2,
+					paramName : fileHash,
+					addRemoveLinks : true,
+					maxFiles : 1,
+					headers : {
+						"file-hashcode" : fileHash
+					}
+				};
+				var newDrop = new dropzone(targetElement, options);
+				newDrop.on("error", function(file) {
+					// TODO: to change.
+					alert("error!");
+				});
+				newDrop.on("maxfilesexceeded", function(file) {
+					// TODO: to change.
+					newDrop.removeFile(file);
+				});
+				newDrop.disable();
+				imgDropzones.push(newDrop);
+			};
 
 			return function($scope, jquery, require, orchestration,
 					widgetElement) {
@@ -291,6 +321,26 @@ define(
 
 						// TODO: to add remove picture function.
 					}
+				};
+
+				$scope.initAbstractTitleImage = function() {
+					var fileHash = uuid();
+					var fileName = "abstract_title_image";
+					initImgDropzones(widgetElement, fileName, fileHash);
+				};
+
+				$scope.preProcessImageDropzone = function(index, paragraph) {
+					var fileHash = uuid();
+					var fileName = "upload_img_file_" + index;
+					paragraph.imgdesc = {};
+					paragraph.imgdesc.hash = fileHash;
+					paragraph.imgdesc.name = fileName;
+				};
+
+				$scope.postProcessImageDropzone = function(element, context) {
+					var fileParamName = $scope.initParagraphContent[context.$index].imgdesc.name;
+					var fileHash = $scope.initParagraphContent[context.$index].imgdesc.hash;
+					initImgDropzones(widgetElement, fileParamName, fileHash);
 				};
 
 				return function(widgetElement) {

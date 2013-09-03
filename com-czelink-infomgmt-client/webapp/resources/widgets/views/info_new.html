@@ -70,6 +70,10 @@
 						ng-mouseleave="picInsertStatus()" ng-mouseup="picInsertStatus()">{{article.title.text}}</h1>
 					<div class="articleContentArea"
 						ng-mouseup="selectParagraph(-1, $event)">
+						<div>
+							<p ng-init="initAbstractTitleImage()" class="dropzone"
+								img-dropzone="abstract_title_image"></p>
+						</div>
 						<div articleeditable="{{$index}}"
 							ng-mouseenter="enterParagraph($index);picInsertStatus()"
 							ng-mouseleave="leaveParagraph();picInsertStatus()"
@@ -81,8 +85,10 @@
 								class="pull-right" ng-class="enterCrossClass"
 								ng-click="removeParagraph($index)"></i><span>&nbsp</span>
 							<hr ng-show="checkOverParagrahIndex($index)" class="panel-hr">
-
 							<p contenteditable="true" ng-bind-html-unsafe="paragraph.text">{{paragraph.text}}</p>
+							<p ng-init="preProcessImageDropzone($index, paragraph)"
+								ng-post-render="postProcessImageDropzone" class="dropzone"
+								img-dropzone="{{paragraph.imgdesc.name}}"></p>
 						</div>
 					</div>
 				</div>

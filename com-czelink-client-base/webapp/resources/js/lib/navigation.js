@@ -50,6 +50,25 @@ define(
 					orchestration) {
 				var widgetModule = angular.module(widgetName, []);
 
+				// add post render directive
+				widgetModule
+						.directive(
+								"ngPostRender",
+								[
+										'$timeout',
+										function(timeout) {
+											return function(scope, element,
+													attrs) {
+												timeout(
+														function() {
+															var postRenderMethodName = attrs["ngPostRender"];
+															scope[postRenderMethodName]
+																	(element,
+																			scope);
+														}, 0);
+											};
+										} ]);
+
 				var outerNgAppCallback = undefined;
 
 				var widgetControllerPath = 'widgets/js/' + widgetName;
