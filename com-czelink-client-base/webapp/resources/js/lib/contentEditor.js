@@ -22,6 +22,7 @@ define(
 
 			var checkSelectedItemRange = function(rootElement, landmark,
 					targetElement) {
+				
 				var result = false;
 				if (targetElement === null || targetElement === undefined) {
 					result = false;
@@ -64,7 +65,7 @@ define(
 						result = false;
 					} else {
 						result = checkSelectedItemRange(rootElement, landmark,
-								rangy.getSelection().anchorNode.parentElement);
+								rangy.getSelection().anchorNode.parentNode);
 					}
 					return result;
 				};
@@ -74,7 +75,7 @@ define(
 					var anchorNode = rangy.getSelection().anchorNode;
 					if (anchorNode !== undefined && anchorNode !== null) {
 						result = checkSelectedItemRange(rootElement, landmark,
-								anchorNode.parentElement);
+								anchorNode.parentNode);
 					}
 					return result;
 				};
@@ -84,7 +85,7 @@ define(
 					var anchorNode = rangy.getSelection().anchorNode;
 					if (anchorNode !== undefined && anchorNode !== null) {
 						result = getSelectedItemLandMarkElement(rootElement,
-								landmark, anchorNode.parentElement);
+								landmark, anchorNode.parentNode);
 					}
 					return result;
 				};
