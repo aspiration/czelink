@@ -128,39 +128,60 @@ define(
 				$scope.restPicNum = totalPicNum;
 
 				$scope.picInsertStatus = function() {
-
-					$scope.isInsertPicDisabled = true;
-
-					if (titlePicUrl === undefined || titlePicUrl === null) {
-						$scope.isInsertPicDisabled = false;
-					} else {
-						var selectedParagraph = getSelectedParagraph();
-
-						if (selectedParagraph === undefined) {
-							$scope.isInsertPicDisabled = true;
+					var selectedParagraph = getSelectedParagraph();
+					if (selectedParagraph === undefined) {
+						if (titlePicUrl === undefined || titlePicUrl === null) {
+							$scope.isInsertPicDisabled = false;
 						} else {
-							var index = parseInt(selectedParagraph
-									.getAttribute("articleeditable"));
+							$scope.isInsertPicDisabled = true;
+						}
+					} else {
+						var index = parseInt(selectedParagraph
+								.getAttribute("articleeditable"));
+						if (index === -1) {
+							if (titlePicUrl === undefined
+									|| titlePicUrl === null) {
+								$scope.isInsertPicDisabled = false;
+							} else {
+								$scope.isInsertPicDisabled = true;
+							}
+						} else {
 							$scope.isInsertPicDisabled = paraPicInsertStatus[index];
 						}
 					}
 				};
 
 				$scope.insertNewPicture = function() {
-					if (titlePicUrl === undefined || titlePicUrl === null) {
-						titlePicUrl = ""; // TODO: to add real implementation.
-						console.log("instert new title pic!");
-						$scope.restPicNum--;
+					var selectedParagraph = getSelectedParagraph();
+					if (selectedParagraph !== undefined) {
+						var index = parseInt(selectedParagraph
+								.getAttribute("articleeditable"));
+						if (index === -1) {
+							if (titlePicUrl === undefined
+									|| titlePicUrl === null) {
+								titlePicUrl = ""; // TODO: to add real
+								// implementation.
+								console.log("instert new title pic!");
+								$scope.restPicNum--;
+								$scope.isInsertPicDisabled = true;
+							}
+						} else {
+							if (!paraPicInsertStatus[index]) {
+								paraPicInsertStatus[index] = true;
+								// TODO: to add real implementation.
+								console
+										.log("insert pic for pargraph: "
+												+ index);
+								$scope.restPicNum--;
+							}
+						}
 					} else {
-						var selectedParagraph = getSelectedParagraph();
-
-						if (selectedParagraph !== undefined) {
-							var index = parseInt(selectedParagraph
-									.getAttribute("articleeditable"));
-							paraPicInsertStatus[index] = true;
-							// TODO: to add real implementation.
-							console.log("insert pic for pargraph: " + index);
+						if (titlePicUrl === undefined || titlePicUrl === null) {
+							titlePicUrl = ""; // TODO: to add real
+							// implementation.
+							console.log("instert new title pic!");
 							$scope.restPicNum--;
+							$scope.isInsertPicDisabled = true;
 						}
 					}
 					if ($scope.restPicNum <= 0) {
@@ -220,7 +241,8 @@ define(
 					$scope.selectedParagraph = index;
 
 					// disable pic insert button.
-					if (index === -1) {
+					if (index === -1 && titlePicUrl !== undefined
+							&& titlePicUrl !== null) {
 						$scope.isInsertPicDisabled = true;
 					}
 
