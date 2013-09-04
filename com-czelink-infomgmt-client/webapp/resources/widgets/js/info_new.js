@@ -146,7 +146,7 @@ define(
 					}
 				};
 
-				var titlePicUrl = undefined;
+				var titlePicInsertMark = undefined;
 				var totalPicNum = 11;
 
 				var paraPicInsertStatus = [];
@@ -160,7 +160,8 @@ define(
 				$scope.picInsertStatus = function() {
 					var selectedParagraph = getSelectedParagraph();
 					if (selectedParagraph === undefined) {
-						if (titlePicUrl === undefined || titlePicUrl === null) {
+						if (titlePicInsertMark === undefined
+								|| titlePicInsertMark === null) {
 							$scope.isInsertPicDisabled = false;
 						} else {
 							$scope.isInsertPicDisabled = true;
@@ -169,8 +170,8 @@ define(
 						var index = parseInt(selectedParagraph
 								.getAttribute("articleeditable"));
 						if (index === -1) {
-							if (titlePicUrl === undefined
-									|| titlePicUrl === null) {
+							if (titlePicInsertMark === undefined
+									|| titlePicInsertMark === null) {
 								$scope.isInsertPicDisabled = false;
 							} else {
 								$scope.isInsertPicDisabled = true;
@@ -187,29 +188,28 @@ define(
 						var index = parseInt(selectedParagraph
 								.getAttribute("articleeditable"));
 						if (index === -1) {
-							if (titlePicUrl === undefined
-									|| titlePicUrl === null) {
-								titlePicUrl = ""; // TODO: to add real
-								// implementation.
-								console.log("instert new title pic!");
+							if (titlePicInsertMark === undefined
+									|| titlePicInsertMark === null) {
+								titlePicInsertMark = "";
+								imgDropzones[0].removeAllFiles();
+								imgDropzones[0].enable();
 								$scope.restPicNum--;
 								$scope.isInsertPicDisabled = true;
 							}
 						} else {
 							if (!paraPicInsertStatus[index]) {
 								paraPicInsertStatus[index] = true;
-								// TODO: to add real implementation.
-								console
-										.log("insert pic for pargraph: "
-												+ index);
+								imgDropzones[index + 1].removeAllFiles();
+								imgDropzones[index + 1].enable();
 								$scope.restPicNum--;
 							}
 						}
 					} else {
-						if (titlePicUrl === undefined || titlePicUrl === null) {
-							titlePicUrl = ""; // TODO: to add real
-							// implementation.
-							console.log("instert new title pic!");
+						if (titlePicInsertMark === undefined
+								|| titlePicInsertMark === null) {
+							titlePicInsertMark = "";
+							imgDropzones[0].removeAllFiles();
+							imgDropzones[0].enable();
 							$scope.restPicNum--;
 							$scope.isInsertPicDisabled = true;
 						}
@@ -217,6 +217,34 @@ define(
 					if ($scope.restPicNum <= 0) {
 						$scope.isInsertPicDisabled = true;
 					}
+				};
+
+				$scope.displayTitlePicZone = function() {
+					var result = false;
+					if (titlePicInsertMark !== undefined
+							&& titlePicInsertMark !== null) {
+						result = true;
+					}
+					return result;
+				};
+
+				$scope.cancelTitlePicZone = function() {
+					titlePicInsertMark = undefined;
+					imgDropzones[0].disable();
+					imgDropzones[0].removeAllFiles();
+					$scope.restPicNum++;
+				};
+
+				$scope.displayParagraphPicZone = function(index) {
+					return paraPicInsertStatus[index];
+				};
+
+				$scope.cancelParagraphPicZone = function(index) {
+					imgDropzones[index + 1].disable();
+					imgDropzones[index + 1].removeAllFiles();
+					// TODO: fire backend to delete the uploaded file.
+					paraPicInsertStatus[index] = false;
+					$scope.restPicNum++;
 				};
 
 				orchestration.invoke("navigation", "getFlashObject",
@@ -271,8 +299,8 @@ define(
 					$scope.selectedParagraph = index;
 
 					// disable pic insert button.
-					if (index === -1 && titlePicUrl !== undefined
-							&& titlePicUrl !== null) {
+					if (index === -1 && titlePicInsertMark !== undefined
+							&& titlePicInsertMark !== null) {
 						$scope.isInsertPicDisabled = true;
 					}
 
