@@ -10,24 +10,63 @@ define(
 						.querySelector("p[img-dropzone=" + fileParamName + "]");
 				var options = {
 					url : "/file/post", // TODO: to change
-					dictDefaultMessage : "将图片拖入该区域上传 / 点击这里上传图片",
+					dictDefaultMessage : "将图片拖入该区域上传 或 点击这里上传图片 （只支持上传一张图片）",
+					dictFallbackMessage : "请使用以下浏览器： Chrome 7+ / Firefox 4+ / IE 10+ / Opera 12+ / Safari 6+ ",
+					dictInvalidFileType : "不支持的文件类型",
+					dictFileTooBig : "文件太大",
+					dictResponseError : "文件上传失败, 如需要请联系管理员",
+					dictMaxFilesExceeded : "只可以添加一个文件",
 					maxFilesize : 2,
 					paramName : fileHash,
-					addRemoveLinks : true,
 					maxFiles : 1,
 					headers : {
 						"file-hashcode" : fileHash
+					},
+					addRemoveLinks : true,
+					dictCancelUpload : "取消上传",
+					dictRemoveFile : "删除文件",
+					acceptedFiles : "image/*",
+					init : function() {
+						this
+								.on(
+										"error",
+										function(file) {
+											this.removeFile(file);
+											var customMessageArea = this.element.parentNode
+													.querySelector("p[dz-custom-message='error']");
+											customMessageArea
+													.querySelector("span[message]").textContent = "上传失败";
+											customMessageArea
+													.querySelector("button[class='close']").onclick = function() {
+												customMessageArea.setAttribute(
+														"hidden", true);
+											};
+											customMessageArea
+													.removeAttribute("hidden");
+										});
+
+						this
+								.on(
+										"success",
+										function(file) {
+											var customMessageArea = this.element.parentNode
+													.querySelector("p[dz-custom-message='success']");
+											customMessageArea
+													.querySelector("span[message]").textContent = "上传成功";
+											customMessageArea
+													.querySelector("button[class='close']").onclick = function() {
+												customMessageArea.setAttribute(
+														"hidden", true);
+											};
+											customMessageArea
+													.removeAttribute("hidden");
+										});
 					}
 				};
 				var newDrop = new dropzone(targetElement, options);
-				newDrop.on("error", function(file) {
-					// TODO: to change.
-					alert("error!");
-				});
-				newDrop.on("maxfilesexceeded", function(file) {
-					// TODO: to change.
-					newDrop.removeFile(file);
-				});
+				var customMessageArea = newDrop.element.parentNode
+						.querySelector("p[dz-custom-message]");
+				customMessageArea.setAttribute("hidden", true);
 				newDrop.disable();
 				imgDropzones.push(newDrop);
 			};
@@ -70,22 +109,6 @@ define(
 						$(linethroughBtn).removeClass("active");
 					}
 				};
-
-				// /**
-				// * consist by: true, false. 1. true: paragraph, which can
-				// follow
-				// * by paragraph or picture. 2. false: picture, which can only
-				// * follow by paragraph.
-				// */
-				// var structureStack = [];
-				//
-				// var isIntentedItemValid = function(intentedItem) {
-				// var lastItem = structureStack[structureStack.length - 1];
-				// if (lastItem === undefined || lastItem === null) {
-				// lastItem = true;
-				// }
-				// return (intentedItem || lastItem);
-				// };
 
 				/*
 				 * 1. each element in paragraph will also consists with: text,
@@ -191,6 +214,9 @@ define(
 							if (titlePicInsertMark === undefined
 									|| titlePicInsertMark === null) {
 								titlePicInsertMark = "";
+								var customMessageArea = imgDropzones[0].element.parentNode
+										.querySelector("p[dz-custom-message]");
+								customMessageArea.setAttribute("hidden", true);
 								imgDropzones[0].removeAllFiles();
 								imgDropzones[0].enable();
 								$scope.restPicNum--;
@@ -199,6 +225,9 @@ define(
 						} else {
 							if (!paraPicInsertStatus[index]) {
 								paraPicInsertStatus[index] = true;
+								var customMessageArea = imgDropzones[index + 1].element.parentNode
+										.querySelector("p[dz-custom-message]");
+								customMessageArea.setAttribute("hidden", true);
 								imgDropzones[index + 1].removeAllFiles();
 								imgDropzones[index + 1].enable();
 								$scope.restPicNum--;
@@ -208,6 +237,9 @@ define(
 						if (titlePicInsertMark === undefined
 								|| titlePicInsertMark === null) {
 							titlePicInsertMark = "";
+							var customMessageArea = imgDropzones[0].element.parentNode
+									.querySelector("p[dz-custom-message]");
+							customMessageArea.setAttribute("hidden", true);
 							imgDropzones[0].removeAllFiles();
 							imgDropzones[0].enable();
 							$scope.restPicNum--;
@@ -230,6 +262,7 @@ define(
 
 				$scope.cancelTitlePicZone = function() {
 					titlePicInsertMark = undefined;
+					$scope.isInsertPicDisabled = false;
 					imgDropzones[0].disable();
 					imgDropzones[0].removeAllFiles();
 					$scope.restPicNum++;

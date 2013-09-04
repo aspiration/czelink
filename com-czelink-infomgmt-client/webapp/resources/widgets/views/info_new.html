@@ -74,10 +74,20 @@
 							<div class="row" ng-show="displayTitlePicZone()">
 								<p ng-init="initAbstractTitleImage()" class="dropzone span3"
 									img-dropzone="abstract_title_image"></p>
-								<p class="span3">
+								<div class="span3">
+									<p style="margin-bottom: 10px;" dz-custom-message="error"
+										class="alert alert-error" hidden="hidden">
+										<button type="button" class="close">&times;</button>
+										<span message></span>
+									</p>
+									<p style="margin-bottom: 10px;" dz-custom-message="success"
+										class="alert alert-success" hidden="hidden">
+										<button type="button" class="close">&times;</button>
+										<span message></span>
+									</p>
 									<button class="btn btn-small btn-warning" type="button"
 										ng-click="cancelTitlePicZone()">取消</button>
-								</p>
+								</div>
 							</div>
 						</div>
 						<div articleeditable="{{$index}}"
@@ -98,10 +108,20 @@
 										ng-post-render="postProcessImageDropzone"
 										class="dropzone span3"
 										img-dropzone="{{paragraph.imgdesc.name}}"></p>
-									<p class="span3">
+									<div class="span3">
+										<p style="margin-bottom: 10px;" dz-custom-message="error"
+											class="alert alert-error" hidden="hidden">
+											<button type="button" class="close">&times;</button>
+											<span message></span>
+										</p>
+										<p style="margin-bottom: 10px;" dz-custom-message="success"
+											class="alert alert-success" hidden="hidden">
+											<button type="button" class="close">&times;</button>
+											<span message></span>
+										</p>
 										<button class="btn btn-small btn-warning" type="button"
 											ng-click="cancelParagraphPicZone($index)">取消</button>
-									</p>
+									</div>
 								</div>
 							</div>
 						</div>
