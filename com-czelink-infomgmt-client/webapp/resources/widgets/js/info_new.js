@@ -332,6 +332,7 @@ define(
 				};
 
 				$scope.openCreateLinkModel = function() {
+					contentEditor.saveSelection();
 					resetCreateLinkModel();
 					$(linkManager.addLinkModel).modal('show');
 				};
@@ -357,6 +358,8 @@ define(
 					$scope.createLinkStartValidateMark = true;
 					var result = $scope.checkIfLinkCreationInvalid();
 					if (result !== true) {
+						contentEditor.restoreSelection();
+						
 						var linkTitle = $scope.linkTitle;
 						var linkUrl = $scope.linkUrl;
 						linkManager.createLink(linkTitle, linkUrl);

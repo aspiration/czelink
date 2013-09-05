@@ -1,5 +1,5 @@
 define(
-		[ 'rangy-cssclassapplier' ],
+		[ 'rangy-cssclassapplier', 'rangy-selectionsaverestore' ],
 		function() {
 			rangy.init();
 			rangy.modules.CssClassApplier;
@@ -79,6 +79,16 @@ define(
 
 			return (function() {
 				var editor = {};
+				
+				editor.savedSelection = undefined;
+				
+				editor.saveSelection = function() {
+					editor.savedSelection = rangy.saveSelection();
+				};
+				
+				editor.restoreSelection = function() {
+					rangy.restoreSelection(editor.savedSelection);
+				};
 
 				editor.isSelectedValid = function(rootElement, landmark) {
 					var result = false;

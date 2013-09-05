@@ -19,6 +19,9 @@ requirejs.config({
 		},
 		"rangy-cssclassapplier" : {
 			exports : "cssclassapplier"
+		},
+		"rangy-selectionsaverestore" : {
+			exports : "selectionsaverestore"
 		}
 	}
 });
