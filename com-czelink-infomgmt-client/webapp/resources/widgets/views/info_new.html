@@ -52,6 +52,23 @@
 								</button>
 							</td>
 						</tr>
+						<tr ng-class="{'hidden' : !fontEditStart()}">
+							<td style="text-align: center;">
+								<div class="btn-group">
+									<a class="btn btn-info dropdown-toggle" data-toggle="dropdown"
+										href="#" ng-click="initLinkStatus()"><i
+										class="icon-link icon-white pull-left"></i>链接<span
+										class="caret"></span> </a>
+									<ul class="dropdown-menu"
+										ng-post-render="registerToLinkManager">
+										<li><button type="button" class="btn btn-success"
+												ng-click="openCreateLinkModel()">新建</button></li>
+										<li class="divider"></li>
+									</ul>
+								</div>
+							</td>
+							<td style="text-align: center;"></td>
+						</tr>
 					</tbody>
 				</table>
 			</div>
@@ -128,6 +145,44 @@
 					</div>
 				</div>
 			</div>
+		</div>
+	</div>
+	<div ng-post-render="registerModelToLinkManager"
+		class="modal hide fade" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal"
+				aria-hidden="true">×</button>
+			<h3 id="myModalLabel">创建新链接</h3>
+		</div>
+		<div class="modal-body">
+			<form name="linkCreationForm" class="form-horizontal">
+				<div class="alert alert-error alert-block"
+					ng-show="checkIfLinkCreationInvalid()">
+					<ul>
+						<li ng-show="linkCreationForm.linkTitle.$error.required">请输入链接名称。</li>
+						<li ng-show="linkCreationForm.linkUrl.$error.required">请输入链接地址(URL)。</li>
+						<li ng-show="linkCreationForm.linkUrl.$error.url">链接地址(URL)格式错误。</li>
+					</ul>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="linkTitle">链接名称</label>
+					<div class="controls">
+						<input type="text" ng-model="linkTitle" name="linkTitle"
+							id="linkTitle" placeholder="链接名称" required>
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="linkUrl">链接地址(URL)</label>
+					<div class="controls">
+						<input type="url" ng-model="linkUrl" name="linkUrl" id="linkUrl"
+							placeholder="链接地址(URL)" required>
+					</div>
+				</div>
+			</form>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-primary" ng-click="createLink()">确定</button>
 		</div>
 	</div>
 </div>

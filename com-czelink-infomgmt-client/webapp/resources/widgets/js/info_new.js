@@ -22,9 +22,7 @@ define(
 					headers : {
 						"file-hashcode" : fileHash
 					},
-					addRemoveLinks : true,
 					dictCancelUpload : "取消上传",
-					dictRemoveFile : "删除文件",
 					acceptedFiles : "image/*",
 					init : function() {
 						this
@@ -60,6 +58,7 @@ define(
 											};
 											customMessageArea
 													.removeAttribute("hidden");
+											this.disable();
 										});
 					}
 				};
@@ -70,6 +69,9 @@ define(
 				newDrop.disable();
 				imgDropzones.push(newDrop);
 			};
+
+			var linkManager = contentEditor.createLinkManager();
+			linkManager.buttonGroup = [];
 
 			return function($scope, jquery, require, orchestration,
 					widgetElement) {
@@ -285,8 +287,6 @@ define(
 							$scope.article.title.text = articleTitle;
 						});
 
-				$scope.links = {};
-
 				$scope.bold = function() {
 					if (isSelectedValid()) {
 						contentEditor.boldText();
@@ -315,10 +315,75 @@ define(
 					}
 				};
 
-				$scope.createLink = function(linkTitle, linkUrl) {
-					// TODO: to finish.
-					$scope.links[linkTitle] = createLink.lineThroughText(
-							linkTitle, linkUrl);
+				$scope.registerToLinkManager = function(element, context) {
+					linkManager.linkMenuElement = element[0];
+				};
+
+				$scope.registerModelToLinkManager = function(element, context) {
+					linkManager.addLinkModel = element[0];
+				};
+
+				$scope.createLinkStartValidateMark = false;
+
+				var resetCreateLinkModel = function() {
+					$scope.createLinkStartValidateMark = false;
+					$scope.linkTitle = null;
+					$scope.linkUrl = null;
+				};
+
+				$scope.openCreateLinkModel = function() {
+					resetCreateLinkModel();
+					$(linkManager.addLinkModel).modal('show');
+				};
+
+				$scope.checkIfLinkCreationInvalid = function() {
+					return $scope.createLinkStartValidateMark
+							&& ($scope.linkCreationForm.linkTitle.$error.required
+									|| $scope.linkCreationForm.linkUrl.$error.required || $scope.linkCreationForm.linkUrl.$error.url);
+				};
+
+				$scope.initLinkStatus = function() {
+					linkManager.buttonGroup.forEach(function(button) {
+						var title = button.title;
+						if (linkManager.isLinkApplied(title)) {
+							$(button).addClass("active");
+						} else {
+							$(button).removeClass("active");
+						}
+					});
+				};
+
+				$scope.createLink = function() {
+					$scope.createLinkStartValidateMark = true;
+					var result = $scope.checkIfLinkCreationInvalid();
+					if (result !== true) {
+						var linkTitle = $scope.linkTitle;
+						var linkUrl = $scope.linkUrl;
+						linkManager.createLink(linkTitle, linkUrl);
+
+						var li = document.createElement("li");
+						var button = document.createElement("button");
+						button.setAttribute("type", "button");
+						button.setAttribute("class", "btn btn-primary");
+						button.setAttribute("data-toggle", "button");
+						button.innerHTML = linkTitle;
+						button.onclick = function() {
+							if (linkManager.isLinkApplied(linkTitle)) {
+								linkManager.unLink(linkTitle);
+								$(button).removeClass("active");
+							} else {
+								linkManager.applyLink(linkTitle);
+								$(button).addClass("active");
+							}
+						};
+						li.appendChild(button);
+						linkManager.linkMenuElement.appendChild(li);
+						// register the button to linkMenu with titleName.
+						button.title = linkTitle;
+						linkManager.buttonGroup.push(button);
+						button.onclick();
+						$(linkManager.addLinkModel).modal('hide');
+					}
 				};
 
 				$scope.overParagraphPanelIndex = -1;
@@ -379,8 +444,10 @@ define(
 					if ($scope.restParagraphNum < 10) {
 						$scope.restParagraphNum++;
 						$scope.isInsertParagraphDisabled = false;
-
-						// TODO: to add remove picture function.
+						// remove picture in paragraph
+						if (paraPicInsertStatus[index]) {
+							$scope.cancelParagraphPicZone(index);
+						}
 					}
 				};
 

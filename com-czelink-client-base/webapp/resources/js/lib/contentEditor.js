@@ -22,7 +22,7 @@ define(
 
 			var checkSelectedItemRange = function(rootElement, landmark,
 					targetElement) {
-				
+
 				var result = false;
 				if (targetElement === null || targetElement === undefined) {
 					result = false;
@@ -53,6 +53,28 @@ define(
 					result = targetElement;
 				}
 				return result;
+			};
+
+			var docStyleSheet = undefined;
+			var textLinkRuleText = undefined;
+			angular.forEach(document.styleSheets, function(elem, key) {
+				if (elem.href !== null && elem.href !== undefined
+						&& elem.href.indexOf("style.css") !== -1) {
+					docStyleSheet = elem;
+					var cssRules = docStyleSheet.cssRules;
+					angular.forEach(cssRules, function(rule, key) {
+						if (rule.selectorText === ".text-link") {
+							textLinkRuleText = rule.style.cssText;
+						}
+					});
+				}
+			});
+
+			var createLinkCssStyle = function(counter) {
+				var cssRuleName = "text-link" + "-" + counter;
+				docStyleSheet.insertRule("." + cssRuleName + "{"
+						+ textLinkRuleText + "}", 0);
+				return cssRuleName;
 			};
 
 			return (function() {
@@ -124,17 +146,59 @@ define(
 					}
 				};
 
-				editor.createLink = function(linkTitle, linkUrl) {
-					var linkApplier = rangy.createCssClassApplier("text-link",
-							{
-								elementTagName : "a",
-								elementProperties : {
-									href : linkUrl,
-									title : linkTitle
-								}
-							});
-					linkApplier.toggleSelection();
-					return linkApplier;
+				editor.createLinkManager = function() {
+					var linkManagerConstructor = function() {
+						var linkHolder = {};
+						var instance = {};
+						var counter = 0;
+
+						instance.createLink = function(linkTitle, linkUrl) {
+							var cssRuleName = createLinkCssStyle(counter);
+							var linkApplier = rangy.createCssClassApplier(
+									cssRuleName, {
+										elementTagName : "a",
+										elementProperties : {
+											href : linkUrl,
+											title : linkTitle
+										}
+									});
+							linkHolder[linkTitle] = linkApplier;
+							counter++;
+							return instance;
+						};
+
+						instance.applyLink = function(linkTitle) {
+							var linkApplier = linkHolder[linkTitle];
+							var result = false;
+							if (!instance.isLinkApplied(linkTitle)) {
+								linkApplier.applyToSelection();
+								result = true;
+							}
+							return result;
+						};
+
+						instance.isLinkApplied = function(linkTitle) {
+							var result = false;
+							var linkApplier = linkHolder[linkTitle];
+							if (linkApplier !== undefined
+									&& linkApplier !== null) {
+								result = linkApplier.isAppliedToSelection();
+							}
+							return result;
+						};
+
+						instance.unLink = function(linkTitle) {
+							var linkApplier = linkHolder[linkTitle];
+							var result = false;
+							if (instance.isLinkApplied(linkTitle)) {
+								linkApplier.undoToSelection();
+								result = true;
+							}
+							return result;
+						};
+						return instance;
+					};
+					return linkManagerConstructor();
 				};
 
 				return editor;
