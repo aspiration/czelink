@@ -1,13 +1,15 @@
 package com.czelink.controllers;
 
-import java.util.Date;
+import java.io.IOException;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.czelink.uploadrepo.intg.UploadRepository;
 
@@ -17,11 +19,17 @@ public class BaseController {
 	@Resource(name = "uploadRepository")
 	private UploadRepository uploadRepository;
 
-	@RequestMapping("/showUploadRepositoryPath")
+	@RequestMapping("/fileupload")
 	public @ResponseBody
-	String showUploadRepositoryPath() {
-		// TODO: dummy impl
-		this.uploadRepository.printAbsolutePath();
+	String uploadFileToRepository(final HttpServletRequest request) {
+		try {
+			// TODO: dummy impl
+			System.out.println("fileHash: "
+					+ request.getHeader("file-hashcode"));
+			this.uploadRepository.saveFile(request.getInputStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return "Hello world!";
 	}
 

@@ -9,7 +9,7 @@ define(
 				var targetElement = widgetElement
 						.querySelector("p[img-dropzone=" + fileParamName + "]");
 				var options = {
-					url : "/file/post", // TODO: to change
+					url : "app/fileupload", // TODO: to confirm
 					dictDefaultMessage : "将图片拖入该区域上传 或 点击这里上传图片 （只支持上传一张图片）",
 					dictFallbackMessage : "请使用以下浏览器： Chrome 7+ / Firefox 4+ / IE 10+ / Opera 12+ / Safari 6+ ",
 					dictInvalidFileType : "不支持的文件类型",
@@ -63,9 +63,12 @@ define(
 					}
 				};
 				var newDrop = new dropzone(targetElement, options);
-				var customMessageArea = newDrop.element.parentNode
-						.querySelector("p[dz-custom-message]");
-				customMessageArea.setAttribute("hidden", true);
+				var customMessageAreas = newDrop.element.parentNode
+						.querySelectorAll("p[dz-custom-message]");
+				angular.forEach(customMessageAreas,
+						function(customMessageArea) {
+							customMessageArea.setAttribute("hidden", true);
+						});
 				newDrop.disable();
 				imgDropzones.push(newDrop);
 			};
@@ -216,9 +219,13 @@ define(
 							if (titlePicInsertMark === undefined
 									|| titlePicInsertMark === null) {
 								titlePicInsertMark = "";
-								var customMessageArea = imgDropzones[0].element.parentNode
-										.querySelector("p[dz-custom-message]");
-								customMessageArea.setAttribute("hidden", true);
+								var customMessageAreas = imgDropzones[0].element.parentNode
+										.querySelectorAll("p[dz-custom-message]");
+								angular.forEach(customMessageAreas, function(
+										customMessageArea) {
+									customMessageArea.setAttribute("hidden",
+											true);
+								});
 								imgDropzones[0].removeAllFiles();
 								imgDropzones[0].enable();
 								$scope.restPicNum--;
@@ -227,9 +234,13 @@ define(
 						} else {
 							if (!paraPicInsertStatus[index]) {
 								paraPicInsertStatus[index] = true;
-								var customMessageArea = imgDropzones[index + 1].element.parentNode
-										.querySelector("p[dz-custom-message]");
-								customMessageArea.setAttribute("hidden", true);
+								var customMessageAreas = imgDropzones[index + 1].element.parentNode
+										.querySelectorAll("p[dz-custom-message]");
+								angular.forEach(customMessageAreas, function(
+										customMessageArea) {
+									customMessageArea.setAttribute("hidden",
+											true);
+								});
 								imgDropzones[index + 1].removeAllFiles();
 								imgDropzones[index + 1].enable();
 								$scope.restPicNum--;
@@ -239,9 +250,12 @@ define(
 						if (titlePicInsertMark === undefined
 								|| titlePicInsertMark === null) {
 							titlePicInsertMark = "";
-							var customMessageArea = imgDropzones[0].element.parentNode
-									.querySelector("p[dz-custom-message]");
-							customMessageArea.setAttribute("hidden", true);
+							var customMessageAreas = imgDropzones[0].element.parentNode
+									.querySelectorAll("p[dz-custom-message]");
+							angular.forEach(customMessageAreas, function(
+									customMessageArea) {
+								customMessageArea.setAttribute("hidden", true);
+							});
 							imgDropzones[0].removeAllFiles();
 							imgDropzones[0].enable();
 							$scope.restPicNum--;
@@ -359,7 +373,7 @@ define(
 					var result = $scope.checkIfLinkCreationInvalid();
 					if (result !== true) {
 						contentEditor.restoreSelection();
-						
+
 						var linkTitle = $scope.linkTitle;
 						var linkUrl = $scope.linkUrl;
 						linkManager.createLink(linkTitle, linkUrl);

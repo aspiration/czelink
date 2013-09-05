@@ -12,8 +12,7 @@
 	<!-- Enables the Spring MVC @Controller programming model -->
 	<annotation-driven />
 
-	<!-- Only needed because we require fileupload in the org.springframework.samples.mvc.fileupload 
-		package -->
+	<!-- required for file upload -->
 	<beans:bean id="multipartResolver"
 		class="org.springframework.web.multipart.commons.CommonsMultipartResolver" />
 

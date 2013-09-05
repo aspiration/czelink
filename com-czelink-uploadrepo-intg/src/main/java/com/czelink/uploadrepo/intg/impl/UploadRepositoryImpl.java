@@ -1,5 +1,7 @@
 package com.czelink.uploadrepo.intg.impl;
 
+import java.io.InputStream;
+
 import javax.servlet.ServletContext;
 
 import org.springframework.web.context.ServletContextAware;
@@ -13,19 +15,19 @@ public class UploadRepositoryImpl implements UploadRepository,
 
 	private ServletContext servletContext;
 
-	public String printAbsolutePath() {
+	private String getRepositoryAbsolutePath() {
 		final ServletContext targetContext = this.servletContext
 				.getContext(UploadRepositoryImpl.TARGET_CONTEXT_NAME);
-
-		System.out.println(targetContext.getContextPath());
-		System.out.println(targetContext.getRealPath("/"));
-		System.out.println(targetContext.getRealPath("."));
-
 		return targetContext.getContextPath();
 	}
 
 	public void setServletContext(ServletContext pServletContext) {
 		this.servletContext = pServletContext;
+	}
+
+	public boolean saveFile(final InputStream inputStream) {
+		System.out.println("save file!");
+		return false;
 	}
 
 }

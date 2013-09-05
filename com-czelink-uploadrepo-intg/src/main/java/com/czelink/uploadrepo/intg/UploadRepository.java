@@ -1,6 +1,8 @@
 package com.czelink.uploadrepo.intg;
 
+import java.io.InputStream;
+
 public interface UploadRepository {
 
-	public String printAbsolutePath();
+	public boolean saveFile(final InputStream inputStream);
 }
