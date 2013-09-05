@@ -16,7 +16,7 @@
 	background: -o-linear-gradient(45deg, #020031 0%, #6d3353 100%);
 	background: -ms-linear-gradient(45deg, #020031 0%, #6d3353 100%);
 	background: linear-gradient(45deg, #020031 0%, #6d3353 100%);
-	filter: progid:DXImageTransform.Microsoft.gradient( 
+	filter: progid:DXImageTransform.Microsoft.gradient(   
 		                     
 		                     
 		                     
@@ -248,4 +248,13 @@ body {
 
 .icon-remove-hover {
 	cursor: pointer;
+}
+
+.custom-dropdown-menu {
+	min-width: 99px;
+	text-align: center;
+}
+
+.custom-dropdown-menu>li {
+	margin: 10px;
 }

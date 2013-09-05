@@ -79,13 +79,13 @@ define(
 
 			return (function() {
 				var editor = {};
-				
+
 				editor.savedSelection = undefined;
-				
+
 				editor.saveSelection = function() {
 					editor.savedSelection = rangy.saveSelection();
 				};
-				
+
 				editor.restoreSelection = function() {
 					rangy.restoreSelection(editor.savedSelection);
 				};
@@ -180,7 +180,14 @@ define(
 						instance.applyLink = function(linkTitle) {
 							var linkApplier = linkHolder[linkTitle];
 							var result = false;
-							if (!instance.isLinkApplied(linkTitle)) {
+							if (null !== linkApplier
+									&& undefined !== linkApplier) {
+								angular.forEach(linkHolder, function(applier,
+										key) {
+									if (linkApplier !== applier) {
+										applier.undoToSelection();
+									}
+								});
 								linkApplier.applyToSelection();
 								result = true;
 							}

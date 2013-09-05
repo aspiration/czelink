@@ -1,83 +1,6 @@
 <div class="container" ng-mousemove="fontEditStart();"
 	ng-mouseup="fontEditStart();selectParagraph(-1, $event)">
 	<div class="row">
-		<div class="span3">
-			<div class="panel">
-				<h3>工具栏</h3>
-				<hr class="panel-hr">
-				<table class="table table-bordered table-hover">
-					<tbody>
-						<tr>
-							<td style="text-align: center;">
-								<button class="btn btn-info"
-									ng-class="{disabled : isInsertParagraphDisabled}" type="button"
-									ng-click="insertNewParagraph()">
-									<span>新段落({{restParagraphNum}})</span><i
-										class="icon-leaf icon-white pull-right"></i>
-								</button>
-							</td>
-							<td style="text-align: center;">
-								<button ng-class="{disabled: isInsertPicDisabled}"
-									ng-click="insertNewPicture()" class="btn btn-info"
-									type="button">
-									<span>新图片({{restPicNum}})</span><i
-										class="icon-picture icon-white pull-right"></i>
-								</button>
-							</td>
-						</tr>
-						<tr ng-class="{'hidden' : !fontEditStart()}">
-							<td style="text-align: center;">
-								<button class="btn btn-info" type="button" ng-click="italic()">
-									<span>斜体</span><i class="icon-italic icon-white pull-right"></i>
-								</button>
-							</td>
-							<td style="text-align: center;">
-								<button class="btn btn-info" type="button" ng-click="bold()">
-									<span>加粗</span><i class="icon-bold icon-white pull-right"></i>
-								</button>
-							</td>
-						</tr>
-						<tr ng-class="{'hidden' : !fontEditStart()}">
-							<td style="text-align: center;">
-								<button underline-btn="true" class="btn btn-info" type="button"
-									ng-click="underline()">
-									<span>下划线</span><i class="icon-underline icon-white pull-right"></i>
-								</button>
-							</td>
-							<td style="text-align: center;">
-								<button linethrough-btn="true" class="btn btn-info"
-									type="button" ng-click="lineThrough()">
-									<span>删除线</span><i
-										class="icon-strikethrough icon-white pull-right"></i>
-								</button>
-							</td>
-						</tr>
-						<tr ng-class="{'hidden' : !fontEditStart()}">
-							<td style="text-align: center;">
-								<div class="btn-group">
-									<a class="btn btn-info dropdown-toggle" data-toggle="dropdown"
-										href="#" ng-click="initLinkStatus()"><i
-										class="icon-link icon-white pull-left"></i>链接<span
-										class="caret"></span> </a>
-									<ul class="dropdown-menu"
-										ng-post-render="registerToLinkManager">
-										<li><button type="button" class="btn btn-success"
-												ng-click="openCreateLinkModel()">新建</button></li>
-										<li class="divider"></li>
-									</ul>
-								</div>
-							</td>
-							<td style="text-align: center;"></td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-			<div class="panel">
-				<h3>说明</h3>
-				<hr class="panel-hr">
-				说明文字在这里出现
-			</div>
-		</div>
 		<div class="span9">
 			<div class="panel">
 				<h3>预览</h3>
@@ -144,6 +67,83 @@
 						</div>
 					</div>
 				</div>
+			</div>
+		</div>
+		<div class="span3">
+			<div class="panel">
+				<h3>工具栏</h3>
+				<hr class="panel-hr">
+				<table class="table table-bordered table-hover">
+					<tbody>
+						<tr>
+							<td style="text-align: center;">
+								<button class="btn btn-info"
+									ng-class="{disabled : isInsertParagraphDisabled}" type="button"
+									ng-click="insertNewParagraph()">
+									<span>新段落({{restParagraphNum}})</span><i
+										class="icon-leaf icon-white pull-right"></i>
+								</button>
+							</td>
+							<td style="text-align: center;">
+								<button ng-class="{disabled: isInsertPicDisabled}"
+									ng-click="insertNewPicture()" class="btn btn-info"
+									type="button">
+									<span>新图片({{restPicNum}})</span><i
+										class="icon-picture icon-white pull-right"></i>
+								</button>
+							</td>
+						</tr>
+						<tr ng-class="{'hidden' : !fontEditStart()}">
+							<td style="text-align: center;">
+								<button class="btn btn-info" type="button" ng-click="italic()">
+									<span>斜体</span><i class="icon-italic icon-white pull-right"></i>
+								</button>
+							</td>
+							<td style="text-align: center;">
+								<button class="btn btn-info" type="button" ng-click="bold()">
+									<span>加粗</span><i class="icon-bold icon-white pull-right"></i>
+								</button>
+							</td>
+						</tr>
+						<tr ng-class="{'hidden' : !fontEditStart()}">
+							<td style="text-align: center;">
+								<button underline-btn="true" class="btn btn-info" type="button"
+									ng-click="underline()">
+									<span>下划线</span><i class="icon-underline icon-white pull-right"></i>
+								</button>
+							</td>
+							<td style="text-align: center;">
+								<button linethrough-btn="true" class="btn btn-info"
+									type="button" ng-click="lineThrough()">
+									<span>删除线</span><i
+										class="icon-strikethrough icon-white pull-right"></i>
+								</button>
+							</td>
+						</tr>
+						<tr ng-class="{'hidden' : !fontEditStart()}">
+							<td style="text-align: center;">
+								<div class="btn-group">
+									<a class="btn btn-info dropdown-toggle" data-toggle="dropdown"
+										href="#" ng-click="initLinkStatus()"><i
+										class="icon-link icon-white pull-left"></i>链接<span
+										class="caret"></span> </a>
+									<ul class="dropdown-menu custom-dropdown-menu"
+										ng-post-render="registerToLinkManager">
+										<li><button type="button" class="btn btn-success"
+												ng-click="openCreateLinkModel()">新建</button></li>
+										<li class="divider"></li>
+									</ul>
+								</div>
+							</td>
+							<td style="text-align: center;"></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="panel">
+				<h3>说明</h3>
+				<hr class="panel-hr">
+				说明文字在这里出现
 			</div>
 		</div>
 	</div>
