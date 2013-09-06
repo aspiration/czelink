@@ -1,6 +1,6 @@
 define(
-		[ 'contentEditor', 'dropzone', 'uuid' ],
-		function(contentEditor, dropzone, uuid) {
+		[ 'contentEditor', 'dropzone' ],
+		function(contentEditor, dropzone) {
 
 			dropzone.autoDiscover = false;
 			var imgDropzones = [];
@@ -17,10 +17,9 @@ define(
 					dictResponseError : "文件上传失败, 如需要请联系管理员",
 					dictMaxFilesExceeded : "只可以添加一个文件",
 					maxFilesize : 2,
-					paramName : fileHash,
 					maxFiles : 1,
 					headers : {
-						"file-hashcode" : fileHash
+						"conversation-id" : fileHash
 					},
 					dictCancelUpload : "取消上传",
 					acceptedFiles : "image/*",
@@ -301,6 +300,11 @@ define(
 							$scope.article.title.text = articleTitle;
 						});
 
+				orchestration.invoke("navigation", "getFlashObject",
+						"conversation_id", function(conversation_id) {
+							$scope.conversation_id = conversation_id;
+						});
+
 				$scope.bold = function() {
 					if (isSelectedValid()) {
 						contentEditor.boldText();
@@ -469,7 +473,7 @@ define(
 				};
 
 				$scope.initAbstractTitleImage = function() {
-					var fileHash = uuid();
+					var fileHash = $scope.conversation_id;
 					var fileName = "abstract_title_image";
 					initImgDropzones(widgetElement, fileName, fileHash);
 				};
