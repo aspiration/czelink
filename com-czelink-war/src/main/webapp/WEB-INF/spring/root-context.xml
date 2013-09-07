@@ -5,6 +5,8 @@
 
 	<import resource="classpath:/spring/czelink/server/base/converters.xml" />
 
+	<import resource="classpath:/spring/czelink/server/base/support.xml" />
+
 	<import resource="classpath*:/spring/czelink/uploadrepo/intg/config.xml" />
 
 	<import resource="classpath*:/spring/czelink/infomgmt/intg/config.xml" />

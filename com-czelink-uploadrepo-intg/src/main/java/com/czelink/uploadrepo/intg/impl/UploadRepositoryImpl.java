@@ -1,15 +1,17 @@
 package com.czelink.uploadrepo.intg.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.czelink.uploadrepo.intg.UploadRepository;
 
@@ -23,39 +25,56 @@ public class UploadRepositoryImpl implements UploadRepository,
 	private String getRepositoryAbsolutePath() {
 		final ServletContext targetContext = this.servletContext
 				.getContext(UploadRepositoryImpl.TARGET_CONTEXT_NAME);
-		return targetContext.getContextPath();
+		return targetContext.getRealPath("/");
 	}
 
 	public void setServletContext(ServletContext pServletContext) {
 		this.servletContext = pServletContext;
 	}
 
-	public boolean saveFile(final List<FileItem> fileItems) {
-		System.out.println("save file!");
-		System.out.println("================= file items ============");
-		final Iterator<FileItem> i = fileItems.iterator();
-		while (i.hasNext()) {
-			FileItem fi = (FileItem) i.next();
-			System.out.println(fi.getName() + " - " + fi.getFieldName() + " - "
-					+ fi.getContentType());
+	public boolean saveFile(final Map<String, MultipartFile> files,
+			final String subFolder) throws IOException {
+		boolean result = false;
+		try {
+			final Set<Entry<String, MultipartFile>> entrySet = files.entrySet();
+			for (final Iterator<Entry<String, MultipartFile>> it = entrySet
+					.iterator(); it.hasNext();) {
+				final Entry<String, MultipartFile> entry = it.next();
+				final MultipartFile file = entry.getValue();
+				String path = StringUtils.replace(
+						this.getRepositoryAbsolutePath(), "\\", "/");
+				if (!path.endsWith("/")) {
+					path = path.concat("/");
+				}
+				if (null != subFolder) {
+					path = path.concat(subFolder);
+				}
+				final File dir = new File(path);
+				dir.mkdirs();
+				path = path.concat("/" + file.getOriginalFilename());
+				final File targetFile = new File(path);
+				if (!targetFile.exists()) {
+					targetFile.createNewFile();
+				}
+				file.transferTo(targetFile);
+				result = true;
+			}
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+			throw e;
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw e;
+		} finally {
+			result = false;
 		}
-		System.out.println("================= file items ============");
-		return false;
+		return result;
 	}
 
-	public ServletFileUpload getFileUploadHander(int maxFileSize, int maxMemSize) {
-		final String repoPath = this.getRepositoryAbsolutePath();
-		System.out.println(repoPath);
-		final DiskFileItemFactory factory = new DiskFileItemFactory();
-		// maximum size that will be stored in memory
-		factory.setSizeThreshold(maxMemSize);
-		// Location to save data that is larger than maxMemSize.
-		factory.setRepository(new File(repoPath));
-		// Create a new file upload handler
-		final ServletFileUpload upload = new ServletFileUpload(factory);
-		// maximum file size to be uploaded.
-		upload.setSizeMax(maxFileSize);
-		return upload;
+	public String getRepositoryContextPath() {
+		final ServletContext targetContext = this.servletContext
+				.getContext(UploadRepositoryImpl.TARGET_CONTEXT_NAME);
+		return targetContext.getContextPath();
 	}
 
 }

@@ -4,7 +4,7 @@ define(function() {
 
 		$scope.createNewInfoArticle = function(newArticleTitle) {
 
-			$.getJSON('app/startConversation', function(data) {
+			$.getJSON('app/startUploadConversation', function(data) {
 				var uid = data.uid;
 
 				var options = {

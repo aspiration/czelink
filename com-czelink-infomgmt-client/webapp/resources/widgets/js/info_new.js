@@ -9,7 +9,7 @@ define(
 				var targetElement = widgetElement
 						.querySelector("p[img-dropzone=" + fileParamName + "]");
 				var options = {
-					url : "app/fileupload", // TODO: to confirm
+					url : "app/fileupload",
 					dictDefaultMessage : "将图片拖入该区域上传 或 点击这里上传图片 （只支持上传一张图片）",
 					dictFallbackMessage : "请使用以下浏览器： Chrome 7+ / Firefox 4+ / IE 10+ / Opera 12+ / Safari 6+ ",
 					dictInvalidFileType : "不支持的文件类型",
@@ -40,12 +40,13 @@ define(
 											};
 											customMessageArea
 													.removeAttribute("hidden");
+											this.src = undefined;
 										});
 
 						this
 								.on(
 										"success",
-										function(file) {
+										function(file, data) {
 											var customMessageArea = this.element.parentNode
 													.querySelector("p[dz-custom-message='success']");
 											customMessageArea
@@ -58,6 +59,7 @@ define(
 											customMessageArea
 													.removeAttribute("hidden");
 											this.disable();
+											this.src = data.src;
 										});
 					}
 				};
@@ -276,11 +278,43 @@ define(
 				};
 
 				$scope.cancelTitlePicZone = function() {
-					titlePicInsertMark = undefined;
-					$scope.isInsertPicDisabled = false;
-					imgDropzones[0].disable();
-					imgDropzones[0].removeAllFiles();
-					$scope.restPicNum++;
+					var file = imgDropzones[0].files[0];
+					var fileName = undefined;
+					if (file !== undefined && file !== null) {
+						fileName = file.name;
+					}
+					if (fileName !== undefined) {
+						$.ajax({
+							url : 'app/cancelupload',
+							type : 'post',
+							data : {
+								fileName : fileName
+							},
+							headers : {
+								"conversation-id" : $scope.conversation_id,
+							},
+							dataType : 'json',
+							success : function(data) {
+								if (data.status === true) {
+									titlePicInsertMark = undefined;
+									$scope.isInsertPicDisabled = false;
+									imgDropzones[0].disable();
+									imgDropzones[0].removeAllFiles();
+									$scope.restPicNum++;
+
+									if (!$scope.$$phase) {
+										$scope.$apply();
+									}
+								}
+							}
+						});
+					} else {
+						titlePicInsertMark = undefined;
+						$scope.isInsertPicDisabled = false;
+						imgDropzones[0].disable();
+						imgDropzones[0].removeAllFiles();
+						$scope.restPicNum++;
+					}
 				};
 
 				$scope.displayParagraphPicZone = function(index) {
@@ -288,11 +322,41 @@ define(
 				};
 
 				$scope.cancelParagraphPicZone = function(index) {
-					imgDropzones[index + 1].disable();
-					imgDropzones[index + 1].removeAllFiles();
-					// TODO: fire backend to delete the uploaded file.
-					paraPicInsertStatus[index] = false;
-					$scope.restPicNum++;
+					var file = imgDropzones[index + 1].files[0];
+					var fileName = undefined;
+					if (file !== undefined && file !== null) {
+						fileName = file.name;
+					}
+					if (fileName !== undefined) {
+						$.ajax({
+							url : 'app/cancelupload',
+							type : 'post',
+							data : {
+								fileName : fileName
+							},
+							headers : {
+								"conversation-id" : $scope.conversation_id,
+							},
+							dataType : 'json',
+							success : function(data) {
+								if (data.status === true) {
+									imgDropzones[index + 1].disable();
+									imgDropzones[index + 1].removeAllFiles();
+									paraPicInsertStatus[index] = false;
+									$scope.restPicNum++;
+
+									if (!$scope.$$phase) {
+										$scope.$apply();
+									}
+								}
+							}
+						});
+					} else {
+						imgDropzones[index + 1].disable();
+						imgDropzones[index + 1].removeAllFiles();
+						paraPicInsertStatus[index] = false;
+						$scope.restPicNum++;
+					}
 				};
 
 				orchestration.invoke("navigation", "getFlashObject",
@@ -479,7 +543,7 @@ define(
 				};
 
 				$scope.preProcessImageDropzone = function(index, paragraph) {
-					var fileHash = uuid();
+					var fileHash = $scope.conversation_id;
 					var fileName = "upload_img_file_" + index;
 					paragraph.imgdesc = {};
 					paragraph.imgdesc.hash = fileHash;
@@ -490,6 +554,40 @@ define(
 					var fileParamName = $scope.initParagraphContent[context.$index].imgdesc.name;
 					var fileHash = $scope.initParagraphContent[context.$index].imgdesc.hash;
 					initImgDropzones(widgetElement, fileParamName, fileHash);
+				};
+
+				$scope.cancelArticle = function() {
+					$.ajax({
+						url : 'app/endUploadConversation',
+						type : 'post',
+						data : {
+							"conversation-id" : $scope.conversation_id,
+						},
+						dataType : 'json',
+						success : function(data) {
+							if (data.status === true) {
+								// TODO: to finish.
+								console.log("end!");
+							}
+						}
+					});
+				};
+
+				$scope.submitArticle = function() {
+					$.ajax({
+						url : 'app/completeUploadConversation',
+						type : 'post',
+						data : {
+							"conversation-id" : $scope.conversation_id,
+						},
+						dataType : 'json',
+						success : function(data) {
+							if (data.status === true) {
+								// TODO: to finish.
+								console.log("complete!");
+							}
+						}
+					});
 				};
 
 				return function(widgetElement) {

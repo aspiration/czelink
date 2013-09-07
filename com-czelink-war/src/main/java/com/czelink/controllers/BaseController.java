@@ -1,53 +1,57 @@
 package com.czelink.controllers;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.annotation.Resource;
 
 import net.sf.json.JSONObject;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.czelink.server.base.support.ConversationManager;
+import com.czelink.server.base.support.ConversationManager.ConversationTask;
 import com.czelink.uploadrepo.intg.UploadRepository;
 
 @Controller
-@SessionAttributes("conversations")
 public class BaseController {
+
+	@Resource(name = "uploadConversationManager")
+	private ConversationManager uploadConversationManager;
 
 	@Resource(name = "uploadRepository")
 	private UploadRepository uploadRepository;
 
-	@ModelAttribute("conversations")
-	public Map<String, Map<String, Object>> createConversationHolder() {
-		return new HashMap<String, Map<String, Object>>();
-	}
-
-	@RequestMapping("/startConversation")
+	@RequestMapping("/startUploadConversation")
 	public @ResponseBody
-	String startConversation(
-			@ModelAttribute("conversations") final Map<String, Map<String, Object>> conversations) {
-		final String uid = UUID.randomUUID().toString();
+	String startUploadConversation() {
+		final String uid = this.uploadConversationManager.startConversation();
 		final JSONObject result = new JSONObject();
 		result.put("uid", uid);
-		conversations.put(uid, new HashMap());
+		this.uploadConversationManager.setConversationOnCompleteTask(uid,
+				new UploadConverstionTask(uid, this.uploadConversationManager));
 		return result.toString();
 	}
 
-	@RequestMapping("/endConversation")
+	@RequestMapping("/endUploadConversation")
 	public @ResponseBody
-	String endConversation(
-			@ModelAttribute("conversations") final Map<String, Map<String, Object>> conversations,
-			@RequestParam final String conversationID) {
-		conversations.remove(conversationID);
+	String endUploadConversation(
+			@RequestParam("conversation-id") final String conversationID) {
+		this.uploadConversationManager.endConversation(conversationID);
+		final JSONObject result = new JSONObject();
+		result.put("status", true);
+		return result.toString();
+	}
+
+	@RequestMapping("/completeUploadConversation")
+	public @ResponseBody
+	String completeUploadConversation(
+			@RequestParam("conversation-id") final String conversationID) {
+		this.uploadConversationManager.completeConversation(conversationID);
 		final JSONObject result = new JSONObject();
 		result.put("status", true);
 		return result.toString();
@@ -57,12 +61,46 @@ public class BaseController {
 	public @ResponseBody
 	String uploadFileToRepository(
 			@RequestHeader("conversation-id") final String conversationID,
-			@RequestParam final MultipartFile file,
-			@ModelAttribute("conversations") final Map<String, Map<String, Object>> conversations) {
-		final Map<String, Object> conversation = conversations
-				.get(conversationID);
-		// TODO : do stuffs here.
-		return "Hello world!";
+			@RequestParam final MultipartFile file) {
+		final boolean result = this.uploadConversationManager
+				.putIntoConversation(conversationID,
+						file.getOriginalFilename(), file);
+		final JSONObject json = new JSONObject();
+		if (result) {
+			json.put("src",
+					this.uploadRepository.getRepositoryContextPath() + "/imgs/"
+							+ conversationID + "/" + file.getOriginalFilename());
+		} else {
+			throw new IllegalStateException("invalid conversationID: "
+					+ conversationID);
+		}
+		json.put("status", result);
+		return json.toString();
+	}
+
+	@RequestMapping("/cancelupload")
+	public @ResponseBody
+	String uploadFileToRepository(
+			@RequestHeader("conversation-id") final String conversationID,
+			@RequestParam final String fileName) {
+		final boolean result = this.uploadConversationManager
+				.removeFromConversation(conversationID, fileName);
+		if (!result) {
+			throw new IllegalStateException("invalid conversationID: "
+					+ conversationID);
+		}
+		final JSONObject json = new JSONObject();
+		json.put("status", result);
+		return json.toString();
+	}
+
+	public ConversationManager getUploadConversationManager() {
+		return uploadConversationManager;
+	}
+
+	public void setUploadConversationManager(
+			ConversationManager uploadConversationManager) {
+		this.uploadConversationManager = uploadConversationManager;
 	}
 
 	public UploadRepository getUploadRepository() {
@@ -71,6 +109,27 @@ public class BaseController {
 
 	public void setUploadRepository(UploadRepository uploadRepository) {
 		this.uploadRepository = uploadRepository;
+	}
+
+	private class UploadConverstionTask extends ConversationTask {
+
+		public UploadConverstionTask(String pConversationId,
+				ConversationManager pConversationManager) {
+			super(pConversationId, pConversationManager);
+		}
+
+		@Override
+		public void run() {
+			// persist the uploaded file to disk.
+			final Map<String, MultipartFile> conversation = this
+					.getConversation(MultipartFile.class);
+			try {
+				getUploadRepository().saveFile(conversation,
+						"imgs/" + this.conversationId);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }

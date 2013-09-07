@@ -1,14 +1,14 @@
 package com.czelink.uploadrepo.intg;
 
-import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UploadRepository {
 
-	public boolean saveFile(final List<FileItem> fileItems);
+	public boolean saveFile(final Map<String, MultipartFile> files,
+			final String subFolder) throws Exception;
 
-	public ServletFileUpload getFileUploadHander(final int maxFileSize,
-			final int maxMemSize);
+	public String getRepositoryContextPath();
+
 }
