@@ -11,4 +11,6 @@
 
 	<import resource="classpath*:/spring/czelink/infomgmt/intg/config.xml" />
 
+	<import resource="classpath*:/spring/czelink/usermgmt/intg/config.xml" />
+
 </beans>

@@ -18,9 +18,13 @@
 
 		<module>../com-czelink-infomgmt-intg</module>
 
+		<module>../com-czelink-usermgmt-intg</module>
+
 		<module>../com-czelink-server-base</module>
 
 		<module>../com-czelink-infomgmt-server</module>
+
+		<module>../com-czelink-usermgmt-server</module>
 
 		<module>../com-czelink-war</module>
 

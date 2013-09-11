@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:lang="http://www.springframework.org/schema/lang" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:task="http://www.springframework.org/schema/task" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.2.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.2.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd">
+
+	<!-- <ldap-server id="ldapServer" url="ldap://localhost:10389/dc=czelink,dc=com" 
+		manager-dn="uid=admin,ou=system" manager-password="password" /> -->
+
+	<security:http xmlns="http://www.springframework.org/schema/security"
+		pattern="/resources/css/**" security="none" />
+	<security:http xmlns="http://www.springframework.org/schema/security"
+		pattern="/resources/font/**" security="none" />
+	<security:http xmlns="http://www.springframework.org/schema/security"
+		pattern="/resources/img/**" security="none" />
+	<security:http xmlns="http://www.springframework.org/schema/security"
+		pattern="/resources/js/**" security="none" />
+	<security:http xmlns="http://www.springframework.org/schema/security"
+		pattern="/resources/style/**" security="none" />
+	<security:http xmlns="http://www.springframework.org/schema/security"
+		pattern="/resources/views/**" security="none" />
+
+	<security:http xmlns="http://www.springframework.org/schema/security"
+		use-expressions="true" auto-config="false"
+		entry-point-ref="authenticationProcessingFilterEntryPoint">
+		<custom-filter position="FORM_LOGIN_FILTER" ref="authenticationFilter" />
+		<intercept-url pattern="/" access="permitAll" />
+		<intercept-url pattern="/resources/widgets/**" access="hasRole('ROLE_USER')" />
+		<intercept-url pattern="/login/*" access="permitAll" />
+		<intercept-url pattern="/logout" access="permitAll" />
+		<intercept-url pattern="/**" access="hasRole('ROLE_USER')" />
+	</security:http>
+
+	<bean id="authenticationProcessingFilterEntryPoint"
+		class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+		<property name="loginFormUrl" value="/login" />
+		<property name="forceHttps" value="false" />
+	</bean>
+
+	<bean id="authenticationFilter"
+		class="org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter">
+		<property name="authenticationManager" ref="authenticationManager" />
+		<property name="filterProcessesUrl" value="/login_check" />
+		<property name="usernameParameter" value="username" />
+		<property name="passwordParameter" value="password" />
+		<property name="authenticationFailureHandler" ref="authFailureHandler" />
+		<property name="authenticationSuccessHandler" ref="authSuccessHandler" />
+	</bean>
+
+	<bean id="authFailureHandler"
+		class="com.czelink.usermgmt.handlers.AjaxAuthenticationFailureHandler" />
+
+	<bean id="authSuccessHandler"
+		class="com.czelink.usermgmt.handlers.AjaxAuthenticationSuccessHandler" />
+
+	<security:authentication-manager alias="authenticationManager"
+		xmlns="http://www.springframework.org/schema/security">
+		<authentication-provider>
+			<user-service>
+				<user name="user1@example.com" password="user1" authorities="ROLE_USER" />
+				<user name="admin1@example.com" password="admin1" authorities="ROLE_USER,ROLE_ADMIN" />
+			</user-service>
+		</authentication-provider>
+	</security:authentication-manager>
+</beans>

@@ -22,6 +22,12 @@
         <dependent-module archiveName="com-czelink-infomgmt-intg-1.0.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/com-czelink-infomgmt-intg/com-czelink-infomgmt-intg">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="com-czelink-usermgmt-server-1.0.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/com-czelink-usermgmt-server/com-czelink-usermgmt-server">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="com-czelink-usermgmt-intg-1.0.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/com-czelink-usermgmt-intg/com-czelink-usermgmt-intg">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="com-czelink-war"/>
         <property name="java-output-path" value="/com-czelink-war/build/classes"/>
     </wb-module>

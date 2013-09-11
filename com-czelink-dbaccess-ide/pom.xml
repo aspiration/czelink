@@ -14,11 +14,14 @@
 
 		<module>../com-czelink-intg</module>
 		<module>../com-czelink-dbaccess</module>
-		
+
 		<module>../com-czelink-common-intg</module>
-		
+
 		<module>../com-czelink-infomgmt-intg</module>
 		<module>../com-czelink-infomgmt-dbaccess</module>
+
+		<module>../com-czelink-usermgmt-intg</module>
+		<module>../com-czelink-usermgmt-dbaccess</module>
 
 		<module>../com-czelink-dbaccess-facade</module>
 

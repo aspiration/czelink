@@ -25,6 +25,10 @@
 			<groupId>com.czelink</groupId>
 			<artifactId>com-czelink-infomgmt-server</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.czelink</groupId>
+			<artifactId>com-czelink-usermgmt-server</artifactId>
+		</dependency>
 
 		<!-- Servlet -->
 		<dependency>

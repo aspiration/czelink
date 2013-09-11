@@ -50,6 +50,11 @@
 				<artifactId>com-czelink-infomgmt-server</artifactId>
 				<version>${com.czelink-version}</version>
 			</dependency>
+			<dependency>
+				<groupId>com.czelink</groupId>
+				<artifactId>com-czelink-usermgmt-server</artifactId>
+				<version>${com.czelink-version}</version>
+			</dependency>
 			<!-- infomgmt module -->
 			<dependency>
 				<groupId>com.czelink</groupId>
@@ -114,6 +119,11 @@
 				<artifactId>com-czelink-infomgmt-intg</artifactId>
 				<version>${com.czelink-version}</version>
 			</dependency>
+			<dependency>
+				<groupId>com.czelink</groupId>
+				<artifactId>com-czelink-usermgmt-intg</artifactId>
+				<version>${com.czelink-version}</version>
+			</dependency>
 			<!-- data access -->
 			<dependency>
 				<groupId>com.czelink</groupId>
@@ -123,6 +133,11 @@
 			<dependency>
 				<groupId>com.czelink</groupId>
 				<artifactId>com-czelink-infomgmt-dbaccess</artifactId>
+				<version>${com.czelink-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.czelink</groupId>
+				<artifactId>com-czelink-usermgmt-dbaccess</artifactId>
 				<version>${com.czelink-version}</version>
 			</dependency>
 			<!-- Spring -->
@@ -161,6 +176,11 @@
 			<dependency>
 				<groupId>org.springframework.security</groupId>
 				<artifactId>spring-security-config</artifactId>
+				<version>3.1.4.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-ldap</artifactId>
 				<version>3.1.4.RELEASE</version>
 			</dependency>
 			<!-- mongodb -->
