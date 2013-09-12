@@ -36,6 +36,7 @@
 			access="permitAll" />
 		<intercept-url pattern="/resources/widgets/**" access="hasRole('ROLE_USER')" />
 		<intercept-url pattern="/resources/**" access="permitAll" />
+		<intercept-url pattern="/app/navigationList" access="permitAll" />
 		<intercept-url pattern="/usermgmt/login" access="permitAll" />
 		<intercept-url pattern="/usermgmt/logout" access="permitAll" />
 		<intercept-url pattern="/**" access="hasRole('ROLE_USER')" />

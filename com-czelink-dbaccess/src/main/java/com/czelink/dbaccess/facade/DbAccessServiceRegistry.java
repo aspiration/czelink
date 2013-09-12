@@ -92,9 +92,6 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 
 		try {
 
-			System.out
-					.println("Calling DbAccessServiceRegistry for serviceImpl.");
-
 			final Object serviceImplObject_inner = this.componentClassLoader
 					.loadClass((String) serviceImplementation).newInstance();
 
@@ -116,9 +113,6 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 
 			final InvocationHandler dbAccessInvocationHandler = new DbAccessInvocationHandler(
 					serviceImplObject_inner);
-
-			System.out
-					.println("Calling DbAccessServiceRegistry for serviceInterface.");
 
 			final Class serviceInterfaceClass = this.componentClassLoader
 					.loadClass(serviceInterfaceName);

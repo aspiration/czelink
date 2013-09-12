@@ -1,11 +1,17 @@
 package com.czelink.controllers;
 
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,9 +19,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.czelink.common.intg.constants.CommonConstants;
 import com.czelink.server.base.support.ConversationManager;
 import com.czelink.server.base.support.ConversationManager.ConversationTask;
 import com.czelink.uploadrepo.intg.UploadRepository;
+import com.czelink.utils.ComponentAvailabilityHook;
+import com.czelink.utils.ComponentAvailabilityHook.ComponentAvailabilityResult;
 
 @Controller
 public class BaseController {
@@ -25,6 +34,73 @@ public class BaseController {
 
 	@Resource(name = "uploadRepository")
 	private UploadRepository uploadRepository;
+
+	@Resource(name = "navigationMessageSource")
+	private MessageSource navigationMessageSource;
+
+	@Resource(name = "navigationLabelMessageSource")
+	private MessageSource navigationLabelMessageSource;
+
+	@Resource(name = "componentAvailabilityHook")
+	private ComponentAvailabilityHook componentAvailabilityHook;
+
+	@RequestMapping("/navigationList")
+	public @ResponseBody
+	String getNavigationList(final HttpSession session) {
+		final JSONObject result = new JSONObject();
+
+		final List<String> rolesList = (List<String>) session
+				.getAttribute(CommonConstants.ROLE_LIST_IN_SESSION_KEY);
+
+		String navStr = StringUtils.EMPTY;
+		if (null != rolesList) {
+			if (rolesList.contains(CommonConstants.ROLE_ADMIN)) {
+				navStr = this.navigationMessageSource.getMessage(
+						CommonConstants.ROLE_ADMIN, null, Locale.getDefault());
+			} else if (rolesList.contains(CommonConstants.ROLE_USER)) {
+				navStr = this.navigationMessageSource.getMessage(
+						CommonConstants.ROLE_USER, null, Locale.getDefault());
+			} else {
+				navStr = this.navigationMessageSource.getMessage(
+						CommonConstants.ROLE_ANONYMOUS, null,
+						Locale.getDefault());
+			}
+		} else {
+			if (componentAvailabilityHook.checkIfComponentAvailable("usermgmt")
+					.equals(ComponentAvailabilityResult.AVAILABLE)) {
+				navStr = this.navigationMessageSource.getMessage(
+						CommonConstants.ROLE_ANONYMOUS, null,
+						Locale.getDefault());
+			} else if (componentAvailabilityHook.checkIfComponentAvailable(
+					"usermgmt").equals(ComponentAvailabilityResult.UNAVAILABLE)) {
+				navStr = this.navigationMessageSource.getMessage(
+						CommonConstants.ROLE_ADMIN, null, Locale.getDefault());
+			} else {
+				navStr = StringUtils.EMPTY;
+			}
+		}
+		if (StringUtils.isNotBlank(navStr)) {
+			result.put("status", true);
+			final String[] navArr = navStr.split(",");
+			final JSONArray navigationList = new JSONArray();
+			for (int i = 0; i < navArr.length; i++) {
+				final String labelCode = StringUtils.substring(navArr[i], 1);
+				final String label = this.navigationLabelMessageSource
+						.getMessage(labelCode, null, Locale.getDefault());
+
+				final JSONObject navItem = new JSONObject();
+				navItem.put("hashLink", navArr[i]);
+				navItem.put("label", label);
+				navigationList.add(navItem);
+			}
+			result.put("navigationList", navigationList);
+		} else {
+			throw new IllegalStateException(
+					"invalid security or navigation information provided in navigation.properites or hooks.properites.");
+		}
+
+		return result.toString();
+	}
 
 	@RequestMapping("/startUploadConversation")
 	public @ResponseBody
@@ -111,6 +187,32 @@ public class BaseController {
 		this.uploadRepository = uploadRepository;
 	}
 
+	public MessageSource getNavigationMessageSource() {
+		return navigationMessageSource;
+	}
+
+	public void setNavigationMessageSource(MessageSource navigationMessageSource) {
+		this.navigationMessageSource = navigationMessageSource;
+	}
+
+	public ComponentAvailabilityHook getComponentAvailabilityHook() {
+		return componentAvailabilityHook;
+	}
+
+	public void setComponentAvailabilityHook(
+			ComponentAvailabilityHook componentAvailabilityHook) {
+		this.componentAvailabilityHook = componentAvailabilityHook;
+	}
+
+	public MessageSource getNavigationLabelMessageSource() {
+		return navigationLabelMessageSource;
+	}
+
+	public void setNavigationLabelMessageSource(
+			MessageSource navigationLabelMessageSource) {
+		this.navigationLabelMessageSource = navigationLabelMessageSource;
+	}
+
 	private class UploadConverstionTask extends ConversationTask {
 
 		public UploadConverstionTask(String pConversationId,
@@ -131,5 +233,4 @@ public class BaseController {
 			}
 		}
 	}
-
 }

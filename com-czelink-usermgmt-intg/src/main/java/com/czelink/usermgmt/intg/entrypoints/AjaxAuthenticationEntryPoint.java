@@ -17,8 +17,6 @@ public class AjaxAuthenticationEntryPoint implements AuthenticationEntryPoint {
 			HttpServletResponse response, AuthenticationException authException)
 			throws IOException, ServletException {
 
-		System.out.println("called AjaxAuthenticationFailureHandler.");
-
 		final JSONObject result = new JSONObject();
 		result.put("status", false);
 		result.put("statusCode", "000"); // 000 means required to login.

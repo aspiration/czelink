@@ -9,261 +9,432 @@ define(
 
 			// prepare loadpath:
 			var location = window.location.hash;
-			var candidates = [ '#home', '#information', '#weibo', '#blog',
-					'#group', '#recruitment', '#community', '#photo',
-					'#business_school', '#help' ];
-			var loadpath = "text!views/home.html";
-			if (candidates.indexOf(location) > -1) {
-				var target = location.slice(1, location.length);
-				loadpath = "text!views/" + target + ".html";
-			} else {
-				window.location.hash = "#home";
-			}
 
-			var evalRenderOnlyExpr = function(renderOnlyKey) {
-				var renderOnlyValue = false;
+			$
+					.getJSON(
+							'app/navigationList',
+							function(data) {
+								if (data.status) {
+									var navList = data.navigationList;
 
-				if (renderOnlyKey.indexOf("!") === 0) {
-					renderOnlyKey = renderOnlyKey
-							.slice(1, renderOnlyKey.length);
-					renderOnlyValue = flashParams[renderOnlyKey];
-					if (renderOnlyValue === null
-							|| renderOnlyValue === undefined) {
-						renderOnlyValue = siteParams[renderOnlyKey];
-					}
-					if (renderOnlyValue === null
-							|| renderOnlyValue === undefined) {
-						renderOnlyValue = false;
-					}
-					renderOnlyValue = !renderOnlyValue;
-				} else {
-					renderOnlyValue = flashParams[renderOnlyKey];
-					if (renderOnlyValue === null
-							|| renderOnlyValue === undefined) {
-						renderOnlyValue = siteParams[renderOnlyKey];
-					}
-				}
-				return renderOnlyValue;
-			};
+									var candidates = [];
 
-			var initWidgetApplication = function(widgetName, widgetElement,
-					orchestration) {
-				var widgetModule = angular.module(widgetName, []);
+									navList.forEach(function(item) {
+										candidates.push(item.hashLink);
+									});
+									candidates.push("#help");
 
-				// add post render directive
-				widgetModule
-						.directive(
-								"ngPostRender",
-								[
-										'$timeout',
-										function(timeout) {
-											return function(scope, element,
-													attrs) {
-												timeout(
-														function() {
-															var postRenderMethodName = attrs["ngPostRender"];
-															scope[postRenderMethodName]
-																	(element,
-																			scope);
-														}, 0);
-											};
-										} ]);
+									var loadpath = "text!views/home.html";
+									if (candidates.indexOf(location) > -1) {
+										var target = location.slice(1,
+												location.length);
+										loadpath = "text!views/" + target
+												+ ".html";
+									} else {
+										window.location.hash = "#home";
+									}
 
-				var outerNgAppCallback = undefined;
+									var evalRenderOnlyExpr = function(
+											renderOnlyKey) {
+										var renderOnlyValue = false;
 
-				var widgetControllerPath = 'widgets/js/' + widgetName;
-				require([ widgetControllerPath ], function(widgetController) {
-					// define controller
-					widgetModule.controller(widgetName + "Ctrl", function(
-							$scope) {
-						// register to orchestration.
-						var orchestrationManager = orchestration(widgetName,
-								$scope);
+										if (renderOnlyKey.indexOf("!") === 0) {
+											renderOnlyKey = renderOnlyKey
+													.slice(
+															1,
+															renderOnlyKey.length);
+											renderOnlyValue = flashParams[renderOnlyKey];
+											if (renderOnlyValue === null
+													|| renderOnlyValue === undefined) {
+												renderOnlyValue = siteParams[renderOnlyKey];
+											}
+											if (renderOnlyValue === null
+													|| renderOnlyValue === undefined) {
+												renderOnlyValue = false;
+											}
+											renderOnlyValue = !renderOnlyValue;
+										} else {
+											renderOnlyValue = flashParams[renderOnlyKey];
+											if (renderOnlyValue === null
+													|| renderOnlyValue === undefined) {
+												renderOnlyValue = siteParams[renderOnlyKey];
+											}
+										}
+										return renderOnlyValue;
+									};
 
-						orchestrationManager.replaceWith = function(
-								targetWidgetName) {
-							var widget = document
-									.querySelectorAll('div[widget='
-											+ targetWidgetName + ']');
+									var initWidgetApplication = function(
+											widgetName, widgetElement,
+											orchestration) {
+										var widgetModule = angular.module(
+												widgetName, []);
 
-							// get widget template
-							var widgetName = widget.getAttribute('widget');
-							// attach controller
-							widget.setAttribute('ng-controller', widgetName
-									+ 'Ctrl');
-							var widgetPath = 'text!widgets/views/' + widgetName
-									+ ".html!strip";
-							require([ widgetPath ], function(widgetTemplate) {
-								widget.innerHTML = widgetTemplate;
-								initWidgetApplication(widgetName, widget,
-										orchestration);
-							});
-						};
+										// add post render directive
+										widgetModule
+												.directive(
+														"ngPostRender",
+														[
+																'$timeout',
+																function(
+																		timeout) {
+																	return function(
+																			scope,
+																			element,
+																			attrs) {
+																		timeout(
+																				function() {
+																					var postRenderMethodName = attrs["ngPostRender"];
+																					scope[postRenderMethodName]
+																							(
+																									element,
+																									scope);
+																				},
+																				0);
+																	};
+																} ]);
 
-						// handled by consumer.
-						outerNgAppCallback = widgetController($scope, jquery,
-								require, orchestrationManager, widgetElement);
-					});
-					angular.bootstrap(widgetElement, [ widgetName ]);
+										var outerNgAppCallback = undefined;
 
-					// outer angular application call - usually for dom
-					// manipulate.
-					if (outerNgAppCallback !== undefined) {
-						outerNgAppCallback(widgetElement);
-					}
+										var widgetControllerPath = 'widgets/js/'
+												+ widgetName;
+										require(
+												[ widgetControllerPath ],
+												function(widgetController) {
+													// define controller
+													widgetModule
+															.controller(
+																	widgetName
+																			+ "Ctrl",
+																	function(
+																			$scope) {
+																		// register
+																		// to
+																		// orchestration.
+																		var orchestrationManager = orchestration(
+																				widgetName,
+																				$scope);
 
-					// show the widget element after rendering.
-					widgetElement.removeAttribute("hidden");
-				});
-			};
+																		orchestrationManager.replaceWith = function(
+																				targetWidgetName) {
+																			var widget = document
+																					.querySelectorAll('div[widget='
+																							+ targetWidgetName
+																							+ ']');
 
-			var handleWidgets = function(orchestration) {
-				var widgets = document.querySelectorAll('div[widget]');
+																			// get
+																			// widget
+																			// template
+																			var widgetName = widget
+																					.getAttribute('widget');
+																			// attach
+																			// controller
+																			widget
+																					.setAttribute(
+																							'ng-controller',
+																							widgetName
+																									+ 'Ctrl');
+																			var widgetPath = 'text!widgets/views/'
+																					+ widgetName
+																					+ ".html!strip";
+																			require(
+																					[ widgetPath ],
+																					function(
+																							widgetTemplate) {
+																						widget.innerHTML = widgetTemplate;
+																						initWidgetApplication(
+																								widgetName,
+																								widget,
+																								orchestration);
+																					});
+																		};
 
-				angular
-						.forEach(
-								widgets,
-								function(widget) {
-									// hidden the widget during rendering.
-									widget.setAttribute("hidden", true);
+																		// handled
+																		// by
+																		// consumer.
+																		outerNgAppCallback = widgetController(
+																				$scope,
+																				jquery,
+																				require,
+																				orchestrationManager,
+																				widgetElement);
+																	});
+													angular.bootstrap(
+															widgetElement,
+															[ widgetName ]);
 
-									var widgetName = widget
-											.getAttribute('widget');
+													// outer angular application
+													// call - usually for dom
+													// manipulate.
+													if (outerNgAppCallback !== undefined) {
+														outerNgAppCallback(widgetElement);
+													}
 
-									// get widget render condition.
-									var renderOnlyKey = widget
-											.getAttribute('renderOnly');
-									var renderOnlyValue = false;
-
-									if (renderOnlyKey !== null
-											&& renderOnlyKey !== undefined) {
-										var renderOnlyParamKeys = renderOnlyKey
-												.split("&&");
-										renderOnlyValue = true;
-
-										renderOnlyParamKeys
-												.forEach(function(
-														renderOnlyParamKey) {
-													renderOnlyParamKey = renderOnlyParamKey
-															.trim();
-													renderOnlyValue = renderOnlyValue
-															&& evalRenderOnlyExpr(renderOnlyParamKey);
+													// show the widget element
+													// after rendering.
+													widgetElement
+															.removeAttribute("hidden");
 												});
-									}
+									};
 
-									// get widget template
-									if (renderOnlyValue === true
-											|| renderOnlyKey === null
-											|| renderOnlyKey === undefined) {
-										// attach controller
-										widget.setAttribute('ng-controller',
-												widgetName + 'Ctrl');
-										var widgetPath = 'text!widgets/views/'
-												+ widgetName + ".html!strip";
-										require([ widgetPath ], function(
-												widgetTemplate) {
-											widget.innerHTML = widgetTemplate;
-											initWidgetApplication(widgetName,
-													widget, orchestration);
-										});
-									}
-								});
+									var handleWidgets = function(orchestration) {
+										var widgets = document
+												.querySelectorAll('div[widget]');
 
-			};
+										angular
+												.forEach(
+														widgets,
+														function(widget) {
+															// hidden the widget
+															// during rendering.
+															widget
+																	.setAttribute(
+																			"hidden",
+																			true);
 
-			// initialize navigation
-			var ngNavbar = angular.module('navigation', []);
+															var widgetName = widget
+																	.getAttribute('widget');
 
-			ngNavbar.controller('navCtrl', function($scope) {
+															// get widget render
+															// condition.
+															var renderOnlyKey = widget
+																	.getAttribute('renderOnly');
+															var renderOnlyValue = false;
 
-				var orchestrationManager = orchestration('navigation', $scope);
+															if (renderOnlyKey !== null
+																	&& renderOnlyKey !== undefined) {
+																var renderOnlyParamKeys = renderOnlyKey
+																		.split("&&");
+																renderOnlyValue = true;
 
-				if (window.location.hash === '') {
-					$scope.currentHash = '#home';
-				} else {
-					$scope.currentHash = window.location.hash;
-				}
+																renderOnlyParamKeys
+																		.forEach(function(
+																				renderOnlyParamKey) {
+																			renderOnlyParamKey = renderOnlyParamKey
+																					.trim();
+																			renderOnlyValue = renderOnlyValue
+																					&& evalRenderOnlyExpr(renderOnlyParamKey);
+																		});
+															}
 
-				$scope.activityCheck = function(target) {
+															// get widget
+															// template
+															if (renderOnlyValue === true
+																	|| renderOnlyKey === null
+																	|| renderOnlyKey === undefined) {
+																// attach
+																// controller
+																widget
+																		.setAttribute(
+																				'ng-controller',
+																				widgetName
+																						+ 'Ctrl');
+																var widgetPath = 'text!widgets/views/'
+																		+ widgetName
+																		+ ".html!strip";
+																require(
+																		[ widgetPath ],
+																		function(
+																				widgetTemplate) {
+																			widget.innerHTML = widgetTemplate;
+																			initWidgetApplication(
+																					widgetName,
+																					widget,
+																					orchestration);
+																		});
+															}
+														});
 
-					if ($scope.currentHash === target) {
-						return true;
-					} else {
-						return false;
-					}
-				};
+									};
 
-				// options: location, flashObjs, siteObjs
-				$scope.navigate = function(options) {
-					flashParams = {};
+									// initialize navigation
+									var ngNavbar = angular.module('navigation',
+											[]);
 
-					var location = options.location;
-					var flashObjs = options.flashObjs;
-					var siteObjs = options.siteObjs;
+									ngNavbar
+											.controller(
+													'navCtrl',
+													function($scope) {
 
-					$scope.currentHash = "#"
-							+ location.slice(0, location.indexOf(".html"));
+														var orchestrationManager = orchestration(
+																'navigation',
+																$scope);
 
-					if (!$scope.$$phase) {
-						$scope.$apply();
-					}
+														if (window.location.hash === '') {
+															$scope.currentHash = '#home';
+														} else {
+															$scope.currentHash = window.location.hash;
+														}
 
-					if (flashObjs !== null && flashObjs !== undefined) {
-						flashParams = flashObjs;
-					}
+														$scope.activityCheck = function(
+																target) {
 
-					if (siteObjs !== null && siteObjs !== undefined) {
-						angular.extend({}, siteParams, siteObjs);
-					}
+															if ($scope.currentHash === target) {
+																return true;
+															} else {
+																return false;
+															}
+														};
 
-					var main_content = document.getElementById('main_content');
-					var loadpath = "text!views/" + location + "!strip";
-					require([ loadpath ], function(loadcontent) {
-						main_content.innerHTML = loadcontent;
-						// handle
-						// widgets
-						handleWidgets(orchestration);
-					});
-				};
+														// options: location,
+														// flashObjs, siteObjs
+														$scope.navigate = function(
+																options) {
+															flashParams = {};
 
-				$scope.getFlashObject = function(key) {
-					return flashParams[key];
-				};
+															var location = options.location;
+															var flashObjs = options.flashObjs;
+															var siteObjs = options.siteObjs;
 
-				$scope.getSiteObject = function(key) {
-					return siteParams[key];
-				};
+															$scope.currentHash = "#"
+																	+ location
+																			.slice(
+																					0,
+																					location
+																							.indexOf(".html"));
 
-				$scope.removeSiteObject = function(key) {
-					siteParams[key] = undefined;
-				};
+															if (!$scope.$$phase) {
+																$scope.$apply();
+															}
 
-				$scope.clearSiteObjects = function() {
-					siteParams = {};
-				};
+															if (flashObjs !== null
+																	&& flashObjs !== undefined) {
+																flashParams = flashObjs;
+															}
 
-				// expose to orchestration
-				orchestrationManager.expose("navigateTo", $scope.navigate);
-				orchestrationManager.expose("getFlashObject",
-						$scope.getFlashObject);
-				orchestrationManager.expose("getSiteObject",
-						$scope.getSiteObject);
-				orchestrationManager.expose("removeSiteObject",
-						$scope.removeSiteObject);
-				orchestrationManager.expose("clearSiteObjects",
-						$scope.clearSiteObjects);
+															if (siteObjs !== null
+																	&& siteObjs !== undefined) {
+																angular
+																		.extend(
+																				{},
+																				siteParams,
+																				siteObjs);
+															}
 
-			});
+															var main_content = document
+																	.getElementById('main_content');
+															var loadpath = "text!views/"
+																	+ location
+																	+ "!strip";
+															require(
+																	[ loadpath ],
+																	function(
+																			loadcontent) {
+																		main_content.innerHTML = loadcontent;
+																		// handle
+																		// widgets
+																		handleWidgets(orchestration);
+																	});
+														};
 
-			angular.bootstrap(document.getElementById('navigation'),
-					[ 'navigation' ]);
+														$scope.getFlashObject = function(
+																key) {
+															return flashParams[key];
+														};
 
-			// initialize home content
-			var main_content = document.getElementById('main_content');
+														$scope.getSiteObject = function(
+																key) {
+															return siteParams[key];
+														};
 
-			require([ loadpath ], function(loadcontent) {
-				main_content.innerHTML = loadcontent;
-				// handle widgets.
-				handleWidgets(orchestration);
-			});
+														$scope.removeSiteObject = function(
+																key) {
+															siteParams[key] = undefined;
+														};
+
+														$scope.clearSiteObjects = function() {
+															siteParams = {};
+														};
+
+														// expose to
+														// orchestration
+														orchestrationManager
+																.expose(
+																		"navigateTo",
+																		$scope.navigate);
+														orchestrationManager
+																.expose(
+																		"getFlashObject",
+																		$scope.getFlashObject);
+														orchestrationManager
+																.expose(
+																		"getSiteObject",
+																		$scope.getSiteObject);
+														orchestrationManager
+																.expose(
+																		"removeSiteObject",
+																		$scope.removeSiteObject);
+														orchestrationManager
+																.expose(
+																		"clearSiteObjects",
+																		$scope.clearSiteObjects);
+
+														// build navItems
+														var navItems = [];
+
+														navList
+																.forEach(function(
+																		targetItem) {
+																	var navItem = {
+																		ngClass : function() {
+																			return $scope
+																					.activityCheck(targetItem.hashLink);
+																		},
+																		href : targetItem.hashLink,
+																		label : targetItem.label
+																	};
+
+																	// build on
+																	// click
+																	// function
+																	// TODO: may
+																	// change in
+																	// the
+																	// future
+																	if (targetItem.hashLink === "#information") {
+																		navItem.ngClick = function() {
+																			$scope
+																					.navigate({
+																						location : 'information.html',
+																						flashObjs : {
+																							info_abstract : true
+																						}
+																					});
+																		};
+																	} else {
+																		var location = targetItem.hashLink
+																				.slice(
+																						1,
+																						targetItem.hashLink.length)
+																				+ ".html";
+																		navItem.ngClick = function() {
+																			$scope
+																					.navigate({
+																						location : location
+																					});
+																		};
+																	}
+																	navItems
+																			.push(navItem);
+																});
+														$scope.navItems = navItems;
+													});
+
+									angular.bootstrap(document
+											.getElementById('navigation'),
+											[ 'navigation' ]);
+
+									// initialize home content
+									var main_content = document
+											.getElementById('main_content');
+
+									require(
+											[ loadpath ],
+											function(loadcontent) {
+												main_content.innerHTML = loadcontent;
+												// handle widgets.
+												handleWidgets(orchestration);
+											});
+								}
+							});
+
 		});

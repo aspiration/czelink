@@ -178,6 +178,22 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${basedir}/webapp</directory>
+							<excludes>
+								<exclude>resources/widgets/js/status*.js</exclude>
+								<exclude>resources/widgets/views/status*.html</exclude>
+								<exclude>META-INF/**</exclude>
+							</excludes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

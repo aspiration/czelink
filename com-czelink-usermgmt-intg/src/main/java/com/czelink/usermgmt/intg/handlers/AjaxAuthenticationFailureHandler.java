@@ -18,8 +18,6 @@ public class AjaxAuthenticationFailureHandler implements
 			HttpServletResponse response, AuthenticationException exception)
 			throws IOException, ServletException {
 
-		System.out.println("called AjaxAuthenticationFailureHandler.");
-
 		final JSONObject result = new JSONObject();
 		result.put("status", false);
 		result.put("statusCode", "001"); // 001 means login failed.

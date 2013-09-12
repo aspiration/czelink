@@ -19,6 +19,10 @@
 	<!-- Imports user-defined @Controller beans that process client requests -->
 	<beans:import resource="controllers.xml" />
 
+	<beans:import resource="classpath:/spring/czelink/common/beans.xml" />
+
+	<beans:import resource="classpath:/spring/czelink/common/message-sources.xml" />
+
 	<task:annotation-driven />
 
 </beans:beans>

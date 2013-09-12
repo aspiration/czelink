@@ -30,41 +30,13 @@
 					ng-click="navigate({location:'home.html'})">财智网</a>
 				<div class="nav-collapse collapse navbar-responsive-collapse">
 					<ul class="nav">
-						<li ng-class="{'active' : activityCheck('#home')}"><a
-							href="#home" ng-click="navigate({location:'home.html'})">首页</a></li>
-						<li class="divider-vertical"></li>
-						<li ng-class="{'active':activityCheck('#information')}"><a
-							href="#information"
-							ng-click="navigate({location:'information.html', flashObjs: {info_abstract : true}})">资讯</a></li>
-						<li class="divider-vertical"></li>
-						<li ng-class="{'active':activityCheck('#weibo')}"><a
-							href="#weibo" ng-click="navigate({location:'weibo.html'})">微博</a></li>
-						<li class="divider-vertical"></li>
-						<li ng-class="{'active':activityCheck('#blog')}"><a
-							href="#blog" ng-click="navigate({location : 'blog.html'})">博客
-						</a></li>
-						<li class="divider-vertical"></li>
-						<li ng-class="{'active':activityCheck('#group')}"><a
-							href="#group" ng-click="navigate({location:'group.html'})">圈子</a></li>
-						<li class="divider-vertical"></li>
-						<li ng-class="{'active':activityCheck('#recruitment')}"><a
-							href="#recruitment"
-							ng-click="navigate({location:'recruitment.html'})">招聘</a></li>
-						<li class="divider-vertical"></li>
-						<li ng-class="{'active':activityCheck('#community')}"><a
-							href="#community"
-							ng-click="navigate({location:'community.html'})">社区 </a></li>
-						<li class="divider-vertical"></li>
-						<li ng-class="{'active':activityCheck('#photo')}"><a
-							href="#photo" ng-click="navigate({location:'photo.html'})">图片</a></li>
-						<li class="divider-vertical"></li>
-						<li ng-class="{'active':activityCheck('#business_school')}"><a
-							href="#business_school"
-							ng-click="navigate({location:'business_school.html'})">商学院</a></li>
+						<li ng-repeat="navItem in navItems"
+							ng-class="{'active': navItem.ngClass()}"><a
+							href="{{navItem.href}}" ng-click="navItem.ngClick()">{{navItem.label}}</a></li>
 					</ul>
 					<ul class="nav pull-right">
 						<li ng-class="{'active':activityCheck('#help')}"><a
-							href="#help" ng-click="navigate('help.html')">帮助</a></li>
+							href="#help" ng-click="navigate({location: 'help.html'})">帮助</a></li>
 					</ul>
 				</div>
 				<!-- /.nav-collapse -->
