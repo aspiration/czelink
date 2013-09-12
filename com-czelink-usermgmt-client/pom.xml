@@ -187,8 +187,11 @@
 							<excludes>
 								<exclude>resources/widgets/js/status*.js</exclude>
 								<exclude>resources/widgets/views/status*.html</exclude>
-								<exclude>META-INF/**</exclude>
 							</excludes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/META-INF</directory>
 							<followSymlinks>false</followSymlinks>
 						</fileset>
 					</filesets>

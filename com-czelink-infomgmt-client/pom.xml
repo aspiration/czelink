@@ -191,8 +191,11 @@
 								<exclude>resources/widgets/js/latestinfo.js</exclude>
 								<exclude>resources/widgets/views/info_*.html</exclude>
 								<exclude>resources/widgets/views/latestinfo.html</exclude>
-								<exclude>META-INF/**</exclude>
 							</excludes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/META-INF</directory>
 							<followSymlinks>false</followSymlinks>
 						</fileset>
 					</filesets>
