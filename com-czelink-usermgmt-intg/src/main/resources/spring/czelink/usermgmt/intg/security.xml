@@ -22,19 +22,6 @@
 		entry-point-ref="authenticationProcessingFilterEntryPoint">
 		<custom-filter position="FORM_LOGIN_FILTER" ref="authenticationFilter" />
 		<intercept-url pattern="/index.html" access="permitAll" />
-		<intercept-url pattern="/resources/widgets/js/carousel.js"
-			access="permitAll" />
-		<intercept-url pattern="/resources/widgets/views/carousel.html"
-			access="permitAll" />
-		<intercept-url pattern="/resources/widgets/js/statuscontent.js"
-			access="permitAll" />
-		<intercept-url pattern="/resources/widgets/views/statuscontent.html"
-			access="permitAll" />
-		<intercept-url pattern="/resources/widgets/js/statusmgmt.js"
-			access="permitAll" />
-		<intercept-url pattern="/resources/widgets/views/statusmgmt.html"
-			access="permitAll" />
-		<intercept-url pattern="/resources/widgets/**" access="hasRole('ROLE_USER')" />
 		<intercept-url pattern="/resources/**" access="permitAll" />
 		<intercept-url pattern="/app/navigationList" access="permitAll" />
 		<intercept-url pattern="/usermgmt/login" access="permitAll" />
@@ -48,7 +35,7 @@
 	<bean id="authenticationFilter"
 		class="org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter">
 		<property name="authenticationManager" ref="authenticationManager" />
-		<property name="filterProcessesUrl" value="/usermgmt/login_check" />
+		<property name="filterProcessesUrl" value="/usermgmt/login" />
 		<property name="usernameParameter" value="username" />
 		<property name="passwordParameter" value="password" />
 		<property name="authenticationFailureHandler" ref="authFailureHandler" />

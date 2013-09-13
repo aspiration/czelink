@@ -77,8 +77,8 @@ define(
 			var linkManager = contentEditor.createLinkManager();
 			linkManager.buttonGroup = [];
 
-			return function($scope, jquery, require, orchestration,
-					widgetElement) {
+			return function($scope, secureDataRetriever, require,
+					orchestration, widgetElement) {
 
 				var articleContentArea = widgetElement
 						.querySelector("div.articleContentArea");
@@ -284,30 +284,30 @@ define(
 						fileName = file.name;
 					}
 					if (fileName !== undefined) {
-						$.ajax({
-							url : 'app/cancelupload',
-							type : 'post',
-							data : {
-								fileName : fileName
-							},
-							headers : {
-								"conversation-id" : $scope.conversation_id,
-							},
-							dataType : 'json',
-							success : function(data) {
-								if (data.status === true) {
-									titlePicInsertMark = undefined;
-									$scope.isInsertPicDisabled = false;
-									imgDropzones[0].disable();
-									imgDropzones[0].removeAllFiles();
-									$scope.restPicNum++;
+						secureDataRetriever.setData({
+							fileName : fileName
+						});
 
-									if (!$scope.$$phase) {
-										$scope.$apply();
-									}
+						secureDataRetriever.setHeader({
+							"conversation-id" : $scope.conversation_id,
+						});
+
+						secureDataRetriever.onSuccess(function(data) {
+							if (data.status === true) {
+								titlePicInsertMark = undefined;
+								$scope.isInsertPicDisabled = false;
+								imgDropzones[0].disable();
+								imgDropzones[0].removeAllFiles();
+								$scope.restPicNum++;
+
+								if (!$scope.$$phase) {
+									$scope.$apply();
 								}
 							}
 						});
+
+						secureDataRetriever.post('app/cancelupload');
+
 					} else {
 						titlePicInsertMark = undefined;
 						$scope.isInsertPicDisabled = false;
@@ -328,29 +328,30 @@ define(
 						fileName = file.name;
 					}
 					if (fileName !== undefined) {
-						$.ajax({
-							url : 'app/cancelupload',
-							type : 'post',
-							data : {
-								fileName : fileName
-							},
-							headers : {
-								"conversation-id" : $scope.conversation_id,
-							},
-							dataType : 'json',
-							success : function(data) {
-								if (data.status === true) {
-									imgDropzones[index + 1].disable();
-									imgDropzones[index + 1].removeAllFiles();
-									paraPicInsertStatus[index] = false;
-									$scope.restPicNum++;
 
-									if (!$scope.$$phase) {
-										$scope.$apply();
-									}
+						secureDataRetriever.setData({
+							fileName : fileName
+						});
+
+						secureDataRetriever.setHeader({
+							"conversation-id" : $scope.conversation_id,
+						});
+
+						secureDataRetriever.onSuccess(function(data) {
+							if (data.status === true) {
+								imgDropzones[index + 1].disable();
+								imgDropzones[index + 1].removeAllFiles();
+								paraPicInsertStatus[index] = false;
+								$scope.restPicNum++;
+
+								if (!$scope.$$phase) {
+									$scope.$apply();
 								}
 							}
 						});
+
+						secureDataRetriever.post('app/cancelupload');
+
 					} else {
 						imgDropzones[index + 1].disable();
 						imgDropzones[index + 1].removeAllFiles();
@@ -557,37 +558,35 @@ define(
 				};
 
 				$scope.cancelArticle = function() {
-					$.ajax({
-						url : 'app/endUploadConversation',
-						type : 'post',
-						data : {
-							"conversation-id" : $scope.conversation_id,
-						},
-						dataType : 'json',
-						success : function(data) {
-							if (data.status === true) {
-								// TODO: to finish.
-								console.log("end!");
-							}
+
+					secureDataRetriever.setData({
+						"conversation-id" : $scope.conversation_id,
+					});
+
+					secureDataRetriever.onSuccess(function(data) {
+						if (data.status === true) {
+							// TODO: to finish.
+							console.log("end!");
 						}
 					});
+
+					secureDataRetriever.post('app/endUploadConversation');
 				};
 
 				$scope.submitArticle = function() {
-					$.ajax({
-						url : 'app/completeUploadConversation',
-						type : 'post',
-						data : {
-							"conversation-id" : $scope.conversation_id,
-						},
-						dataType : 'json',
-						success : function(data) {
-							if (data.status === true) {
-								// TODO: to finish.
-								console.log("complete!");
-							}
+
+					secureDataRetriever.setData({
+						"conversation-id" : $scope.conversation_id,
+					});
+
+					secureDataRetriever.onSuccess(function(data) {
+						if (data.status === true) {
+							// TODO: to finish.
+							console.log("complete!");
 						}
 					});
+
+					secureDataRetriever.post('app/completeUploadConversation');
 				};
 
 				return function(widgetElement) {

@@ -1,7 +1,7 @@
 define(function() {
-	return function($scope, jquery, require, orchestration) {
+	return function($scope, secureDataRetriever, require, orchestration) {
 
-		jquery('.carousel').carousel({
+		$('.carousel').carousel({
 			interval : 2000
 		});
 	};

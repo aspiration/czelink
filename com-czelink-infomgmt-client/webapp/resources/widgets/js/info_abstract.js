@@ -1,10 +1,9 @@
 define(function() {
-	return function($scope, jquery, require, orchestration) {
-		// TODO: dummy implementation.
+	return function($scope, secureDataRetriever, require, orchestration) {
 
 		$scope.createNewInfoArticle = function(newArticleTitle) {
 
-			$.getJSON('app/startUploadConversation', function(data) {
+			secureDataRetriever.onSuccess(function(data) {
 				var uid = data.uid;
 
 				var options = {
@@ -16,8 +15,9 @@ define(function() {
 					},
 				};
 				orchestration.invoke('navigation', 'navigateTo', options);
-
 			});
+
+			secureDataRetriever.get("app/startUploadConversation");
 		};
 	};
 });

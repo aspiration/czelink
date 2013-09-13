@@ -1,6 +1,6 @@
 define(
-		[ 'jquery', 'require', 'orchestration' ],
-		function(jquery, require, orchestration) {
+		[ 'jquery', 'require', 'orchestration', 'secureDataRetriever' ],
+		function(jquery, require, orchestration, secureDataRetriever) {
 
 			// flash repository.
 			var flashParams = {};
@@ -16,6 +16,8 @@ define(
 							function(data) {
 								if (data.status) {
 									var navList = data.navigationList;
+
+									var currentRole = data.role;
 
 									var candidates = [];
 
@@ -140,7 +142,29 @@ define(
 																					[ widgetPath ],
 																					function(
 																							widgetTemplate) {
-																						widget.innerHTML = widgetTemplate;
+
+																						// security
+																						// process.
+																						var widgetInnerHTML = $
+																								.parseHTML(widgetTemplate)[0];
+																						var securedElems = widgetInnerHTML
+																								.querySelectorAll("[secure]");
+
+																						angular
+																								.forEach(
+																										securedElems,
+																										function(
+																												elem) {
+
+																											var secureRoles = elem
+																													.getAttribute("secure");
+																											if (secureRoles
+																													.indexOf(currentRole) === -1) {
+																												elem.outerHTML = "";
+																											}
+																										});
+																						widget.innerHTML = widgetInnerHTML.outerHTML;
+
 																						initWidgetApplication(
 																								widgetName,
 																								widget,
@@ -153,7 +177,8 @@ define(
 																		// consumer.
 																		outerNgAppCallback = widgetController(
 																				$scope,
-																				jquery,
+																				new secureDataRetriever(
+																						widgetElement),
 																				require,
 																				orchestrationManager,
 																				widgetElement);
@@ -235,7 +260,28 @@ define(
 																		[ widgetPath ],
 																		function(
 																				widgetTemplate) {
-																			widget.innerHTML = widgetTemplate;
+
+																			// security
+																			// process.
+																			var widgetInnerHTML = $
+																					.parseHTML(widgetTemplate)[0];
+																			var securedElems = widgetInnerHTML
+																					.querySelectorAll("[secure]");
+
+																			angular
+																					.forEach(
+																							securedElems,
+																							function(
+																									elem) {
+																								var secureRoles = elem
+																										.getAttribute("secure");
+																								if (secureRoles
+																										.indexOf(currentRole) === -1) {
+																									elem.outerHTML = "";
+																								}
+																							});
+																			widget.innerHTML = widgetInnerHTML.outerHTML;
+
 																			initWidgetApplication(
 																					widgetName,
 																					widget,
@@ -312,6 +358,10 @@ define(
 
 															var main_content = document
 																	.getElementById('main_content');
+															main_content
+																	.setAttribute(
+																			"hidden",
+																			true);
 															var loadpath = "text!views/"
 																	+ location
 																	+ "!strip";
@@ -323,6 +373,8 @@ define(
 																		// handle
 																		// widgets
 																		handleWidgets(orchestration);
+																		main_content
+																				.removeAttribute("hidden");
 																	});
 														};
 
@@ -422,10 +474,13 @@ define(
 									angular.bootstrap(document
 											.getElementById('navigation'),
 											[ 'navigation' ]);
+									document.getElementById('navigation')
+											.removeAttribute("hidden");
 
 									// initialize home content
 									var main_content = document
 											.getElementById('main_content');
+									main_content.setAttribute("hidden", true);
 
 									require(
 											[ loadpath ],
@@ -433,6 +488,8 @@ define(
 												main_content.innerHTML = loadcontent;
 												// handle widgets.
 												handleWidgets(orchestration);
+												main_content
+														.removeAttribute("hidden");
 											});
 								}
 							});

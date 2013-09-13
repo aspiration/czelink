@@ -53,17 +53,21 @@ public class BaseController {
 				.getAttribute(CommonConstants.ROLE_LIST_IN_SESSION_KEY);
 
 		String navStr = StringUtils.EMPTY;
+		String role = CommonConstants.ROLE_ANONYMOUS;
 		if (null != rolesList) {
 			if (rolesList.contains(CommonConstants.ROLE_ADMIN)) {
 				navStr = this.navigationMessageSource.getMessage(
 						CommonConstants.ROLE_ADMIN, null, Locale.getDefault());
+				role = CommonConstants.ROLE_ADMIN;
 			} else if (rolesList.contains(CommonConstants.ROLE_USER)) {
 				navStr = this.navigationMessageSource.getMessage(
 						CommonConstants.ROLE_USER, null, Locale.getDefault());
+				role = CommonConstants.ROLE_USER;
 			} else {
 				navStr = this.navigationMessageSource.getMessage(
 						CommonConstants.ROLE_ANONYMOUS, null,
 						Locale.getDefault());
+				role = CommonConstants.ROLE_ANONYMOUS;
 			}
 		} else {
 			if (componentAvailabilityHook.checkIfComponentAvailable("usermgmt")
@@ -71,12 +75,15 @@ public class BaseController {
 				navStr = this.navigationMessageSource.getMessage(
 						CommonConstants.ROLE_ANONYMOUS, null,
 						Locale.getDefault());
+				role = CommonConstants.ROLE_ANONYMOUS;
 			} else if (componentAvailabilityHook.checkIfComponentAvailable(
 					"usermgmt").equals(ComponentAvailabilityResult.UNAVAILABLE)) {
 				navStr = this.navigationMessageSource.getMessage(
 						CommonConstants.ROLE_ADMIN, null, Locale.getDefault());
+				role = CommonConstants.ROLE_ADMIN;
 			} else {
 				navStr = StringUtils.EMPTY;
+				role = CommonConstants.ROLE_ANONYMOUS;
 			}
 		}
 		if (StringUtils.isNotBlank(navStr)) {
@@ -94,6 +101,7 @@ public class BaseController {
 				navigationList.add(navItem);
 			}
 			result.put("navigationList", navigationList);
+			result.put("role", role);
 		} else {
 			throw new IllegalStateException(
 					"invalid security or navigation information provided in navigation.properites or hooks.properites.");

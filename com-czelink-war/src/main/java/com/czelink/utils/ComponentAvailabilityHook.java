@@ -17,13 +17,13 @@ public final class ComponentAvailabilityHook {
 	public ComponentAvailabilityResult checkIfComponentAvailable(
 			final String componantName) {
 		ComponentAvailabilityResult result = ComponentAvailabilityResult.UNDEFINED;
-		final String packageInfo = this.hookMessageSource.getMessage(
+		final String detectClass = this.hookMessageSource.getMessage(
 				componantName, null, StringUtils.EMPTY, Locale.getDefault());
-		if (StringUtils.isBlank(packageInfo)) {
+		if (StringUtils.isBlank(detectClass)) {
 			result = ComponentAvailabilityResult.UNDEFINED;
 		} else {
 			try {
-				Class.forName(packageInfo);
+				Class.forName(detectClass);
 				result = ComponentAvailabilityResult.AVAILABLE;
 			} catch (ClassNotFoundException e) {
 				result = ComponentAvailabilityResult.UNAVAILABLE;

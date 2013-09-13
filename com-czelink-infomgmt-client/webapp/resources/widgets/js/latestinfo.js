@@ -1,13 +1,15 @@
 define(function() {
-	return function($scope, jquery, require, orchestration) {
+	return function($scope, secureDataRetriever, require, orchestration) {
 
-		$.getJSON('infomgmt/latestInfo', function(data) {
+		secureDataRetriever.onSuccess(function(data) {
 			$scope.contents = data.contents;
 
 			if (!$scope.$$phase) {
 				$scope.$apply();
 			}
 		});
+
+		secureDataRetriever.get('infomgmt/latestInfo');
 
 		$scope.showDetails = function(articleId) {
 			var options = {
