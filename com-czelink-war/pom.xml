@@ -82,11 +82,11 @@
 									<artifactId>com-czelink-client-aggregate</artifactId>
 									<type>jar</type>
 									<overWrite>true</overWrite>
-									<excludes>META-INF/**,app/**</excludes>
+									<excludes>META-INF/**,app/**,infomgmt/**,usermgmt/**</excludes>
 									<outputDirectory>${basedir}/src/main/webapp</outputDirectory>
 								</artifactItem>
 							</artifactItems>
-							<excludes>META-INF/**,app/**</excludes>
+							<excludes>META-INF/**,app/**,infomgmt/**,usermgmt/**</excludes>
 						</configuration>
 					</execution>
 				</executions>
