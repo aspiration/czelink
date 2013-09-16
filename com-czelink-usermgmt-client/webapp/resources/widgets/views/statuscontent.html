@@ -1,1 +1,59 @@
-<div id="statuscontent" class="collapse">Test content.</div>
+<div id="statuscontent" class="collapse">
+	Test content.
+	<!-- popup model -->
+	<div ng-post-render="registerLoginModal" class="modal hide fade"
+		tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal"
+				aria-hidden="true">×</button>
+			<ul class="nav nav-tabs">
+				<li ng-class="{'active': isLoginPanelActivated()}"><a
+					ng-click="showLoginPanel()" data-toggle="tab">用户登录</a></li>
+				<li ng-class="{'active': isRegisterPanelActivated()}"><a
+					ng-click="showRegisterPanel()" data-toggle="tab">新用户注册</a></li>
+			</ul>
+			<div class="tab-content">
+				<div ng-class="{'active': isLoginPanelActivated()}" class="tab-pane"
+					ng-post-render="registerLoginPanel">
+					<form name="loginForm" class="form-horizontal">
+						<div class="alert alert-error alert-block"
+							ng-show="checkIfLoginInfoInvalid()">
+							<ul>
+								<li ng-show="loginForm.username.$error.required">请输入注册邮箱</li>
+								<li ng-show="loginForm.username.$error.email">邮箱格式错误</li>
+								<li ng-show="loginForm.password.$error.required">请输入登录密码</li>
+								<li ng-show="checkLoginStatus()">登录失败</li>
+							</ul>
+						</div>
+						<div class="control-group">
+							<label class="control-label" for="username">注册邮箱</label>
+							<div class="controls">
+								<input type="email" ng-model="username" name="username"
+									id="username" placeholder="请输入注册邮箱" required>
+							</div>
+						</div>
+						<div class="control-group">
+							<label class="control-label" for="password">登录密码</label>
+							<div class="controls">
+								<input type="password" ng-model="password" name="password"
+									id="password" placeholder="请输入登录密码" required>
+							</div>
+						</div>
+					</form>
+				</div>
+				<div ng-class="{'active': isRegisterPanelActivated()}"
+					class="tab-pane" ng-post-render="registerRegisterPanel">新用户注册</div>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<!-- button for login -->
+			<button ng-hide="isRegisterPanelActivated()"
+				ng-disabled="isRegisterPanelActivated()" class="btn btn-primary"
+				ng-click="login()">登录</button>
+			<!-- button for register -->
+			<button ng-hide="isLoginPanelActivated()"
+				ng-disabled="isLoginPanelActivated()" class="btn btn-primary"
+				ng-click="register()">注册</button>
+		</div>
+	</div>
+</div>

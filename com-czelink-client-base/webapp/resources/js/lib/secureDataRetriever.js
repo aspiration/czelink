@@ -33,33 +33,34 @@ define([ 'jquery', 'angular' ], function(jquery, angular) {
 		};
 
 		var doSuccess = function(data, textStatus, jqXHR) {
-			// TODO: to add
-
-			if (!data.status) {
-				hiddenWidgetContainer();
-			}
-
-			if ((instance.onSuccess !== undefined)
-					&& instance.onSuccess instanceof Function) {
-				instance.onSuccess(data);
+			if ((instance.success !== undefined)
+					&& instance.success instanceof Function) {
+				var result = instance.success(data);
+				if (result !== false) {
+					if (!data.status) {
+						hiddenWidgetContainer();
+					}
+				}
+			} else if (instance.success === false) {
+				// no operation - suspend onSuccess.
+			} else {
+				if (!data.status) {
+					hiddenWidgetContainer();
+				}
 			}
 		};
 
 		var doFailure = function(jqXHR, textStatus, errorThrown) {
-			// TODO: to add
-
-			console.log(jqXHR);
-			window.jqXHR = jqXHR;
-			console.log(textStatus);
-			window.textStatus = textStatus;
-			console.log(errorThrown);
-			window.errorThrown = errorThrown;
-
-			hiddenWidgetContainer();
-
-			if ((instance.onFailure !== undefined)
-					&& instance.onFailure instanceof Function) {
-				// TODO: to define
+			if ((instance.failure !== undefined)
+					&& instance.failure instanceof Function) {
+				var result = instance.failure(jqXHR, textStatus, errorThrown);
+				if (result !== false) {
+					hiddenWidgetContainer();
+				}
+			} else if (instance.failure === false) {
+				// do nothing. suspend on failure
+			} else {
+				hiddenWidgetContainer();
 			}
 		};
 
