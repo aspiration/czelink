@@ -7,6 +7,8 @@ define(
 			// site repository.
 			var siteParams = {};
 
+			var currentRole = "ROLE_ANONYMOUS";
+
 			// prepare loadpath:
 			var location = window.location.hash;
 
@@ -17,7 +19,7 @@ define(
 								if (data.status) {
 									var navList = data.navigationList;
 
-									var currentRole = data.role;
+									currentRole = data.role;
 
 									var candidates = [];
 
@@ -346,6 +348,7 @@ define(
 																	&& flashObjs !== undefined) {
 																flashParams = flashObjs;
 															}
+															flashParams['currentLocation'] = location;
 
 															if (siteObjs !== null
 																	&& siteObjs !== undefined) {
@@ -397,6 +400,40 @@ define(
 															siteParams = {};
 														};
 
+														var restoreFlashObjects = function() {
+															return angular
+																	.copy(flashParams);
+														};
+
+														var restoreSiteObjects = function() {
+															return angular
+																	.copy(siteParams);
+														};
+
+														$scope.refreshStatus = function() {
+
+															var restoredFlashObjects = restoreFlashObjects();
+															var restoredSiteObjects = restoreSiteObjects();
+
+															$
+																	.getJSON(
+																			'app/getCurrentRole',
+																			function(
+																					data) {
+																				currentRole = data.role;
+																				var currentLocation = flashParams['currentLocation'];
+
+																				var options = {
+																					location : currentLocation,
+																					flashObjs : restoredFlashObjects,
+																					siteObjs : restoredSiteObjects
+																				};
+
+																				$scope
+																						.navigate(options);
+																			});
+														};
+
 														// expose to
 														// orchestration
 														orchestrationManager
@@ -419,6 +456,10 @@ define(
 																.expose(
 																		"clearSiteObjects",
 																		$scope.clearSiteObjects);
+														orchestrationManager
+																.expose(
+																		"refreshStatus",
+																		$scope.refreshStatus);
 
 														// build navItems
 														var navItems = [];
@@ -481,6 +522,7 @@ define(
 									var main_content = document
 											.getElementById('main_content');
 									main_content.setAttribute("hidden", true);
+									flashParams['currentLocation'] = "home.html";
 
 									require(
 											[ loadpath ],

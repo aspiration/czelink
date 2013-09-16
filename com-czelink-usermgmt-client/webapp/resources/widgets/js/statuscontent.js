@@ -63,19 +63,30 @@ define(function() {
 
 		$scope.login = function() {
 			$scope.initLoginInfoPanelInvalid = true;
+			$scope.loginfailedMessage = false;
 
 			if (!$scope.checkIfLoginInfoInvalid()) {
 				secureDataRetriever.setData({
 					"username" : $scope.username,
 					"password" : $scope.password
 				});
+
 				secureDataRetriever.onSuccess(function(data) {
-					if (!data.status) {
+					if (data.status) {
 						$(loginModal).modal('hide');
 						resetLoginModel();
-					} else {
+
 						$scope.loginfailedMessage = false;
+
+						orchestration.invoke('navigation', 'refreshStatus');
+					} else {
+						$scope.loginfailedMessage = true;
 					}
+
+					if (!$scope.$$phase) {
+						$scope.$apply();
+					}
+					return false;
 				});
 
 				secureDataRetriever.onFailure(function() {

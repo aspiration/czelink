@@ -22,9 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.czelink.common.intg.constants.CommonConstants;
 import com.czelink.server.base.support.ConversationManager;
 import com.czelink.server.base.support.ConversationManager.ConversationTask;
-import com.czelink.uploadrepo.intg.UploadRepository;
 import com.czelink.utils.ComponentAvailabilityHook;
 import com.czelink.utils.ComponentAvailabilityHook.ComponentAvailabilityResult;
+import com.czelink.uploadrepo.intg.UploadRepository;
 
 @Controller
 public class BaseController {
@@ -106,6 +106,41 @@ public class BaseController {
 			throw new IllegalStateException(
 					"invalid security or navigation information provided in navigation.properites or hooks.properites.");
 		}
+
+		return result.toString();
+	}
+
+	@RequestMapping("/getCurrentRole")
+	@ResponseBody
+	String getCurrentRole(final HttpSession session) {
+		final JSONObject result = new JSONObject();
+
+		final List<String> rolesList = (List<String>) session
+				.getAttribute(CommonConstants.ROLE_LIST_IN_SESSION_KEY);
+
+		String role = CommonConstants.ROLE_ANONYMOUS;
+
+		if (null != rolesList) {
+			if (rolesList.contains(CommonConstants.ROLE_ADMIN)) {
+				role = CommonConstants.ROLE_ADMIN;
+			} else if (rolesList.contains(CommonConstants.ROLE_USER)) {
+				role = CommonConstants.ROLE_USER;
+			} else {
+				role = CommonConstants.ROLE_ANONYMOUS;
+			}
+		} else {
+			if (componentAvailabilityHook.checkIfComponentAvailable("usermgmt")
+					.equals(ComponentAvailabilityResult.AVAILABLE)) {
+				role = CommonConstants.ROLE_ANONYMOUS;
+			} else if (componentAvailabilityHook.checkIfComponentAvailable(
+					"usermgmt").equals(ComponentAvailabilityResult.UNAVAILABLE)) {
+				role = CommonConstants.ROLE_ADMIN;
+			} else {
+				role = CommonConstants.ROLE_ANONYMOUS;
+			}
+		}
+
+		result.put("role", role);
 
 		return result.toString();
 	}

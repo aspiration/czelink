@@ -14,9 +14,6 @@
 		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.2.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd">
 
-	<!-- <ldap-server id="ldapServer" url="ldap://localhost:10389/dc=czelink,dc=com" 
-		manager-dn="uid=admin,ou=system" manager-password="password" /> -->
-
 	<security:http xmlns="http://www.springframework.org/schema/security"
 		use-expressions="true" auto-config="false"
 		entry-point-ref="authenticationProcessingFilterEntryPoint">
@@ -50,11 +47,16 @@
 
 	<security:authentication-manager alias="authenticationManager"
 		xmlns="http://www.springframework.org/schema/security">
-		<authentication-provider>
-			<user-service>
-				<user name="user1@example.com" password="user1" authorities="ROLE_USER" />
-				<user name="admin1@example.com" password="admin1" authorities="ROLE_USER,ROLE_ADMIN" />
-			</user-service>
-		</authentication-provider>
+		<ldap-authentication-provider server-ref="ldapServer"
+			user-dn-pattern="uid={0},ou=users,dc=czelink,dc=com"
+			user-search-filter="(uid={0})" group-search-base="ou=roles"
+			group-search-filter="uniqueMember={0}" group-role-attribute="cn"
+			role-prefix="ROLE_" user-details-class="inetOrgPerson">
+		</ldap-authentication-provider>
 	</security:authentication-manager>
+
+	<security:ldap-server xmlns="http://www.springframework.org/schema/security"
+		id="ldapServer" url="ldap://localhost:10389/dc=czelink,dc=com"
+		manager-dn="uid=superadmin@czelink.com,ou=users,dc=czelink,dc=com"
+		manager-password="Password" />
 </beans>
