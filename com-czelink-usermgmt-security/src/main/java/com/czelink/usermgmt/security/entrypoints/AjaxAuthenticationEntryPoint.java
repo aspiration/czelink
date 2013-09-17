@@ -1,4 +1,4 @@
-package com.czelink.usermgmt.intg.handlers;
+package com.czelink.usermgmt.security.entrypoints;
 
 import java.io.IOException;
 
@@ -9,22 +9,22 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONObject;
 
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.AuthenticationEntryPoint;
 
-public class AjaxAuthenticationFailureHandler implements
-		AuthenticationFailureHandler {
+public class AjaxAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-	public void onAuthenticationFailure(HttpServletRequest request,
-			HttpServletResponse response, AuthenticationException exception)
+	public void commence(HttpServletRequest request,
+			HttpServletResponse response, AuthenticationException authException)
 			throws IOException, ServletException {
 
 		final JSONObject result = new JSONObject();
 		result.put("status", false);
-		result.put("statusCode", "001"); // 001 means login failed.
-		result.put("errorMessage", exception.getMessage());
+		result.put("statusCode", "000"); // 000 means required to login.
+		result.put("errorMessage", authException.getMessage());
 
 		response.getWriter().print(result.toString());
 		response.getWriter().flush();
+
 	}
 
 }

@@ -91,6 +91,11 @@
 				<version>${com.czelink-version}</version>
 				<type>zip</type>
 			</dependency>
+			<dependency>
+				<groupId>com.czelink</groupId>
+				<artifactId>com-czelink-usermgmt-security</artifactId>
+				<version>${com.czelink-version}</version>
+			</dependency>
 			<!-- upload repository -->
 			<dependency>
 				<groupId>com.czelink</groupId>
@@ -172,6 +177,16 @@
 				<groupId>org.springframework.data</groupId>
 				<artifactId>spring-data-mongodb</artifactId>
 				<version>1.2.1.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.ldap</groupId>
+				<artifactId>spring-ldap-core</artifactId>
+				<version>1.3.2.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.ldap</groupId>
+				<artifactId>spring-ldap-core-tiger</artifactId>
+				<version>1.3.2.RELEASE</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.security</groupId>

@@ -24,6 +24,8 @@
 
 		<module>../com-czelink-infomgmt-server</module>
 
+		<module>../com-czelink-usermgmt-security</module>
+
 		<module>../com-czelink-usermgmt-server</module>
 
 		<module>../com-czelink-war</module>

@@ -28,6 +28,9 @@
         <dependent-module archiveName="com-czelink-usermgmt-intg-1.0.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/com-czelink-usermgmt-intg/com-czelink-usermgmt-intg">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="com-czelink-usermgmt-security-1.0.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/com-czelink-usermgmt-security/com-czelink-usermgmt-security">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="com-czelink-war"/>
         <property name="java-output-path" value="/com-czelink-war/build/classes"/>
     </wb-module>
