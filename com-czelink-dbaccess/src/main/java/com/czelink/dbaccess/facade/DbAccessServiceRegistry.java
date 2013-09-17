@@ -19,7 +19,7 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.web.context.ServletContextAware;
 
 import com.czelink.dbaccess.GridFsOperationsAware;
-import com.czelink.dbaccess.LdapTemplateAware;
+import com.czelink.dbaccess.LdapOperationsAware;
 import com.czelink.dbaccess.MongoOperationsAware;
 import com.czelink.dbaccess.handler.DbAccessInvocationHandler;
 import com.czelink.dbaccess.loader.ReloadableComponentClassLoader;
@@ -119,9 +119,9 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 			}
 
 			// set LdapTemplate
-			if (serviceImplObject_inner instanceof LdapTemplateAware) {
-				final LdapTemplateAware ldapTemplateAware = (LdapTemplateAware) serviceImplObject_inner;
-				ldapTemplateAware.setLdapTemplate(this.ldapTemplate);
+			if (serviceImplObject_inner instanceof LdapOperationsAware) {
+				final LdapOperationsAware ldapTemplateAware = (LdapOperationsAware) serviceImplObject_inner;
+				ldapTemplateAware.setLdapOperations(this.ldapTemplate);
 			}
 
 			final InvocationHandler dbAccessInvocationHandler = new DbAccessInvocationHandler(

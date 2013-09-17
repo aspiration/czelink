@@ -25,6 +25,7 @@
 		<intercept-url pattern="/resources/**" access="permitAll" />
 		<intercept-url pattern="/app/navigationList" access="permitAll" />
 		<intercept-url pattern="/usermgmt/login" access="permitAll" />
+		<intercept-url pattern="/usermgmt/register" access="permitAll" />
 		<intercept-url pattern="/usermgmt/logout" access="permitAll" />
 		<intercept-url pattern="/**" access="hasRole('ROLE_USER')" />
 	</security:http>

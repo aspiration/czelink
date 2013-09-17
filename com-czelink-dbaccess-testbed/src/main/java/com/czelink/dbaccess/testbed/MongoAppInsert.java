@@ -37,10 +37,8 @@ public class MongoAppInsert {
 		user.setGender(true);
 		user.setCompany("HSDC");
 		user.setJobTitle("Software Engineer");
-		user.setMailAddress("jason.lambert.89@gmail.com");
-		user.setUsername("Jason_Lambert");
+		user.setUsername("jason.lambert.89@gmail.com");
 		user.setPassword("123");
-		user.setRegisterDate(new Date());
 
 		// final Properties props = new Properties();
 		// final InputStream inputStream = MongoAppInsert.class.getClassLoader()
@@ -68,5 +66,7 @@ public class MongoAppInsert {
 
 		mongoOps.insert(user);
 		mongoOps.insert(articleList, InfoArticle.class);
+
+		System.out.println(user.getId());
 	}
 }

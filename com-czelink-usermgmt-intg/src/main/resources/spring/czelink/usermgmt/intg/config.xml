@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-	<bean id="usermgmtService" class="com.czelink.intg.proxy.ServiceInvokerProxy">
+	<bean id="userManagementService" class="com.czelink.intg.proxy.ServiceInvokerProxy">
 		<property name="serviceGroupName" value="usermgmt" />
 		<property name="serviceInterface"
 			value="com.czelink.usermgmt.intg.services.UserManagementService" />

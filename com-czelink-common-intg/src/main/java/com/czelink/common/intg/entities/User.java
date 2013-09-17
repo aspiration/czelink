@@ -1,7 +1,6 @@
 package com.czelink.common.intg.entities;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.data.annotation.Id;
@@ -19,15 +18,12 @@ public class User implements Serializable {
 
 	private String password;
 
+	private String displayName;
+
 	/**
 	 * true for man, false for woman.
 	 */
-	private boolean gender;
-
-	/**
-	 * unique for sign-in.
-	 */
-	private String mailAddress;
+	private String gender;
 
 	private String company;
 
@@ -38,8 +34,6 @@ public class User implements Serializable {
 	private String[] interests;
 
 	private String[] otherDescriptions;
-
-	private Date registerDate;
 
 	public String getUsername() {
 		return username;
@@ -57,20 +51,12 @@ public class User implements Serializable {
 		this.password = password;
 	}
 
-	public boolean isGender() {
-		return gender;
+	public String getGender() {
+		return this.gender;
 	}
 
-	public void setGender(boolean gender) {
+	public void setGender(String gender) {
 		this.gender = gender;
-	}
-
-	public String getMailAddress() {
-		return mailAddress;
-	}
-
-	public void setMailAddress(String mailAddress) {
-		this.mailAddress = mailAddress;
 	}
 
 	public String getCompany() {
@@ -113,27 +99,34 @@ public class User implements Serializable {
 		this.otherDescriptions = otherDescriptions;
 	}
 
-	public Date getRegisterDate() {
-		return registerDate;
+	public String getDisplayName() {
+		return displayName;
 	}
 
-	public void setRegisterDate(Date registerDate) {
-		this.registerDate = registerDate;
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String toString() {
 		final ToStringBuilder tsb = new ToStringBuilder(this);
-		tsb.append("id", this.id);
+		tsb.append("id", this.getId());
 		tsb.append("username", this.username);
 		tsb.append("password", this.password);
+		tsb.append("displayName", this.displayName);
 		tsb.append("gender", this.gender);
-		tsb.append("mailAddress", this.mailAddress);
 		tsb.append("company", this.company);
 		tsb.append("jobTitle", this.jobTitle);
 		tsb.append("experiences", this.experiences);
 		tsb.append("interests", this.interests);
 		tsb.append("otherDescriptions", this.otherDescriptions);
-		tsb.append("registerDate", this.registerDate);
 
 		return tsb.toString();
 	}

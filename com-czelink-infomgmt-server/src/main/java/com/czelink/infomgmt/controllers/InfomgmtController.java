@@ -43,6 +43,7 @@ public class InfomgmtController {
 		}
 
 		result.put("contents", array);
+		result.put("status", true);
 
 		return result.toString();
 	}
@@ -65,6 +66,7 @@ public class InfomgmtController {
 		for (int j = 0; j < paragraphs.length; j++) {
 			paraArray.add(paragraphs[j]);
 		}
+		infoContent.put("status", true);
 		infoContent.put("paragraphs", paraArray);
 		infoContent.put("author", infoArticle.getAuther());
 		infoContent.put("date",
