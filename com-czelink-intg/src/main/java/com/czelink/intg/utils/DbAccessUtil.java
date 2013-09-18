@@ -9,10 +9,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
-import org.apache.commons.lang.reflect.FieldUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.util.ClassUtils;
 
 public final class DbAccessUtil {
@@ -48,7 +47,48 @@ public final class DbAccessUtil {
 			return obj;
 		} else if (null != loader) {
 
-			if (!ClassUtils.isPrimitiveOrWrapper(obj.getClass())) {
+			if (ClassUtils.isPrimitiveOrWrapper(obj.getClass())
+					|| StringUtils.equals(String.class.getName(), obj
+							.getClass().getName())) {
+				// work for primitive (or wrapper) types.
+				final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				ObjectOutputStream out = new ObjectOutputStream(bos);
+				out.writeObject(obj);
+
+				final ByteArrayInputStream bis = new ByteArrayInputStream(
+						bos.toByteArray());
+				ObjectInputStream in = new ObjectInputStream(bis);
+
+				return in.readObject();
+			} else if (ClassUtils.isPrimitiveArray(obj.getClass())
+					|| ClassUtils.isPrimitiveWrapperArray(obj.getClass())) {
+
+				// handle with primitive array type.
+				final int length = Array.getLength(obj);
+				final Object newArray = Array.newInstance(obj.getClass()
+						.getComponentType(), length);
+				for (int i = 0; i < length; i++) {
+					final Object arrayElement = Array.get(obj, i);
+					Array.set(newArray, i,
+							DbAccessUtil.transformThroughLoader(arrayElement));
+				}
+
+				return newArray;
+			} else if (obj.getClass().isArray()) {
+
+				// handle with custom class element array type.
+				final int length = Array.getLength(obj);
+				final Class targetClass = loader.loadClass(obj.getClass()
+						.getComponentType().getName());
+				final Object newArray = Array.newInstance(targetClass, length);
+				for (int i = 0; i < length; i++) {
+					final Object arrayElement = Array.get(obj, i);
+					Array.set(newArray, i, DbAccessUtil.transformThroughLoader(
+							arrayElement, loader));
+				}
+
+				return newArray;
+			} else {
 				// work for custom class type - which should have loader
 				// provided.
 				final Class transformedClass = loader.loadClass(obj.getClass()
@@ -69,41 +109,8 @@ public final class DbAccessUtil {
 								.getWriteMethod().invoke(result, targetValue);
 					}
 				}
-				return result;
-			} else if (ClassUtils.isPrimitiveArray(obj.getClass())
-					|| ClassUtils.isPrimitiveWrapperArray(obj.getClass())) {
-				// handle with primitive array type.
-				final int length = Array.getLength(obj);
-				final Object newArray = Array.newInstance(obj.getClass()
-						.getComponentType(), length);
-				for (int i = 0; i < length; i++) {
-					final Object arrayElement = Array.get(obj, i);
-					Array.set(newArray, i,
-							DbAccessUtil.transformThroughLoader(arrayElement));
-				}
-				return newArray;
-			} else if (obj.getClass().isArray()) {
-				// handle with custom class element array type.
-				final int length = Array.getLength(obj);
-				final Class targetClass = loader.loadClass(obj.getClass()
-						.getComponentType().getName());
-				final Object newArray = Array.newInstance(targetClass, length);
-				for (int i = 0; i < length; i++) {
-					final Object arrayElement = Array.get(obj, i);
-					Array.set(newArray, i, DbAccessUtil.transformThroughLoader(
-							arrayElement, loader));
-				}
-				return newArray;
-			} else {
-				// work for primitive (or wrapper) types.
-				final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				ObjectOutputStream out = new ObjectOutputStream(bos);
-				out.writeObject(obj);
 
-				final ByteArrayInputStream bis = new ByteArrayInputStream(
-						bos.toByteArray());
-				ObjectInputStream in = new ObjectInputStream(bis);
-				return in.readObject();
+				return result;
 			}
 		} else {
 			if (ClassUtils.isPrimitiveOrWrapper(obj.getClass())) {

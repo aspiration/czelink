@@ -1,5 +1,7 @@
 package com.czelink.usermgmt.dbaccess;
 
+import java.security.MessageDigest;
+
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
@@ -10,6 +12,7 @@ import javax.naming.directory.ModificationItem;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.BasicQuery;
+import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DistinguishedName;
 import org.springframework.ldap.core.LdapOperations;
 
@@ -25,19 +28,63 @@ public class UserManagementServiceImpl implements UserManagementService,
 
 	private MongoOperations mongoOperations;
 
+	private String encryptLdapPassword(String algorithm, String _password) {
+		String sEncrypted = _password;
+		if ((_password != null) && (_password.length() > 0)) {
+			boolean bMD5 = algorithm.equalsIgnoreCase("MD5");
+			boolean bSHA = algorithm.equalsIgnoreCase("SHA")
+					|| algorithm.equalsIgnoreCase("SHA1")
+					|| algorithm.equalsIgnoreCase("SHA-1");
+			if (bSHA || bMD5) {
+				String sAlgorithm = "MD5";
+				if (bSHA) {
+					sAlgorithm = "SHA";
+				}
+				try {
+					final MessageDigest md = MessageDigest
+							.getInstance(sAlgorithm);
+					md.update(_password.getBytes("UTF-8"));
+					sEncrypted = "{" + sAlgorithm + "}"
+							+ new String(md.digest());
+				} catch (Exception e) {
+					// TODO: to use log.
+					e.printStackTrace();
+					sEncrypted = null;
+				}
+			}
+		}
+		return sEncrypted;
+	}
+
+	private void addToUserRole(final String fullName) {
+		final DistinguishedName distinguisedName = new DistinguishedName();
+		distinguisedName.add("ou", "roles");
+		distinguisedName.add("cn", "user");
+
+		final Attribute uniqueMemberAttribue = new BasicAttribute(
+				"uniqueMember", fullName);
+		final ModificationItem uniqueMemberItem = new ModificationItem(
+				DirContext.ADD_ATTRIBUTE, uniqueMemberAttribue);
+
+		this.ldapOperations.modifyAttributes(distinguisedName,
+				new ModificationItem[] { uniqueMemberItem });
+	}
+
 	public boolean addNewUser(User user) {
 
 		boolean result = false;
 
 		try {
 			final DistinguishedName distinguisedName = new DistinguishedName();
-			distinguisedName.add("cn", user.getUsername());
+			distinguisedName.add("ou", "users");
+			distinguisedName.add("uid", user.getUsername());
 
 			final Attributes userAttributes = new BasicAttributes();
-			userAttributes.put("sn", user.getDisplayName());
+			userAttributes.put("sn", user.getUsername());
 			userAttributes.put("mail", user.getUsername());
-			userAttributes.put("uid", user.getUsername());
-			userAttributes.put("userPassword", user.getPassword());
+			userAttributes.put("cn", user.getUsername());
+			userAttributes.put("userPassword",
+					encryptLdapPassword("SHA", user.getPassword()));
 
 			final BasicAttribute classAttribute = new BasicAttribute(
 					"objectclass");
@@ -48,6 +95,11 @@ public class UserManagementServiceImpl implements UserManagementService,
 			userAttributes.put(classAttribute);
 
 			this.ldapOperations.bind(distinguisedName, null, userAttributes);
+
+			final DirContextAdapter dirContextAdapter = (DirContextAdapter) this.ldapOperations
+					.lookup(distinguisedName);
+			final String fullName = dirContextAdapter.getNameInNamespace();
+			this.addToUserRole(fullName);
 
 			// will not store user password in MongoDB.
 			user.setPassword(StringUtils.EMPTY);
@@ -63,13 +115,14 @@ public class UserManagementServiceImpl implements UserManagementService,
 		return result;
 	}
 
-	public boolean ModifyUser(User user) {
+	public boolean modifyUser(User user) {
 
 		boolean result = false;
 
 		try {
 			final DistinguishedName distinguisedName = new DistinguishedName();
-			distinguisedName.add("cn", user.getUsername());
+			distinguisedName.add("ou", "users");
+			distinguisedName.add("uid", user.getUsername());
 
 			final Attribute displayNameAttribute = new BasicAttribute(
 					"displayName", user.getDisplayName());
@@ -96,7 +149,8 @@ public class UserManagementServiceImpl implements UserManagementService,
 
 			if (StringUtils.isNotBlank(user.getPassword())) {
 				final Attribute passwordAttribute = new BasicAttribute(
-						"userPassword", user.getPassword());
+						"userPassword", encryptLdapPassword("SHA",
+								user.getPassword()));
 				final ModificationItem passwordItem = new ModificationItem(
 						DirContext.REPLACE_ATTRIBUTE, passwordAttribute);
 

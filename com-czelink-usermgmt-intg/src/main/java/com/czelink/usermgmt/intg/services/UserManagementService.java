@@ -6,7 +6,7 @@ public interface UserManagementService {
 
 	public boolean addNewUser(final User user);
 
-	public boolean ModifyUser(final User user);
+	public boolean modifyUser(final User user);
 
 	public boolean removeUser(final User user);
 
