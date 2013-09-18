@@ -129,6 +129,13 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 					dbAccessAppContext,
 					ServiceInvokerProxy.SERVICE_REGISTRY_BEAN);
 
+			final Method getComponentClassLoaderMethod = serviceRegistryBean
+					.getClass().getMethod("getComponentClassLoader",
+							new Class[0]);
+
+			final ClassLoader componentClassLoader = (ClassLoader) getComponentClassLoaderMethod
+					.invoke(serviceRegistryBean, new Object[0]);
+
 			final Method getServiceInterfaceImplementMethod = serviceRegistryBean
 					.getClass().getMethod("getServiceInterfaceImplement",
 							new Class[] { String.class, String.class });
@@ -137,17 +144,40 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 					.invoke(serviceRegistryBean, new Object[] {
 							this.serviceGroupName, this.serviceInterface });
 
+			System.out.println("serviceImpl: " + serviceImpl);
+
+			// transform argument type and object
 			final int paramNum = (null == args) ? 0 : args.length;
 			final Class[] paramterTypesClass = new Class[paramNum];
+			final Object[] parameterObjects = new Object[paramNum];
 			for (int i = 0; i < paramNum; i++) {
-				paramterTypesClass[i] = args[i].getClass();
+				paramterTypesClass[i] = componentClassLoader.loadClass(args[i]
+						.getClass().getName());
+				parameterObjects[i] = DbAccessUtil.transformThroughLoader(
+						args[i], componentClassLoader);
+
+				System.out.println("paramterTypesClass: "
+						+ paramterTypesClass[i]);
+				System.out.println("paramterTypesClassLoader: "
+						+ paramterTypesClass[i].getClassLoader());
+
+				System.out.println("parameterObjects: " + parameterObjects[i]);
+				System.out.println("parameterObjects Class: "
+						+ parameterObjects[i].getClass());
+				System.out.println("parameterObjects ClassLoader: "
+						+ parameterObjects[i].getClass().getClassLoader());
 			}
+
+			System.out.println("serviceImpl class: " + serviceImpl.getClass());
+			System.out.println("serviceImpl classLoader: "
+					+ serviceImpl.getClass().getClassLoader());
 
 			final Method targetMethod = serviceImpl.getClass().getMethod(
 					methodName, paramterTypesClass);
 
 			result = DbAccessUtil.transformThroughLoader(targetMethod.invoke(
-					serviceImpl, args));
+					serviceImpl, parameterObjects), this.getClass()
+					.getClassLoader());
 
 		} catch (Exception e) {
 			throw new IllegalStateException("Invokation of service: "

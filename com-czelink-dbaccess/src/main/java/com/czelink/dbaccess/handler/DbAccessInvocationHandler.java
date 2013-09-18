@@ -32,13 +32,11 @@ public class DbAccessInvocationHandler implements InvocationHandler {
 			throws Throwable {
 
 		final String methodName = method.getName();
-		final Object[] inputParams = (Object[]) DbAccessUtil
-				.transformThroughLoader(args);
 
 		final Method targetMethod = this.targetServiceImpl.getClass()
 				.getMethod(methodName, method.getParameterTypes());
 
-		return targetMethod.invoke(this.targetServiceImpl, inputParams);
+		return targetMethod.invoke(this.targetServiceImpl, args);
 	}
 
 }

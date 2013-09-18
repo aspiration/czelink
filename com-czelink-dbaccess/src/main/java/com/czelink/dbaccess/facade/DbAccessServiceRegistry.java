@@ -72,6 +72,10 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 	 */
 	private MongoConverter mongoConverter;
 
+	private void setComponentClassLoader(ClassLoader componentClassLoader) {
+		this.componentClassLoader = componentClassLoader;
+	}
+
 	/**
 	 * get service interface implementation from serviceRepository.
 	 * 
@@ -99,7 +103,7 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 
 		try {
 
-			final Object serviceImplObject_inner = this.componentClassLoader
+			final Object serviceImplObject_inner = this.getComponentClassLoader()
 					.loadClass((String) serviceImplementation).newInstance();
 
 			final MongoTemplate mongoTemplate = new MongoTemplate(
@@ -127,13 +131,15 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 			final InvocationHandler dbAccessInvocationHandler = new DbAccessInvocationHandler(
 					serviceImplObject_inner);
 
-			final Class serviceInterfaceClass = this.componentClassLoader
+			final Class serviceInterfaceClass = this.getComponentClassLoader()
 					.loadClass(serviceInterfaceName);
 
 			serviceImplObject = Proxy.newProxyInstance(
 					serviceInterfaceClass.getClassLoader(),
 					new Class[] { serviceInterfaceClass },
 					dbAccessInvocationHandler);
+			
+			System.out.println("serviceImplObject: "+ serviceImplObject);
 
 		} catch (Exception e) {
 			throw new IllegalStateException("fail creating instance of class: "
@@ -206,9 +212,9 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 
 		this.componentRepositoryPath = realPath + "/components";
 
-		this.componentClassLoader = ReloadableComponentClassLoader.getInstance(
+		this.setComponentClassLoader(ReloadableComponentClassLoader.getInstance(
 				this.getClass().getClassLoader(),
-				new String[] { this.componentRepositoryPath }, 5 * 1000);
+				new String[] { this.componentRepositoryPath }, 5 * 1000));
 	}
 
 	public LdapTemplate getLdapTemplate() {
@@ -217,5 +223,9 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 
 	public void setLdapTemplate(LdapTemplate ldapTemplate) {
 		this.ldapTemplate = ldapTemplate;
+	}
+
+	public ClassLoader getComponentClassLoader() {
+		return componentClassLoader;
 	}
 }
