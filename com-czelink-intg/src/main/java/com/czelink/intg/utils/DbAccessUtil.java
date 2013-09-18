@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
@@ -71,12 +72,28 @@ public final class DbAccessUtil {
 				return result;
 			} else if (ClassUtils.isPrimitiveArray(obj.getClass())
 					|| ClassUtils.isPrimitiveWrapperArray(obj.getClass())) {
-				final Object[] targetArray = (Object[]) obj;
-				// TODO: to do with primitive array
-				return null;
+				// handle with primitive array type.
+				final int length = Array.getLength(obj);
+				final Object newArray = Array.newInstance(obj.getClass()
+						.getComponentType(), length);
+				for (int i = 0; i < length; i++) {
+					final Object arrayElement = Array.get(obj, i);
+					Array.set(newArray, i,
+							DbAccessUtil.transformThroughLoader(arrayElement));
+				}
+				return newArray;
 			} else if (obj.getClass().isArray()) {
-				// TODO: to do with custom class array type.
-				return null;
+				// handle with custom class element array type.
+				final int length = Array.getLength(obj);
+				final Class targetClass = loader.loadClass(obj.getClass()
+						.getComponentType().getName());
+				final Object newArray = Array.newInstance(targetClass, length);
+				for (int i = 0; i < length; i++) {
+					final Object arrayElement = Array.get(obj, i);
+					Array.set(newArray, i, DbAccessUtil.transformThroughLoader(
+							arrayElement, loader));
+				}
+				return newArray;
 			} else {
 				// work for primitive (or wrapper) types.
 				final ByteArrayOutputStream bos = new ByteArrayOutputStream();
