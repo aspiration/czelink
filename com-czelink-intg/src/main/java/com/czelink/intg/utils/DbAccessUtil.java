@@ -10,6 +10,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.ClassUtils;
@@ -88,6 +93,40 @@ public final class DbAccessUtil {
 				}
 
 				return newArray;
+			} else if (List.class.isAssignableFrom(obj.getClass())) {
+				// handle List type.
+				final List sourceList = (List) obj;
+				final List targetList = (List) obj.getClass().newInstance();
+				final int length = sourceList.size();
+				for (int i = 0; i < length; i++) {
+					final Object targetObj = DbAccessUtil
+							.transformThroughLoader(sourceList.get(i), loader);
+					targetList.add(targetObj);
+				}
+				return targetList;
+			} else if (Set.class.isAssignableFrom(obj.getClass())) {
+				final Set sourceSet = (Set) obj;
+				final Set targetSet = (Set) obj.getClass().newInstance();
+				for (final Iterator it = targetSet.iterator(); it.hasNext();) {
+					final Object targetObj = DbAccessUtil
+							.transformThroughLoader(it.next(), loader);
+					targetSet.add(targetObj);
+				}
+				return targetSet;
+			} else if (Map.class.isAssignableFrom(obj.getClass())) {
+				// handle map type.
+				final Map sourceMap = (Map) obj;
+				final Map targetMap = (Map) obj.getClass().newInstance();
+				final Set sourceSet = sourceMap.entrySet();
+				for (final Iterator it = sourceSet.iterator(); it.hasNext();) {
+					final Entry entry = (Entry) it.next();
+					final Object targetKey = DbAccessUtil
+							.transformThroughLoader(entry.getKey(), loader);
+					final Object targetValue = DbAccessUtil
+							.transformThroughLoader(entry.getValue(), loader);
+					targetMap.put(targetKey, targetValue);
+				}
+				return targetMap;
 			} else {
 				// work for custom class type - which should have loader
 				// provided.
