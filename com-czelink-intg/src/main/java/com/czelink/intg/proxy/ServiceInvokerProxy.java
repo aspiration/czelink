@@ -151,30 +151,8 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 				paramterTypesClass[i] = DbAccessUtil.safeLoadClass(
 						args[i].getClass(), componentClassLoader);
 
-				System.out.println("paramterTypesClass[i] : "
-						+ paramterTypesClass[i]);
-
-				System.out.println("paramterTypesClass[i] ClassLoader: "
-						+ paramterTypesClass[i].getClassLoader());
-
 				parameterObjects[i] = DbAccessUtil.transformThroughLoader(
 						args[i], componentClassLoader);
-
-				System.out.println("args[i] : " + args[i]);
-
-				System.out.println("args[i] Class: " + args[i].getClass());
-
-				System.out.println("args[i] ClassLoader: "
-						+ args[i].getClass().getClassLoader());
-
-				System.out.println("parameterObjects[i] : "
-						+ parameterObjects[i]);
-
-				System.out.println("parameterObjects[i] Class: "
-						+ parameterObjects[i].getClass());
-
-				System.out.println("parameterObjects[i] ClassLoader: "
-						+ parameterObjects[i].getClass().getClassLoader());
 			}
 
 			final Method targetMethod = serviceImpl.getClass().getMethod(
@@ -183,6 +161,9 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 			result = DbAccessUtil.transformThroughLoader(targetMethod.invoke(
 					serviceImpl, parameterObjects), this.getClass()
 					.getClassLoader());
+
+			DbAccessUtil.resyncInputParameterStatusAfterProcess(
+					parameterObjects, args);
 
 		} catch (Exception e) {
 			throw new IllegalStateException("Invokation of service: "

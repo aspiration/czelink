@@ -98,18 +98,18 @@ public class UserManagementServiceImpl implements UserManagementService,
 			this.mongoOperations.insert(user);
 
 			result = true;
-		} catch (final NameAlreadyBoundException e) {
-			// TODO: to add log here.
-			e.printStackTrace();
-			result = false;
-			// EORROR_MSG_CDE: 002, user registered.
-			context.put(UsermgmtConstants.EORROR_MSG_CDE, "002");
 		} catch (final Throwable th) {
 			// TODO: to add log here.
 			th.printStackTrace();
+
 			result = false;
-			// EORROR_MSG_CDE: 008, unknown issue, fatal error.
-			context.put(UsermgmtConstants.EORROR_MSG_CDE, "008");
+			if (th instanceof NameAlreadyBoundException) {
+				// EORROR_MSG_CDE: 002, user registered.
+				context.put(UsermgmtConstants.EORROR_MSG_CDE, "002");
+			} else {
+				// EORROR_MSG_CDE: 008, unknown issue, fatal error.
+				context.put(UsermgmtConstants.EORROR_MSG_CDE, "008");
+			}
 		}
 
 		return result;

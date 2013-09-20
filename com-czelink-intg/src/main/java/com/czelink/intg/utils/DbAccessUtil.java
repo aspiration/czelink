@@ -28,6 +28,89 @@ public final class DbAccessUtil {
 		// no-op;
 	}
 
+	public static void resyncInputParameterStatusAfterProcess(
+			final Object[] processed, final Object[] input)
+			throws ArrayIndexOutOfBoundsException, IllegalArgumentException,
+			IOException, ClassNotFoundException, InstantiationException,
+			IllegalAccessException, IntrospectionException,
+			InvocationTargetException {
+		for (int i = 0; i < processed.length; i++) {
+			final Object processedElem = processed[i];
+			final Object inputElem = input[i];
+			if (ClassUtils.isPrimitiveWrapperArray(processedElem.getClass())
+					|| ClassUtils.isPrimitiveArray(processedElem.getClass())) {
+				// handle primitive/wrapper array.
+				final int length = Array.getLength(processedElem);
+				for (int j = 0; j < length; j++) {
+					final Object targetValue = Array.get(processedElem, j);
+					Array.set(inputElem, j, targetValue);
+				}
+			} else if (processedElem.getClass().isArray()) {
+				// handle custom object array.
+				final int length = Array.getLength(processedElem);
+				for (int j = 0; j < length; j++) {
+					final Object targetValue = DbAccessUtil
+							.transformThroughLoader(
+									Array.get(processedElem, j),
+									DbAccessUtil.class.getClassLoader());
+					Array.set(inputElem, j, targetValue);
+				}
+			} else if (List.class.isAssignableFrom(processedElem.getClass())) {
+				// handle list
+				final List processedList = (List) processedElem;
+				final List inputList = (List) inputElem;
+				inputList.clear();
+				final int size = processedList.size();
+				for (int j = 0; j < size; j++) {
+					final Object targetValue = DbAccessUtil
+							.transformThroughLoader(processedList.get(j),
+									DbAccessUtil.class.getClassLoader());
+					inputList.add(targetValue);
+				}
+				input[i] = inputList;
+			} else if (Set.class.isAssignableFrom(processedElem.getClass())) {
+				// handle set
+				final Set processedSet = (Set) processedElem;
+				final Set inputSet = (Set) inputElem;
+				inputSet.clear();
+				for (final Iterator iterator = inputSet.iterator(); iterator
+						.hasNext();) {
+					final Object targetValue = DbAccessUtil
+							.transformThroughLoader(iterator.next(),
+									DbAccessUtil.class.getClassLoader());
+					inputSet.add(targetValue);
+				}
+				input[i] = inputSet;
+			} else if (Map.class.isAssignableFrom(processedElem.getClass())) {
+				// handle map
+				final Map processedMap = (Map) processedElem;
+				final Map inputMap = (Map) inputElem;
+				inputMap.clear();
+				final Set processedEntrySet = processedMap.entrySet();
+				for (final Iterator iterator = processedEntrySet.iterator(); iterator
+						.hasNext();) {
+					final Entry processedEntry = (Entry) iterator.next();
+					final Object targetKey = DbAccessUtil
+							.transformThroughLoader(processedEntry.getKey(),
+									DbAccessUtil.class.getClassLoader());
+					final Object targetValue = DbAccessUtil
+							.transformThroughLoader(processedEntry.getValue(),
+									DbAccessUtil.class.getClassLoader());
+					inputMap.put(targetKey, targetValue);
+				}
+				input[i] = inputMap;
+			} else if (ClassUtils
+					.isPrimitiveOrWrapper(processedElem.getClass())) {
+				// primitive class
+				input[i] = DbAccessUtil.transformThroughLoader(inputElem);
+			} else {
+				// custom class
+				input[i] = DbAccessUtil.transformThroughLoader(inputElem,
+						DbAccessUtil.class.getClassLoader());
+			}
+		}
+	}
+
 	public static Class safeLoadClass(final Class rawClass,
 			final ClassLoader loader) throws ClassNotFoundException {
 
