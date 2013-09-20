@@ -1,0 +1,3 @@
+000: required Authentication (optional)
+001: login fail (required)
+002: duplicated Ldap binding.
