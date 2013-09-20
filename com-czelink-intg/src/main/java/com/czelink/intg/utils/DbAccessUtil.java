@@ -28,6 +28,28 @@ public final class DbAccessUtil {
 		// no-op;
 	}
 
+	public static Class safeLoadClass(final Class rawClass,
+			final ClassLoader loader) throws ClassNotFoundException {
+
+		Class result = rawClass;
+		if (Map.class.isAssignableFrom(rawClass)) {
+			result = Map.class;
+		} else if (List.class.isAssignableFrom(rawClass)) {
+			result = List.class;
+		} else if (Set.class.isAssignableFrom(rawClass)) {
+			result = Set.class;
+		} else if (ClassUtils.isPrimitiveArray(rawClass)) {
+			result = rawClass.getComponentType();
+		} else if (rawClass.isArray()) {
+			result = Array.newInstance(rawClass.getComponentType(), 0)
+					.getClass();
+		} else if (!ClassUtils.isPrimitiveOrWrapper(rawClass)) {
+			result = loader.loadClass(rawClass.getName());
+		}
+
+		return result;
+	}
+
 	/**
 	 * transform object through classLoader.
 	 * 

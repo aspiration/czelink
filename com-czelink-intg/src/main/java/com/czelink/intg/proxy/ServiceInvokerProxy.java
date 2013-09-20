@@ -3,7 +3,6 @@ package com.czelink.intg.proxy;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Enumeration;
 
 import javax.servlet.ServletContext;
 
@@ -149,10 +148,33 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 			final Class[] paramterTypesClass = new Class[paramNum];
 			final Object[] parameterObjects = new Object[paramNum];
 			for (int i = 0; i < paramNum; i++) {
-				paramterTypesClass[i] = componentClassLoader.loadClass(args[i]
-						.getClass().getName());
+				paramterTypesClass[i] = DbAccessUtil.safeLoadClass(
+						args[i].getClass(), componentClassLoader);
+
+				System.out.println("paramterTypesClass[i] : "
+						+ paramterTypesClass[i]);
+
+				System.out.println("paramterTypesClass[i] ClassLoader: "
+						+ paramterTypesClass[i].getClassLoader());
+
 				parameterObjects[i] = DbAccessUtil.transformThroughLoader(
 						args[i], componentClassLoader);
+
+				System.out.println("args[i] : " + args[i]);
+
+				System.out.println("args[i] Class: " + args[i].getClass());
+
+				System.out.println("args[i] ClassLoader: "
+						+ args[i].getClass().getClassLoader());
+
+				System.out.println("parameterObjects[i] : "
+						+ parameterObjects[i]);
+
+				System.out.println("parameterObjects[i] Class: "
+						+ parameterObjects[i].getClass());
+
+				System.out.println("parameterObjects[i] ClassLoader: "
+						+ parameterObjects[i].getClass().getClassLoader());
 			}
 
 			final Method targetMethod = serviceImpl.getClass().getMethod(

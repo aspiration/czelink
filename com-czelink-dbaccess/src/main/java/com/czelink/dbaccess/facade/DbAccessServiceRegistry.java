@@ -15,12 +15,14 @@ import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.web.context.ServletContextAware;
 
 import com.czelink.dbaccess.GridFsOperationsAware;
 import com.czelink.dbaccess.LdapOperationsAware;
 import com.czelink.dbaccess.MongoOperationsAware;
+import com.czelink.dbaccess.RedisOperationsAware;
 import com.czelink.dbaccess.handler.DbAccessInvocationHandler;
 import com.czelink.dbaccess.loader.ReloadableComponentClassLoader;
 
@@ -66,6 +68,11 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 	 * ldapTemplate.
 	 */
 	private LdapTemplate ldapTemplate;
+
+	/**
+	 * redisTemplate.
+	 */
+	private RedisTemplate redisTemplate;
 
 	/**
 	 * MongoConverter.
@@ -123,10 +130,16 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 						this.mongoDbFactory, this.mongoConverter));
 			}
 
-			// set LdapTemplate
+			// set LdapOperations
 			if (serviceImplObject_inner instanceof LdapOperationsAware) {
 				final LdapOperationsAware ldapTemplateAware = (LdapOperationsAware) serviceImplObject_inner;
 				ldapTemplateAware.setLdapOperations(this.ldapTemplate);
+			}
+
+			// set RedisOperations
+			if (serviceImplObject_inner instanceof RedisOperationsAware) {
+				final RedisOperationsAware redisOperationsAware = (RedisOperationsAware) serviceImplObject_inner;
+				redisOperationsAware.setRedisOperations(this.redisTemplate);
 			}
 
 			final InvocationHandler dbAccessInvocationHandler = new DbAccessInvocationHandler(
@@ -222,6 +235,14 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 
 	public void setLdapTemplate(LdapTemplate ldapTemplate) {
 		this.ldapTemplate = ldapTemplate;
+	}
+
+	public RedisTemplate getRedisTemplate() {
+		return redisTemplate;
+	}
+
+	public void setRedisTemplate(RedisTemplate redisTemplate) {
+		this.redisTemplate = redisTemplate;
 	}
 
 	public ClassLoader getComponentClassLoader() {

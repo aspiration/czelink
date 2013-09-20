@@ -1,5 +1,7 @@
 package com.czelink.usermgmt.dbaccess;
 
+import java.util.Map;
+
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
@@ -10,6 +12,7 @@ import javax.naming.directory.ModificationItem;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.BasicQuery;
+import org.springframework.ldap.NameAlreadyBoundException;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DistinguishedName;
 import org.springframework.ldap.core.LdapOperations;
@@ -18,6 +21,7 @@ import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import com.czelink.common.intg.entities.User;
 import com.czelink.dbaccess.LdapOperationsAware;
 import com.czelink.dbaccess.MongoOperationsAware;
+import com.czelink.usermgmt.intg.constants.UsermgmtConstants;
 import com.czelink.usermgmt.intg.services.UserManagementService;
 
 public class UserManagementServiceImpl implements UserManagementService,
@@ -57,7 +61,7 @@ public class UserManagementServiceImpl implements UserManagementService,
 				new ModificationItem[] { uniqueMemberItem });
 	}
 
-	public boolean addNewUser(User user) {
+	public boolean addNewUser(final User user, final Map context) {
 
 		boolean result = false;
 
@@ -72,6 +76,7 @@ public class UserManagementServiceImpl implements UserManagementService,
 			userAttributes.put("cn", user.getUsername());
 			userAttributes.put("userPassword",
 					encryptLdapPassword(user.getPassword()));
+			userAttributes.put("destinationIndicator", "false");
 
 			final BasicAttribute classAttribute = new BasicAttribute(
 					"objectclass");
@@ -93,16 +98,24 @@ public class UserManagementServiceImpl implements UserManagementService,
 			this.mongoOperations.insert(user);
 
 			result = true;
+		} catch (final NameAlreadyBoundException e) {
+			// TODO: to add log here.
+			e.printStackTrace();
+			result = false;
+			// EORROR_MSG_CDE: 002, user registered.
+			context.put(UsermgmtConstants.EORROR_MSG_CDE, "002");
 		} catch (final Throwable th) {
 			// TODO: to add log here.
 			th.printStackTrace();
 			result = false;
+			// EORROR_MSG_CDE: 008, unknown issue, fatal error.
+			context.put(UsermgmtConstants.EORROR_MSG_CDE, "008");
 		}
 
 		return result;
 	}
 
-	public boolean modifyUser(User user) {
+	public boolean modifyUser(final User user, final Map context) {
 
 		boolean result = false;
 
@@ -165,12 +178,12 @@ public class UserManagementServiceImpl implements UserManagementService,
 		return result;
 	}
 
-	public boolean removeUser(User user) {
+	public boolean removeUser(final User user, final Map context) {
 		// TODO Not required at this moment.
 		return false;
 	}
 
-	public User getUserDetail(User user) {
+	public User getUserDetail(final User user, final Map context) {
 
 		final BasicQuery query = new BasicQuery("{ username : "
 				+ user.getUsername() + " }");
