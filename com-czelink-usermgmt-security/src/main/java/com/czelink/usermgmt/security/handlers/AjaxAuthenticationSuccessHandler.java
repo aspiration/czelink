@@ -45,8 +45,6 @@ public class AjaxAuthenticationSuccessHandler implements
 		request.getSession().setAttribute(
 				CommonConstants.ROLE_LIST_IN_SESSION_KEY, rolesList);
 
-		System.out.println("rolesList: " + rolesList);
-
 		response.getWriter().print(result.toString());
 		response.getWriter().flush();
 	}

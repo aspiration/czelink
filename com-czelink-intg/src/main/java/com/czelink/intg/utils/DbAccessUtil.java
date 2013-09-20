@@ -133,8 +133,6 @@ public final class DbAccessUtil {
 				final Class transformedClass = loader.loadClass(obj.getClass()
 						.getName());
 
-				System.out.println("transformedClass: " + transformedClass);
-
 				final Object result = transformedClass.newInstance();
 
 				for (PropertyDescriptor pd : Introspector.getBeanInfo(

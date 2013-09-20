@@ -1,7 +1,5 @@
 package com.czelink.usermgmt.dbaccess;
 
-import java.security.MessageDigest;
-
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
@@ -15,6 +13,7 @@ import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DistinguishedName;
 import org.springframework.ldap.core.LdapOperations;
+import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 
 import com.czelink.common.intg.entities.User;
 import com.czelink.dbaccess.LdapOperationsAware;
@@ -24,36 +23,24 @@ import com.czelink.usermgmt.intg.services.UserManagementService;
 public class UserManagementServiceImpl implements UserManagementService,
 		LdapOperationsAware, MongoOperationsAware {
 
+	private static final ShaPasswordEncoder passwordEncoder = new ShaPasswordEncoder();
+
+	static {
+		UserManagementServiceImpl.passwordEncoder.setEncodeHashAsBase64(true);
+	}
+
 	private LdapOperations ldapOperations;
 
 	private MongoOperations mongoOperations;
 
-	private String encryptLdapPassword(String algorithm, String _password) {
-		String sEncrypted = _password;
-		if ((_password != null) && (_password.length() > 0)) {
-			boolean bMD5 = algorithm.equalsIgnoreCase("MD5");
-			boolean bSHA = algorithm.equalsIgnoreCase("SHA")
-					|| algorithm.equalsIgnoreCase("SHA1")
-					|| algorithm.equalsIgnoreCase("SHA-1");
-			if (bSHA || bMD5) {
-				String sAlgorithm = "MD5";
-				if (bSHA) {
-					sAlgorithm = "SHA";
-				}
-				try {
-					final MessageDigest md = MessageDigest
-							.getInstance(sAlgorithm);
-					md.update(_password.getBytes("UTF-8"));
-					sEncrypted = "{" + sAlgorithm + "}"
-							+ new String(md.digest());
-				} catch (Exception e) {
-					// TODO: to use log.
-					e.printStackTrace();
-					sEncrypted = null;
-				}
-			}
-		}
-		return sEncrypted;
+	private String encryptLdapPassword(final String password) {
+
+		final StringBuilder builder = new StringBuilder();
+		builder.append("{sha}");
+		builder.append(UserManagementServiceImpl.passwordEncoder
+				.encodePassword(password, null));
+
+		return builder.toString();
 	}
 
 	private void addToUserRole(final String fullName) {
@@ -84,7 +71,7 @@ public class UserManagementServiceImpl implements UserManagementService,
 			userAttributes.put("mail", user.getUsername());
 			userAttributes.put("cn", user.getUsername());
 			userAttributes.put("userPassword",
-					encryptLdapPassword("SHA", user.getPassword()));
+					encryptLdapPassword(user.getPassword()));
 
 			final BasicAttribute classAttribute = new BasicAttribute(
 					"objectclass");
@@ -149,8 +136,7 @@ public class UserManagementServiceImpl implements UserManagementService,
 
 			if (StringUtils.isNotBlank(user.getPassword())) {
 				final Attribute passwordAttribute = new BasicAttribute(
-						"userPassword", encryptLdapPassword("SHA",
-								user.getPassword()));
+						"userPassword", encryptLdapPassword(user.getPassword()));
 				final ModificationItem passwordItem = new ModificationItem(
 						DirContext.REPLACE_ATTRIBUTE, passwordAttribute);
 

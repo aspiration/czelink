@@ -103,7 +103,8 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 
 		try {
 
-			final Object serviceImplObject_inner = this.getComponentClassLoader()
+			final Object serviceImplObject_inner = this
+					.getComponentClassLoader()
 					.loadClass((String) serviceImplementation).newInstance();
 
 			final MongoTemplate mongoTemplate = new MongoTemplate(
@@ -138,8 +139,6 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 					serviceInterfaceClass.getClassLoader(),
 					new Class[] { serviceInterfaceClass },
 					dbAccessInvocationHandler);
-			
-			System.out.println("serviceImplObject: "+ serviceImplObject);
 
 		} catch (Exception e) {
 			throw new IllegalStateException("fail creating instance of class: "
@@ -212,9 +211,9 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 
 		this.componentRepositoryPath = realPath + "/components";
 
-		this.setComponentClassLoader(ReloadableComponentClassLoader.getInstance(
-				this.getClass().getClassLoader(),
-				new String[] { this.componentRepositoryPath }, 5 * 1000));
+		this.setComponentClassLoader(ReloadableComponentClassLoader
+				.getInstance(this.getClass().getClassLoader(),
+						new String[] { this.componentRepositoryPath }, 5 * 1000));
 	}
 
 	public LdapTemplate getLdapTemplate() {

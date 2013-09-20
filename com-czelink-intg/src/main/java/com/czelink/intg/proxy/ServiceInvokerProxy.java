@@ -144,8 +144,6 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 					.invoke(serviceRegistryBean, new Object[] {
 							this.serviceGroupName, this.serviceInterface });
 
-			System.out.println("serviceImpl: " + serviceImpl);
-
 			// transform argument type and object
 			final int paramNum = (null == args) ? 0 : args.length;
 			final Class[] paramterTypesClass = new Class[paramNum];
@@ -155,22 +153,7 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 						.getClass().getName());
 				parameterObjects[i] = DbAccessUtil.transformThroughLoader(
 						args[i], componentClassLoader);
-
-				System.out.println("paramterTypesClass: "
-						+ paramterTypesClass[i]);
-				System.out.println("paramterTypesClassLoader: "
-						+ paramterTypesClass[i].getClassLoader());
-
-				System.out.println("parameterObjects: " + parameterObjects[i]);
-				System.out.println("parameterObjects Class: "
-						+ parameterObjects[i].getClass());
-				System.out.println("parameterObjects ClassLoader: "
-						+ parameterObjects[i].getClass().getClassLoader());
 			}
-
-			System.out.println("serviceImpl class: " + serviceImpl.getClass());
-			System.out.println("serviceImpl classLoader: "
-					+ serviceImpl.getClass().getClassLoader());
 
 			final Method targetMethod = serviceImpl.getClass().getMethod(
 					methodName, paramterTypesClass);
