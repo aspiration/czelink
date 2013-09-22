@@ -7,7 +7,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
 
 	<context:property-placeholder order="0"
-		location="classpath:/content/czelink/dbaccess/properties/mongo.properties,classpath:/content/czelink/dbaccess/properties/ldap.properties,classpath:/content/czelink/dbaccess/properties/redis.properties" />
+		location="classpath:/content/czelink/dbaccess/properties/mongo.properties,classpath:/content/czelink/dbaccess/properties/ldap.properties,classpath:/content/czelink/dbaccess/properties/redis.properties,classpath:/content/czelink/dbaccess/properties/mail.properties" />
 
 	<!-- mongo DB configuration -->
 	<mongo:mongo host="${mongo.host}" port="${mongo.port}">
@@ -45,6 +45,18 @@
 	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
 		p:connection-factory-ref="redisConnectionFactory" />
 
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="${mail.host}" />
+		<property name="port" value="${mail.port}" />
+		<property name="username" value="${mail.username}" />
+		<property name="password" value="${mail.password}" />
+		<property name="javaMailProperties">
+			<props>
+				<prop key="mail.smtp.auth">${mail.smtp.auth}</prop>
+				<prop key="mail.smtp.starttls.enable">${mail.smtp.starttls.enable}</prop>
+			</props>
+		</property>
+	</bean>
 
 	<!-- DB access entry -->
 	<bean id="dbAccessServiceRegistry" class="com.czelink.dbaccess.facade.DbAccessServiceRegistry">
@@ -52,6 +64,18 @@
 		<property name="mongoConverter" ref="mongoConverter" />
 		<property name="ldapTemplate" ref="ldapTemplate" />
 		<property name="redisTemplate" ref="redisTemplate" />
+		<property name="mailSender" ref="mailSender" />
+	</bean>
+
+	<!-- velocity -->
+	<bean id="velocityEngine"
+		class="org.springframework.ui.velocity.VelocityEngineFactoryBean">
+		<property name="velocityProperties">
+			<value>
+				resource.loader=class
+				class.resource.loader.class=org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+			</value>
+		</property>
 	</bean>
 
 </beans>

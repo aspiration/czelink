@@ -41,6 +41,12 @@ define(function() {
 		$scope.isRegisterPanelActivated = function() {
 			return $scope.registerPanelActivated;
 		};
+		
+		$scope.isActivated = false;
+		
+		$scope.checkIsActivatedMode = function() {
+			return $scope.isActivated;
+		};
 
 		orchestration.expose("openLoginModal", function() {
 			$(loginModal).modal('show');
@@ -61,6 +67,10 @@ define(function() {
 
 		$scope.checkLoginButtonStatus = function() {
 			return ($scope.isRegisterPanelActivated() || $scope.disableDuringSubmit);
+		};
+
+		$scope.isUnderProcessing = function() {
+			return $scope.disableDuringSubmit;
 		};
 
 		var resetLoginModel = function() {
@@ -166,9 +176,13 @@ define(function() {
 			if (!$scope.checkIfRegisterInfoInvalid()) {
 				$scope.registerInvalidInit = true;
 
+				var activatelinkRoot = window.location.origin
+						+ window.location.pathname + "usermgmt/activate";
+
 				secureDataRetriever.setData({
 					username : $scope.newusername,
-					password : $scope.newpassword
+					password : $scope.newpassword,
+					activatelinkRoot : activatelinkRoot
 				});
 
 				secureDataRetriever.onFailure(function() {
@@ -207,6 +221,21 @@ define(function() {
 		$scope.checkRegisterButtonStatus = function() {
 			return (($scope.isLoginPanelActivated())
 					|| ($scope.registerResult == 1) || $scope.disableDuringSubmit);
+		};
+		
+		return function() {
+			secureDataRetriever.onSuccess(function(data) {
+				if(data.status) {
+					$scope.isActivated = true;
+					
+					if (!$scope.$$phase) {
+						$scope.$apply();
+					}
+					$(loginModal).modal('show');
+				}
+			});
+			
+			secureDataRetriever.get("usermgmt/checkActivateStatus");
 		};
 	};
 });

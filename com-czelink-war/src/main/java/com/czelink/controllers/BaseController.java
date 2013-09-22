@@ -100,6 +100,7 @@ public class BaseController {
 				navItem.put("label", label);
 				navigationList.add(navItem);
 			}
+
 			result.put("navigationList", navigationList);
 			result.put("role", role);
 		} else {

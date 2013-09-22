@@ -1,0 +1,8 @@
+<html>
+<body>
+<div>
+<p>您好， ${username}, 感谢您注册财智网!</p>
+<p>请点击<a href="${activatelink}">_这里_</a>激活您的账户。</p>
+</div>
+</body>
+</html>

@@ -20,6 +20,8 @@ public class User implements Serializable {
 
 	private String displayName;
 
+	private Boolean activated;
+
 	/**
 	 * true for man, false for woman.
 	 */
@@ -113,6 +115,14 @@ public class User implements Serializable {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public Boolean isActivated() {
+		return activated;
+	}
+
+	public void setActivated(Boolean activated) {
+		this.activated = activated;
 	}
 
 	public String toString() {

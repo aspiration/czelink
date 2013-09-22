@@ -11,16 +11,21 @@ import java.util.Properties;
 
 import javax.servlet.ServletContext;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.context.ServletContextAware;
 
 import com.czelink.dbaccess.GridFsOperationsAware;
 import com.czelink.dbaccess.LdapOperationsAware;
+import com.czelink.dbaccess.MailSenderAware;
 import com.czelink.dbaccess.MongoOperationsAware;
 import com.czelink.dbaccess.RedisOperationsAware;
 import com.czelink.dbaccess.handler.DbAccessInvocationHandler;
@@ -32,7 +37,8 @@ import com.czelink.dbaccess.loader.ReloadableComponentClassLoader;
  * @author lambert.
  * 
  */
-public class DbAccessServiceRegistry implements ServletContextAware {
+public class DbAccessServiceRegistry implements ServletContextAware,
+		ApplicationContextAware {
 
 	/**
 	 * suffix mapping.
@@ -43,6 +49,11 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 	 * WEB-INF.
 	 */
 	private static final String WEB_INF_PATH = "WEB-INF";
+
+	/**
+	 * applicationContext.
+	 */
+	private ApplicationContext appContext;
 
 	/**
 	 * component classloader.
@@ -73,6 +84,11 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 	 * redisTemplate.
 	 */
 	private RedisTemplate redisTemplate;
+
+	/**
+	 * mail sender.
+	 */
+	private JavaMailSender mailSender;
 
 	/**
 	 * MongoConverter.
@@ -142,6 +158,18 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 				redisOperationsAware.setRedisOperations(this.redisTemplate);
 			}
 
+			// set MailSender
+			if (serviceImplObject_inner instanceof MailSenderAware) {
+				final MailSenderAware mailSenderAware = (MailSenderAware) serviceImplObject_inner;
+				mailSenderAware.setMailSender(this.getMailSender());
+			}
+
+			// set appContext
+			if (serviceImplObject_inner instanceof ApplicationContextAware) {
+				final ApplicationContextAware appCtxAware = (ApplicationContextAware) serviceImplObject_inner;
+				appCtxAware.setApplicationContext(this.appContext);
+			}
+
 			final InvocationHandler dbAccessInvocationHandler = new DbAccessInvocationHandler(
 					serviceImplObject_inner);
 
@@ -199,7 +227,7 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 		return mongoDbFactory;
 	}
 
-	public void setMongoDbFactory(MongoDbFactory mongoDbFactory) {
+	public void setMongoDbFactory(final MongoDbFactory mongoDbFactory) {
 		this.mongoDbFactory = mongoDbFactory;
 	}
 
@@ -207,11 +235,11 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 		return mongoConverter;
 	}
 
-	public void setMongoConverter(MongoConverter mongoConverter) {
+	public void setMongoConverter(final MongoConverter mongoConverter) {
 		this.mongoConverter = mongoConverter;
 	}
 
-	public void setServletContext(ServletContext servletContext) {
+	public void setServletContext(final ServletContext servletContext) {
 		String realPath = servletContext.getRealPath("/").replace('\\', '/');
 
 		final StringBuilder classpathBuilder = new StringBuilder();
@@ -233,7 +261,7 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 		return ldapTemplate;
 	}
 
-	public void setLdapTemplate(LdapTemplate ldapTemplate) {
+	public void setLdapTemplate(final LdapTemplate ldapTemplate) {
 		this.ldapTemplate = ldapTemplate;
 	}
 
@@ -241,11 +269,24 @@ public class DbAccessServiceRegistry implements ServletContextAware {
 		return redisTemplate;
 	}
 
-	public void setRedisTemplate(RedisTemplate redisTemplate) {
+	public void setRedisTemplate(final RedisTemplate redisTemplate) {
 		this.redisTemplate = redisTemplate;
 	}
 
 	public ClassLoader getComponentClassLoader() {
 		return componentClassLoader;
+	}
+
+	public void setApplicationContext(
+			final ApplicationContext applicationContext) throws BeansException {
+		this.appContext = applicationContext;
+	}
+
+	public JavaMailSender getMailSender() {
+		return mailSender;
+	}
+
+	public void setMailSender(JavaMailSender mailSender) {
+		this.mailSender = mailSender;
 	}
 }

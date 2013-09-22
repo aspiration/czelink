@@ -9,12 +9,15 @@
 			<ul class="nav nav-tabs">
 				<li ng-class="{'active': isLoginPanelActivated()}"><a
 					ng-click="showLoginPanel()" data-toggle="tab">用户登录</a></li>
-				<li ng-class="{'active': isRegisterPanelActivated()}"><a
+				<li ng-hide="checkIsActivatedMode()"
+					ng-class="{'active': isRegisterPanelActivated()}"><a
 					ng-click="showRegisterPanel()" data-toggle="tab">新用户注册</a></li>
 			</ul>
 			<div class="tab-content">
 				<div ng-class="{'active': isLoginPanelActivated()}" class="tab-pane"
 					ng-post-render="registerLoginPanel">
+					<div class="alert alert-success alert-inline"
+						ng-show="checkIsActivatedMode()">账户激活成功，请登入。</div>
 					<form name="loginForm" class="form-horizontal">
 						<div class="alert alert-error alert-block"
 							ng-show="checkIfLoginInfoInvalid()">
@@ -26,6 +29,10 @@
 								<li ng-show="loginForm.password.$error.minlength">输入登录密码长度不可以小于6位</li>
 								<li ng-show="checkLoginStatus()">登录失败</li>
 							</ul>
+						</div>
+						<div class="alert alert-info alert-block"
+							ng-show="isUnderProcessing()">
+							<p>正在处理，请稍后</p>
 						</div>
 						<div class="control-group">
 							<label class="control-label" for="username">注册邮箱</label>
@@ -65,7 +72,11 @@
 						</div>
 						<div class="alert alert-success alert-block"
 							ng-show="checkRegisterStatus()">
-							<p>注册成功，请激活(TBD)</p>
+							<p>注册成功，请登錄邮箱{{newusername}}激活账户。</p>
+						</div>
+						<div class="alert alert-info alert-block"
+							ng-show="isUnderProcessing()">
+							<p>正在处理，请稍后</p>
 						</div>
 						<div ng-show="!checkRegisterStatus()">
 							<div class="control-group">

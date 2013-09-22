@@ -1,7 +1,10 @@
 package com.czelink.usermgmt.dbaccess;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
+import javax.mail.internet.MimeMessage;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
@@ -10,22 +13,34 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.velocity.app.VelocityEngine;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.BasicQuery;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.ldap.NameAlreadyBoundException;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DistinguishedName;
 import org.springframework.ldap.core.LdapOperations;
+import org.springframework.mail.MailSender;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
+import org.springframework.ui.velocity.VelocityEngineUtils;
 
 import com.czelink.common.intg.entities.User;
 import com.czelink.dbaccess.LdapOperationsAware;
+import com.czelink.dbaccess.MailSenderAware;
 import com.czelink.dbaccess.MongoOperationsAware;
+import com.czelink.dbaccess.RedisOperationsAware;
 import com.czelink.usermgmt.intg.constants.UsermgmtConstants;
 import com.czelink.usermgmt.intg.services.UserManagementService;
 
 public class UserManagementServiceImpl implements UserManagementService,
-		LdapOperationsAware, MongoOperationsAware {
+		LdapOperationsAware, MongoOperationsAware, RedisOperationsAware,
+		MailSenderAware, ApplicationContextAware {
 
 	private static final ShaPasswordEncoder passwordEncoder = new ShaPasswordEncoder();
 
@@ -36,6 +51,12 @@ public class UserManagementServiceImpl implements UserManagementService,
 	private LdapOperations ldapOperations;
 
 	private MongoOperations mongoOperations;
+
+	private RedisOperations<Object, Object> redisOperations;
+
+	private JavaMailSender mailSender;
+
+	private VelocityEngine velocityEngine;
 
 	private String encryptLdapPassword(final String password) {
 
@@ -66,6 +87,32 @@ public class UserManagementServiceImpl implements UserManagementService,
 		boolean result = false;
 
 		try {
+
+			// step1: send mail and record in Redis.
+			final String uid = UUID.randomUUID().toString();
+			this.redisOperations.opsForValue().set(uid, user.getUsername());
+
+			final MimeMessage message = this.mailSender.createMimeMessage();
+			final MimeMessageHelper helper = new MimeMessageHelper(message,
+					false, "UTF-8");
+			helper.setTo(user.getUsername());
+			helper.setFrom("czelink.com");
+
+			final Map model = new HashMap();
+			model.put("username", user.getUsername());
+			final String activatelink = ((String) context
+					.get(UsermgmtConstants.ACTIVATE_URL_KEY)).concat("?uid="
+					+ uid);
+			model.put("activatelink", activatelink);
+			String text = VelocityEngineUtils.mergeTemplateIntoString(
+					this.velocityEngine, "external/template/mail.vm", "UTF-8",
+					model);
+			helper.setText(text, true);
+			helper.setSubject("感谢注册财智网，点击链接激活账户");
+
+			this.mailSender.send(message);
+
+			// step2: process on LDAP.
 			final DistinguishedName distinguisedName = new DistinguishedName();
 			distinguisedName.add("ou", "users");
 			distinguisedName.add("uid", user.getUsername());
@@ -95,6 +142,8 @@ public class UserManagementServiceImpl implements UserManagementService,
 
 			// will not store user password in MongoDB.
 			user.setPassword(StringUtils.EMPTY);
+
+			// step3: process on MongoDB.
 			this.mongoOperations.insert(user);
 
 			result = true;
@@ -109,6 +158,46 @@ public class UserManagementServiceImpl implements UserManagementService,
 			} else {
 				// EORROR_MSG_CDE: 008, unknown issue, fatal error.
 				context.put(UsermgmtConstants.EORROR_MSG_CDE, "008");
+			}
+		}
+
+		return result;
+	}
+
+	public boolean activateNewUser(final String registerUid, final Map context) {
+
+		boolean result = false;
+
+		final String username = (String) this.redisOperations.opsForValue()
+				.get(registerUid);
+
+		if (StringUtils.isNotBlank(username)) {
+			User user = new User();
+			user.setUsername(username);
+
+			user = this.getUserDetail(user, context);
+
+			try {
+				final DistinguishedName distinguisedName = new DistinguishedName();
+				distinguisedName.add("ou", "users");
+				distinguisedName.add("uid", user.getUsername());
+
+				final Attribute destinationIndicator = new BasicAttribute(
+						"destinationIndicator", user.isActivated().toString());
+				final ModificationItem destinationIndicatorItem = new ModificationItem(
+						DirContext.REPLACE_ATTRIBUTE, destinationIndicator);
+
+				this.ldapOperations.modifyAttributes(distinguisedName,
+						new ModificationItem[] { destinationIndicatorItem });
+
+				this.mongoOperations.save(user);
+
+				this.redisOperations.delete(registerUid);
+
+				result = true;
+			} catch (final Throwable th) {
+				th.printStackTrace();
+				result = false;
 			}
 		}
 
@@ -185,8 +274,8 @@ public class UserManagementServiceImpl implements UserManagementService,
 
 	public User getUserDetail(final User user, final Map context) {
 
-		final BasicQuery query = new BasicQuery("{ username : "
-				+ user.getUsername() + " }");
+		final BasicQuery query = new BasicQuery("{ username : '"
+				+ user.getUsername() + "' }");
 		final User result = this.mongoOperations.findOne(query, User.class);
 
 		return result;
@@ -198,5 +287,20 @@ public class UserManagementServiceImpl implements UserManagementService,
 
 	public void setMongoOperations(final MongoOperations pMongoOperations) {
 		this.mongoOperations = pMongoOperations;
+	}
+
+	public void setMailSender(final JavaMailSender pMailSender) {
+		this.mailSender = pMailSender;
+	}
+
+	public void setRedisOperations(
+			RedisOperations<Object, Object> redisOperations) {
+		this.redisOperations = redisOperations;
+	}
+
+	public void setApplicationContext(ApplicationContext applicationContext)
+			throws BeansException {
+		this.velocityEngine = (VelocityEngine) applicationContext
+				.getBean("velocityEngine");
 	}
 }
