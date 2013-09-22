@@ -22,37 +22,91 @@
 								<li ng-show="loginForm.username.$error.required">请输入注册邮箱</li>
 								<li ng-show="loginForm.username.$error.email">邮箱格式错误</li>
 								<li ng-show="loginForm.password.$error.required">请输入登录密码</li>
+								<li ng-show="loginForm.password.$error.maxlength">输入登录密码长度不可以超过12位</li>
+								<li ng-show="loginForm.password.$error.minlength">输入登录密码长度不可以小于6位</li>
 								<li ng-show="checkLoginStatus()">登录失败</li>
 							</ul>
 						</div>
 						<div class="control-group">
 							<label class="control-label" for="username">注册邮箱</label>
 							<div class="controls">
-								<input type="email" ng-model="username" name="username"
-									id="username" placeholder="请输入注册邮箱" required>
+								<input ng-disabled="disableDuringSubmit" type="email"
+									ng-model="username" name="username" id="username"
+									placeholder="请输入注册邮箱" required>
 							</div>
 						</div>
 						<div class="control-group">
 							<label class="control-label" for="password">登录密码</label>
 							<div class="controls">
-								<input type="password" ng-model="password" name="password"
-									id="password" placeholder="请输入登录密码" required>
+								<input ng-disabled="disableDuringSubmit" type="password"
+									maxlength="12" ng-model="password" name="password"
+									ng-maxlength="12" ng-minlength="6" id="password"
+									placeholder="请输入登录密码" required>
 							</div>
 						</div>
 					</form>
 				</div>
 				<div ng-class="{'active': isRegisterPanelActivated()}"
-					class="tab-pane" ng-post-render="registerRegisterPanel">新用户注册</div>
+					class="tab-pane" ng-post-render="registerRegisterPanel">
+					<form name="registerForm" class="form-horizontal">
+						<div class="alert alert-error alert-block"
+							ng-show="checkIfRegisterInfoInvalid()">
+							<ul>
+								<li ng-show="registerForm.newusername.$error.required">请输入注册邮箱</li>
+								<li ng-show="registerForm.newusername.$error.email">邮箱格式错误</li>
+								<li ng-show="registerForm.newpassword.$error.required">请输入登录密码</li>
+								<li ng-show="registerForm.newpassword.$error.maxlength">密码长度不可以超过12位数</li>
+								<li ng-show="registerForm.newpassword.$error.minlength">密码不可以小于6位数</li>
+								<li ng-show="registerForm.confirmpassword.$error.maxlength">确认密码长度不可以超过12位数</li>
+								<li ng-show="registerForm.confirmpassword.$error.minlength">确认密码不可以小于6位数</li>
+								<li ng-show="!checkPreRegisterStatusValid()">两次密码输入不一致</li>
+								<li ng-show="checkPostRegisterStatusInvalid()">注册失败：{{registerFailReason}}</li>
+							</ul>
+						</div>
+						<div class="alert alert-success alert-block"
+							ng-show="checkRegisterStatus()">
+							<p>注册成功，请激活(TBD)</p>
+						</div>
+						<div ng-show="!checkRegisterStatus()">
+							<div class="control-group">
+								<label class="control-label" for="newusername">注册邮箱</label>
+								<div class="controls">
+									<input ng-disabled="disableDuringSubmit" type="email"
+										ng-model="newusername" name="newusername" id="newusername"
+										placeholder="请输入注册邮箱" required>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="newpassword">登录密码</label>
+								<div class="controls">
+									<input ng-disabled="disableDuringSubmit" type="password"
+										maxlength="12" ng-model="newpassword" ng-maxlength="12"
+										ng-minlength="6" name="newpassword" id="newpassword"
+										placeholder="请输入登录密码" required>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="confirmpassword">确认密码</label>
+								<div class="controls">
+									<input ng-disabled="disableDuringSubmit" type="password"
+										maxlength="12" ng-model="confirmpassword"
+										name="confirmpassword" id="confirmpassword"
+										placeholder="请确认登录密码" required>
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
 			</div>
 		</div>
 		<div class="modal-footer">
 			<!-- button for login -->
-			<button ng-hide="isRegisterPanelActivated()"
-				ng-disabled="isRegisterPanelActivated()" class="btn btn-primary"
+			<button ng-hide="checkLoginButtonStatus()"
+				ng-disabled="checkLoginButtonStatus()" class="btn btn-primary"
 				ng-click="login()">登录</button>
 			<!-- button for register -->
-			<button ng-hide="isLoginPanelActivated()"
-				ng-disabled="isLoginPanelActivated()" class="btn btn-primary"
+			<button ng-hide="checkRegisterButtonStatus()"
+				ng-disabled="checkRegisterButtonStatus()" class="btn btn-primary"
 				ng-click="register()">注册</button>
 		</div>
 	</div>
