@@ -1,0 +1,1 @@
+java -jar fakeSMTP-1.4.jar -o "%CD%/messages"

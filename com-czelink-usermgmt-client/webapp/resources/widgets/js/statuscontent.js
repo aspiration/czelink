@@ -242,6 +242,69 @@ define(function() {
 
 		return function() {
 
+			var adjustWindowLocation = function() {
+				var currentLocation = window.location.href;
+				if (currentLocation.indexOf("#") === -1) {
+					var newLocation = currentLocation.replace(currentLocation
+							.substring(currentLocation.indexOf("?"),
+									currentLocation.length), "");
+					window.history.pushState(null, null, newLocation);
+				} else {
+					var newLocation = currentLocation.replace(currentLocation
+							.substring(currentLocation.indexOf("?"),
+									currentLocation.indexOf("#")), "");
+					window.history.pushState(null, null, newLocation);
+				}
+			};
+
+			var failprocess = function() {
+				$scope.isActivatedFail = true;
+
+				adjustWindowLocation();
+
+				$scope.intervalTime = 5;
+				var intervalMethod = setInterval(function() {
+					$scope.intervalTime--;
+					if ($scope.intervalTime <= 0) {
+						clearInterval(intervalMethod);
+						$scope.isActivatedFail = false;
+					}
+					if (!$scope.$$phase) {
+						$scope.$apply();
+					}
+				}, 1000);
+
+				if (!$scope.$$phase) {
+					$scope.$apply();
+				}
+			};
+
+			var checkStatus = function(activateInstance, verifyKey) {
+				secureDataRetriever.setData({
+					activateInstance : activateInstance,
+					verifyKey : verifyKey
+				});
+
+				secureDataRetriever.onSuccess(function(data) {
+					if (data.status) {
+						$scope.isActivated = true;
+						$scope.username = activateInstance;
+
+						if (!$scope.$$phase) {
+							$scope.$apply();
+						}
+
+						adjustWindowLocation();
+
+						$(loginModal).modal('show');
+					} else {
+						failprocess();
+					}
+				});
+
+				secureDataRetriever.post("usermgmt/checkActivateStatus");
+			};
+
 			orchestration
 					.invoke(
 							"navigation",
@@ -254,97 +317,25 @@ define(function() {
 												"getVerifyKey",
 												null,
 												function(verifyKey) {
-													if (activateInstance === undefined
-															|| activateInstance === null) {
-														activateInstance = "";
+													if (activateInstance !== undefined
+															&& activateInstance !== null
+															&& verifyKey !== undefined
+															&& verifyKey !== null) {
+														checkStatus(
+																activateInstance,
+																verifyKey);
+													} else if (activateInstance !== undefined
+															&& activateInstance !== null
+															&& (verifyKey === undefined || verifyKey === null)) {
+														failprocess();
+													} else if ((activateInstance === undefined || activateInstance === null)
+															&& verifyKey !== undefined
+															&& verifyKey !== null) {
+														failprocess();
+													} else {
+														// do nothing - normal
+														// case.
 													}
-
-													if (verifyKey === undefined
-															|| verifyKey === null) {
-														verifyKey = "";
-													}
-
-													secureDataRetriever
-															.setData({
-																activateInstance : activateInstance,
-																verifyKey : verifyKey
-															});
-
-													secureDataRetriever
-															.onSuccess(function(
-																	data) {
-																if (data.status) {
-																	$scope.isActivated = true;
-																	$scope.username = activateInstance;
-
-																	if (!$scope.$$phase) {
-																		$scope
-																				.$apply();
-																	}
-
-																	var currentLocation = window.location.href;
-																	if (currentLocation
-																			.indexOf("#") === -1) {
-																		var newLocation = currentLocation
-																				.replace(
-																						currentLocation
-																								.substring(
-																										currentLocation
-																												.indexOf("?"),
-																										currentLocation.length),
-																						"");
-																		window.history
-																				.pushState(
-																						null,
-																						null,
-																						newLocation);
-																	} else {
-																		var newLocation = currentLocation
-																				.replace(
-																						currentLocation
-																								.substring(
-																										currentLocation
-																												.indexOf("?"),
-																										currentLocation
-																												.indexOf("#")),
-																						"");
-																		window.history
-																				.pushState(
-																						null,
-																						null,
-																						newLocation);
-																	}
-
-																	$(
-																			loginModal)
-																			.modal(
-																					'show');
-																} else {
-																	$scope.isActivatedFail = true;
-																	$scope.intervalTime = 5;
-																	var intervalMethod = setInterval(
-																			function() {
-																				$scope.intervalTime--;
-																				if ($scope.intervalTime <= 0) {
-																					clearInterval(intervalMethod);
-																					$scope.isActivatedFail = false;
-																				}
-																				if (!$scope.$$phase) {
-																					$scope
-																							.$apply();
-																				}
-																			},
-																			1000);
-
-																	if (!$scope.$$phase) {
-																		$scope
-																				.$apply();
-																	}
-																}
-															});
-
-													secureDataRetriever
-															.post("usermgmt/checkActivateStatus");
 												});
 							});
 		};
