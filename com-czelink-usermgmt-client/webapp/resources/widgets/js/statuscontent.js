@@ -41,11 +41,16 @@ define(function() {
 		$scope.isRegisterPanelActivated = function() {
 			return $scope.registerPanelActivated;
 		};
-		
+
 		$scope.isActivated = false;
-		
+		$scope.isActivatedFail = false;
+
 		$scope.checkIsActivatedMode = function() {
 			return $scope.isActivated;
+		};
+
+		$scope.checkIsActivatedFail = function() {
+			return $scope.isActivatedFail;
 		};
 
 		orchestration.expose("openLoginModal", function() {
@@ -145,6 +150,7 @@ define(function() {
 
 		$scope.registerResult = -1;
 		$scope.registerFailReason = "";
+		$scope.registerFailRsnCde = "";
 
 		$scope.checkIfRegisterInfoInvalid = function() {
 			return $scope.registerInvalidInit
@@ -176,8 +182,17 @@ define(function() {
 			if (!$scope.checkIfRegisterInfoInvalid()) {
 				$scope.registerInvalidInit = true;
 
-				var activatelinkRoot = window.location.origin
-						+ window.location.pathname + "usermgmt/activate";
+				var activatelinkRoot = "";
+				if (window.location.origin !== undefined
+						&& window.location.origin != null
+						&& window.location.origin !== "") {
+					activatelinkRoot = window.location.origin
+							+ window.location.pathname + "usermgmt/activate";
+				} else {
+					activatelinkRoot = window.location.protocol + "//"
+							+ window.location.host + window.location.pathname
+							+ "usermgmt/activate";
+				}
 
 				secureDataRetriever.setData({
 					username : $scope.newusername,
@@ -198,9 +213,11 @@ define(function() {
 						$scope.registerResult = 0;
 						if (data.statusCode === "002") {
 							$scope.registerFailReason = "该邮箱已经注册";
+							$scope.registerFailRsnCde = "002";
 						}
 						if (data.statusCode == "008") {
 							$scope.registerFailReason = "服务器异常，请联系管理员";
+							$scope.registerFailRsnCde = "008";
 						}
 					}
 
@@ -222,20 +239,114 @@ define(function() {
 			return (($scope.isLoginPanelActivated())
 					|| ($scope.registerResult == 1) || $scope.disableDuringSubmit);
 		};
-		
+
 		return function() {
-			secureDataRetriever.onSuccess(function(data) {
-				if(data.status) {
-					$scope.isActivated = true;
-					
-					if (!$scope.$$phase) {
-						$scope.$apply();
-					}
-					$(loginModal).modal('show');
-				}
-			});
-			
-			secureDataRetriever.get("usermgmt/checkActivateStatus");
+
+			orchestration
+					.invoke(
+							"navigation",
+							"getActivatedInstance",
+							null,
+							function(activateInstance) {
+								orchestration
+										.invoke(
+												"navigation",
+												"getVerifyKey",
+												null,
+												function(verifyKey) {
+													if (activateInstance === undefined
+															|| activateInstance === null) {
+														activateInstance = "";
+													}
+
+													if (verifyKey === undefined
+															|| verifyKey === null) {
+														verifyKey = "";
+													}
+
+													secureDataRetriever
+															.setData({
+																activateInstance : activateInstance,
+																verifyKey : verifyKey
+															});
+
+													secureDataRetriever
+															.onSuccess(function(
+																	data) {
+																if (data.status) {
+																	$scope.isActivated = true;
+																	$scope.username = activateInstance;
+
+																	if (!$scope.$$phase) {
+																		$scope
+																				.$apply();
+																	}
+
+																	var currentLocation = window.location.href;
+																	if (currentLocation
+																			.indexOf("#") === -1) {
+																		var newLocation = currentLocation
+																				.replace(
+																						currentLocation
+																								.substring(
+																										currentLocation
+																												.indexOf("?"),
+																										currentLocation.length),
+																						"");
+																		window.history
+																				.pushState(
+																						null,
+																						null,
+																						newLocation);
+																	} else {
+																		var newLocation = currentLocation
+																				.replace(
+																						currentLocation
+																								.substring(
+																										currentLocation
+																												.indexOf("?"),
+																										currentLocation
+																												.indexOf("#")),
+																						"");
+																		window.history
+																				.pushState(
+																						null,
+																						null,
+																						newLocation);
+																	}
+
+																	$(
+																			loginModal)
+																			.modal(
+																					'show');
+																} else {
+																	$scope.isActivatedFail = true;
+																	$scope.intervalTime = 5;
+																	var intervalMethod = setInterval(
+																			function() {
+																				$scope.intervalTime--;
+																				if ($scope.intervalTime <= 0) {
+																					clearInterval(intervalMethod);
+																					$scope.isActivatedFail = false;
+																				}
+																				if (!$scope.$$phase) {
+																					$scope
+																							.$apply();
+																				}
+																			},
+																			1000);
+
+																	if (!$scope.$$phase) {
+																		$scope
+																				.$apply();
+																	}
+																}
+															});
+
+													secureDataRetriever
+															.post("usermgmt/checkActivateStatus");
+												});
+							});
 		};
 	};
 });

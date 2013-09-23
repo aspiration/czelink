@@ -2,21 +2,21 @@ package com.czelink.usermgmt.controllers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.czelink.common.intg.entities.User;
-import com.czelink.server.base.constants.BaseConstants;
 import com.czelink.usermgmt.intg.constants.UsermgmtConstants;
 import com.czelink.usermgmt.intg.services.UserManagementService;
 
@@ -26,20 +26,25 @@ public class UsermgmtController {
 	@Resource(name = "userManagementService")
 	private UserManagementService userManagementService;
 
+	@Resource(name = "redisOperations")
+	private RedisOperations<Object, Object> redisOperations;
+
 	@RequestMapping("/activate")
-	String activate(@RequestParam final String uid,
-			final HttpSession httpSession) {
-		final String resultStr = "redirect:/#activated";
+	String activate(@RequestParam final String uid) {
+
+		String resultStr = "redirect:/?activated";
 
 		final Map context = new HashMap();
 		final boolean result = this.userManagementService.activateNewUser(uid,
 				context);
 		if (result) {
-			httpSession.setAttribute(BaseConstants.ACTIVATED_MARK_KEY,
-					Boolean.TRUE);
+			final String username = (String) context
+					.get(UsermgmtConstants.USER_NAME);
+			final String verifyKey = UUID.randomUUID().toString();
+			this.redisOperations.opsForValue().set(username, verifyKey);
+			resultStr = resultStr.concat("=" + username);
 		} else {
-			httpSession.setAttribute(BaseConstants.ACTIVATED_MARK_KEY,
-					Boolean.FALSE);
+			resultStr = "redirect:/";
 		}
 		return resultStr;
 	}
@@ -81,13 +86,25 @@ public class UsermgmtController {
 
 	@RequestMapping("/checkActivateStatus")
 	@ResponseBody
-	String checkActivateStatus(final HttpSession session) {
-		final Boolean activatedMark = (Boolean) session
-				.getAttribute(BaseConstants.ACTIVATED_MARK_KEY);
+	String checkActivateStatus(
+			@RequestParam(value = "activateInstance") final String activateInstance,
+			@RequestParam(value = "verifyKey") final String verifyKeySrc) {
+
+		String verifyKeyDest = StringUtils.EMPTY;
+
+		if (StringUtils.isNotBlank(activateInstance)
+				&& StringUtils.isNotBlank(verifyKeySrc)) {
+			verifyKeyDest = (String) this.redisOperations.opsForValue().get(
+					activateInstance);
+
+			// remove from data store
+			this.redisOperations.delete(activateInstance);
+		}
 
 		final JSONObject result = new JSONObject();
-		if (null != activatedMark) {
-			result.put("status", activatedMark.booleanValue());
+		if (StringUtils.isNotBlank(verifyKeyDest)
+				&& verifyKeyDest.equals(verifyKeySrc)) {
+			result.put("status", true);
 		} else {
 			result.put("status", false);
 		}
@@ -102,5 +119,14 @@ public class UsermgmtController {
 	public void setUserManagementService(
 			UserManagementService userManagementService) {
 		this.userManagementService = userManagementService;
+	}
+
+	public RedisOperations<Object, Object> getRedisOperations() {
+		return redisOperations;
+	}
+
+	public void setRedisOperations(
+			RedisOperations<Object, Object> redisOperations) {
+		this.redisOperations = redisOperations;
 	}
 }

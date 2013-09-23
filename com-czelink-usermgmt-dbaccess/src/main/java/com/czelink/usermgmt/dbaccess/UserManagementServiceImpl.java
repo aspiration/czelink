@@ -144,6 +144,7 @@ public class UserManagementServiceImpl implements UserManagementService,
 			user.setPassword(StringUtils.EMPTY);
 
 			// step3: process on MongoDB.
+			user.setActivated(false);
 			this.mongoOperations.insert(user);
 
 			result = true;
@@ -170,10 +171,14 @@ public class UserManagementServiceImpl implements UserManagementService,
 
 		final String username = (String) this.redisOperations.opsForValue()
 				.get(registerUid);
+		// remove from data store.
+		this.redisOperations.delete(registerUid);
 
 		if (StringUtils.isNotBlank(username)) {
 			User user = new User();
 			user.setUsername(username);
+
+			context.put(UsermgmtConstants.USER_NAME, username);
 
 			user = this.getUserDetail(user, context);
 
@@ -183,16 +188,15 @@ public class UserManagementServiceImpl implements UserManagementService,
 				distinguisedName.add("uid", user.getUsername());
 
 				final Attribute destinationIndicator = new BasicAttribute(
-						"destinationIndicator", user.isActivated().toString());
+						"destinationIndicator", "true");
 				final ModificationItem destinationIndicatorItem = new ModificationItem(
 						DirContext.REPLACE_ATTRIBUTE, destinationIndicator);
 
 				this.ldapOperations.modifyAttributes(distinguisedName,
 						new ModificationItem[] { destinationIndicatorItem });
 
+				user.setActivated(true);
 				this.mongoOperations.save(user);
-
-				this.redisOperations.delete(registerUid);
 
 				result = true;
 			} catch (final Throwable th) {

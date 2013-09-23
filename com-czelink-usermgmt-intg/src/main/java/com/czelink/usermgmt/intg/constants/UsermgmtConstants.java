@@ -9,6 +9,8 @@ public final class UsermgmtConstants {
 
 	public static final String ACTIVATE_URL_KEY = "ACTIVATE_URL_KEY";
 
+	public static final String USER_NAME = "user_name";
+
 	/**
 	 * private constructor.
 	 */

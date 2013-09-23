@@ -12,6 +12,7 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.MessageSource;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,9 +45,14 @@ public class BaseController {
 	@Resource(name = "componentAvailabilityHook")
 	private ComponentAvailabilityHook componentAvailabilityHook;
 
+	@Resource(name = "redisOperations")
+	private RedisOperations<Object, Object> redisOperations;
+
 	@RequestMapping("/navigationList")
 	public @ResponseBody
-	String getNavigationList(final HttpSession session) {
+	String getNavigationList(
+			final HttpSession session,
+			@RequestParam(value = "activateInstance") final String activateInstance) {
 		final JSONObject result = new JSONObject();
 
 		final List<String> rolesList = (List<String>) session
@@ -106,6 +112,14 @@ public class BaseController {
 		} else {
 			throw new IllegalStateException(
 					"invalid security or navigation information provided in navigation.properites or hooks.properites.");
+		}
+
+		if (StringUtils.isNotBlank(activateInstance)) {
+			final String verifyKey = (String) this.redisOperations
+					.opsForValue().get(activateInstance);
+			if (StringUtils.isNotBlank(verifyKey)) {
+				result.put("verifyKey", verifyKey);
+			}
 		}
 
 		return result.toString();
