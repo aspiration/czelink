@@ -1,22 +1,28 @@
 package com.czelink.usermgmt.controllers;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.czelink.common.intg.entities.User;
+import com.czelink.usermgmt.beans.RegisterBean;
 import com.czelink.usermgmt.intg.constants.UsermgmtConstants;
 import com.czelink.usermgmt.intg.services.UserManagementService;
 
@@ -51,35 +57,51 @@ public class UsermgmtController {
 
 	@RequestMapping("/register")
 	@ResponseBody
-	String register(@RequestParam final String username,
-			@RequestParam final String password,
+	String register(@Valid final RegisterBean registerBean,
+			final BindingResult bindingResult,
 			final HttpServletRequest httpRequest) {
 
-		final User user = new User();
-		user.setUsername(username);
-		user.setPassword(password);
-
-		// build activated link.
-		String activatelinkRoot = httpRequest.getParameter("activatelinkRoot");
-		if (activatelinkRoot.endsWith("/")) {
-			activatelinkRoot = StringUtils.substring(activatelinkRoot, 0,
-					activatelinkRoot.length() - 1);
-		}
-
-		final Map<String, Object> context = new HashMap<String, Object>(1);
-		context.put(UsermgmtConstants.ACTIVATE_URL_KEY, activatelinkRoot);
-
-		final boolean svcResult = this.userManagementService.addNewUser(user,
-				context);
+		final String username = registerBean.getNewusername();
+		final String password = registerBean.getNewpassword();
 
 		final JSONObject result = new JSONObject();
-		result.put("status", svcResult);
+		boolean svcResult = false;
 
-		final String errorCode = (String) context
-				.get(UsermgmtConstants.EORROR_MSG_CDE);
-		if (StringUtils.isNotBlank(errorCode)) {
-			result.put("statusCode", errorCode);
+		if (!bindingResult.hasErrors()) {
+			final User user = new User();
+			user.setUsername(username);
+			user.setPassword(password);
+
+			// build activated link.
+			String activatelinkRoot = httpRequest
+					.getParameter("activatelinkRoot");
+			if (activatelinkRoot.endsWith("/")) {
+				activatelinkRoot = StringUtils.substring(activatelinkRoot, 0,
+						activatelinkRoot.length() - 1);
+			}
+
+			final Map<String, Object> context = new HashMap<String, Object>(1);
+			context.put(UsermgmtConstants.ACTIVATE_URL_KEY, activatelinkRoot);
+
+			svcResult = this.userManagementService.addNewUser(user, context);
+
+			final String errorCode = (String) context
+					.get(UsermgmtConstants.EORROR_MSG_CDE);
+			if (StringUtils.isNotBlank(errorCode)) {
+				result.put("statusCode", errorCode);
+			}
+		} else {
+			final List<ObjectError> errors = bindingResult.getAllErrors();
+			final int length = errors.size();
+			final JSONArray jsonArr = new JSONArray();
+			for (int i = 0; i < length; i++) {
+				final ObjectError error = errors.get(i);
+				jsonArr.add(error.getDefaultMessage());
+			}
+			result.put("validateErrors", jsonArr);
 		}
+
+		result.put("status", svcResult);
 
 		return result.toString();
 	}

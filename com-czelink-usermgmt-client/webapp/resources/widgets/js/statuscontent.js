@@ -172,6 +172,8 @@ define(function() {
 			}
 		};
 
+		$scope.registerValidateErrors = [];
+
 		$scope.register = function() {
 
 			$scope.disableDuringSubmit = true;
@@ -195,8 +197,8 @@ define(function() {
 				}
 
 				secureDataRetriever.setData({
-					username : $scope.newusername,
-					password : $scope.newpassword,
+					newusername : $scope.newusername,
+					newpassword : $scope.newpassword,
 					activatelinkRoot : activatelinkRoot
 				});
 
@@ -205,29 +207,38 @@ define(function() {
 					return false;
 				});
 
-				secureDataRetriever.onSuccess(function(data) {
+				secureDataRetriever
+						.onSuccess(function(data) {
 
-					if (data.status) {
-						$scope.registerResult = 1;
-					} else {
-						$scope.registerResult = 0;
-						if (data.statusCode === "002") {
-							$scope.registerFailReason = "该邮箱已经注册";
-							$scope.registerFailRsnCde = "002";
-						}
-						if (data.statusCode == "008") {
-							$scope.registerFailReason = "服务器异常，请联系管理员";
-							$scope.registerFailRsnCde = "008";
-						}
-					}
+							if (data.status) {
+								$scope.registerResult = 1;
+							} else {
+								if (data.validateErrors !== undefined
+										&& data.validateErrors !== null
+										&& data.validateErrors.length > 0) {
+									$scope.registerValidateErrors = data.validateErrors;
+									$scope.registerResult = 0;
+									$scope.registerFailReason = "非法输入无法通过校验";
+								} else {
+									$scope.registerResult = 0;
+									if (data.statusCode === "002") {
+										$scope.registerFailReason = "该邮箱已经注册";
+										$scope.registerFailRsnCde = "002";
+									}
+									if (data.statusCode == "008") {
+										$scope.registerFailReason = "服务器异常，请联系管理员";
+										$scope.registerFailRsnCde = "008";
+									}
+								}
+							}
 
-					$scope.disableDuringSubmit = false;
+							$scope.disableDuringSubmit = false;
 
-					if (!$scope.$$phase) {
-						$scope.$apply();
-					}
-					return false;
-				});
+							if (!$scope.$$phase) {
+								$scope.$apply();
+							}
+							return false;
+						});
 
 				secureDataRetriever.post("usermgmt/register");
 			} else {

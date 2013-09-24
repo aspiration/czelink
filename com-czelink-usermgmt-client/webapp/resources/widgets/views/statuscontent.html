@@ -70,6 +70,7 @@
 								<li ng-show="registerForm.confirmpassword.$error.minlength">确认密码不可以小于6位数</li>
 								<li ng-show="!checkPreRegisterStatusValid()">两次密码输入不一致</li>
 								<li ng-show="checkPostRegisterStatusInvalid()">注册失败：{{registerFailReason}}</li>
+								<li ng-repeat="validateError in registerValidateErrors">{{validateError}}</li>
 							</ul>
 						</div>
 						<div class="alert alert-success alert-block"
