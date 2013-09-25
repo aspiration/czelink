@@ -1,5 +1,6 @@
 package com.czelink.usermgmt.controllers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,9 +9,6 @@ import java.util.UUID;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.data.redis.core.RedisOperations;
@@ -22,7 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.czelink.common.intg.entities.User;
-import com.czelink.usermgmt.beans.RegisterBean;
+import com.czelink.server.base.beans.JsonBaseViewBean;
+import com.czelink.usermgmt.beans.RegisterFormBean;
 import com.czelink.usermgmt.intg.constants.UsermgmtConstants;
 import com.czelink.usermgmt.intg.services.UserManagementService;
 
@@ -55,22 +54,24 @@ public class UsermgmtController {
 		return resultStr;
 	}
 
-	@RequestMapping("/register")
+	@RequestMapping(value="/register", produces = "application/json")
 	@ResponseBody
-	String register(@Valid final RegisterBean registerBean,
+	JsonBaseViewBean register(@Valid final RegisterFormBean registerBean,
 			final BindingResult bindingResult,
 			final HttpServletRequest httpRequest) {
 
 		final String username = registerBean.getNewusername();
 		final String password = registerBean.getNewpassword();
-
-		final JSONObject result = new JSONObject();
+		final String displayname = registerBean.getNewdisplayname();
+		
+		final JsonBaseViewBean response = new JsonBaseViewBean();
 		boolean svcResult = false;
 
 		if (!bindingResult.hasErrors()) {
 			final User user = new User();
 			user.setUsername(username);
 			user.setPassword(password);
+			user.setDisplayName(displayname);
 
 			// build activated link.
 			String activatelinkRoot = httpRequest
@@ -88,27 +89,27 @@ public class UsermgmtController {
 			final String errorCode = (String) context
 					.get(UsermgmtConstants.EORROR_MSG_CDE);
 			if (StringUtils.isNotBlank(errorCode)) {
-				result.put("statusCode", errorCode);
+				response.setStatusCode(errorCode);
 			}
 		} else {
 			final List<ObjectError> errors = bindingResult.getAllErrors();
 			final int length = errors.size();
-			final JSONArray jsonArr = new JSONArray();
-			for (int i = 0; i < length; i++) {
+			final List validationErrors = new ArrayList<String>(length);
+			for(int i=0; i<length; i++) {
 				final ObjectError error = errors.get(i);
-				jsonArr.add(error.getDefaultMessage());
+				validationErrors.add(error.getDefaultMessage());
 			}
-			result.put("validateErrors", jsonArr);
+			response.setValidateErrors(validationErrors);
 		}
 
-		result.put("status", svcResult);
+		response.setStatus(svcResult);
 
-		return result.toString();
+		return response;
 	}
 
-	@RequestMapping("/checkActivateStatus")
+	@RequestMapping(value="/checkActivateStatus", produces="application/json")
 	@ResponseBody
-	String checkActivateStatus(
+	JsonBaseViewBean checkActivateStatus(
 			@RequestParam(value = "activateInstance") final String activateInstance,
 			@RequestParam(value = "verifyKey") final String verifyKeySrc) {
 
@@ -123,15 +124,15 @@ public class UsermgmtController {
 			this.redisOperations.delete(activateInstance);
 		}
 
-		final JSONObject result = new JSONObject();
+		final JsonBaseViewBean response = new JsonBaseViewBean();
 		if (StringUtils.isNotBlank(verifyKeyDest)
 				&& verifyKeyDest.equals(verifyKeySrc)) {
-			result.put("status", true);
+			response.setStatus(true);
 		} else {
-			result.put("status", false);
+			response.setStatus(false);
 		}
 
-		return result.toString();
+		return response;
 	}
 
 	public UserManagementService getUserManagementService() {

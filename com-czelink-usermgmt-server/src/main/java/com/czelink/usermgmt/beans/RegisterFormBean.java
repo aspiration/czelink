@@ -10,7 +10,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.czelink.server.base.constants.BaseConstants;
 import com.czelink.usermgmt.constants.UsermgmtServerConstants;
 
-public class RegisterBean implements Serializable {
+public class RegisterFormBean implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -21,6 +21,10 @@ public class RegisterBean implements Serializable {
 	@NotEmpty(message = UsermgmtServerConstants.ERROR_MSG_PASSWORD_REQUIRED)
 	@Size(min = 6, max = 12, message = UsermgmtServerConstants.ERROR_MSG_PASSWORD_RANGE)
 	private String newpassword;
+	
+	@NotEmpty(message = UsermgmtServerConstants.ERROR_MSG_DISPLAYNAME_REQUIRED)
+	@Size(max = 30, message = UsermgmtServerConstants.ERROR_MSG_DISPLAYNAME_MAX)
+	private String newdisplayname;
 
 	public String getNewusername() {
 		return newusername;
@@ -36,5 +40,13 @@ public class RegisterBean implements Serializable {
 
 	public void setNewpassword(String newpassword) {
 		this.newpassword = newpassword;
+	}
+
+	public String getNewdisplayname() {
+		return newdisplayname;
+	}
+
+	public void setNewdisplayname(String newdisplayname) {
+		this.newdisplayname = newdisplayname;
 	}
 }

@@ -99,7 +99,7 @@ public class UserManagementServiceImpl implements UserManagementService,
 			helper.setFrom("czelink.com");
 
 			final Map model = new HashMap();
-			model.put("username", user.getUsername());
+			model.put("username", user.getDisplayName());
 			final String activatelink = ((String) context
 					.get(UsermgmtConstants.ACTIVATE_URL_KEY)).concat("?uid="
 					+ uid);
@@ -118,6 +118,7 @@ public class UserManagementServiceImpl implements UserManagementService,
 			distinguisedName.add("uid", user.getUsername());
 
 			final Attributes userAttributes = new BasicAttributes();
+			userAttributes.put("displayName", user.getDisplayName());
 			userAttributes.put("sn", user.getUsername());
 			userAttributes.put("mail", user.getUsername());
 			userAttributes.put("cn", user.getUsername());

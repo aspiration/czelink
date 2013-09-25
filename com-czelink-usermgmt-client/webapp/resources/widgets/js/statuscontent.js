@@ -86,6 +86,7 @@ define(function() {
 
 		$scope.login = function() {
 
+			$scope.isActivatedFail = false;
 			$scope.disableDuringSubmit = true;
 
 			$scope.initLoginInfoPanelInvalid = true;
@@ -156,6 +157,8 @@ define(function() {
 			return $scope.registerInvalidInit
 					&& ($scope.registerForm.newusername.$error.required
 							|| $scope.registerForm.newusername.$error.email
+							|| $scope.registerForm.newdisplayname.$error.required
+							|| $scope.registerForm.newdisplayname.$error.maxlength
 							|| $scope.registerForm.newpassword.$error.required
 							|| $scope.registerForm.newpassword.$error.maxlength
 							|| $scope.registerForm.newpassword.$error.minlength
@@ -199,6 +202,7 @@ define(function() {
 				secureDataRetriever.setData({
 					newusername : $scope.newusername,
 					newpassword : $scope.newpassword,
+					newdisplayname: $scope.newdisplayname,
 					activatelinkRoot : activatelinkRoot
 				});
 
@@ -229,6 +233,7 @@ define(function() {
 										$scope.registerFailReason = "服务器异常，请联系管理员";
 										$scope.registerFailRsnCde = "008";
 									}
+									$scope.registerValidateErrors = [];
 								}
 							}
 

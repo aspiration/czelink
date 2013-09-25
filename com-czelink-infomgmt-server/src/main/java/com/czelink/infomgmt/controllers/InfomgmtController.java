@@ -1,12 +1,10 @@
 package com.czelink.infomgmt.controllers;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Controller;
@@ -14,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.czelink.infomgmt.beans.InfoArticleResponse;
+import com.czelink.infomgmt.beans.InfoContentResponse;
 import com.czelink.infomgmt.intg.entities.InfoArticle;
 import com.czelink.infomgmt.intg.services.InformationManagementService;
 
@@ -26,53 +26,52 @@ public class InfomgmtController {
 	@Resource(name = "infomgmtService")
 	private InformationManagementService informationManagementService;
 
-	@RequestMapping("/latestInfo")
+	@RequestMapping(value="/latestInfo", produces = "application/json")
 	public @ResponseBody
-	String latestInfo() {
+	InfoArticleResponse latestInfo() {
 		final List<InfoArticle> infoArticle = this.informationManagementService
 				.retrieveLatestInformationList(5);
+		
+		final InfoArticleResponse response = new InfoArticleResponse();
 
-		final JSONObject result = new JSONObject();
-
-		final JSONArray array = new JSONArray();
-		for (int i = 0; i < infoArticle.size(); i++) {
-			final JSONObject infoContent = new JSONObject();
-			infoContent.put("id", infoArticle.get(i).getId());
-			infoContent.put("title", infoArticle.get(i).getTitle());
+		final int length = infoArticle.size();
+		final List<InfoContentResponse> array = new ArrayList<InfoContentResponse>(length);
+		for (int i = 0; i < length; i++) {
+			final InfoContentResponse infoContent = new InfoContentResponse();
+			infoContent.setId( infoArticle.get(i).getId());
+			infoContent.setTitle(infoArticle.get(i).getTitle());
 			array.add(infoContent);
 		}
 
-		result.put("contents", array);
-		result.put("status", true);
+		response.setContents(array);
+		response.setStatus(true);
 
-		return result.toString();
+		return response;
 	}
 
-	@RequestMapping("/searchById")
+	@RequestMapping(value="/searchById", produces = "application/json")
 	public @ResponseBody
-	String searchById(
+	InfoContentResponse searchById(
 			@RequestParam(value = "articleId", required = true) String articleId) {
 
 		final InfoArticle infoArticle = this.informationManagementService
 				.retrieveInformationById(articleId);
+		final InfoContentResponse infoContent = new InfoContentResponse();
 
-		final JSONObject infoContent = new JSONObject();
-
-		infoContent.put("id", infoArticle.getId());
-		infoContent.put("title", infoArticle.getTitle());
-
+		infoContent.setId(infoArticle.getId());
+		infoContent.setTitle(infoArticle.getTitle());
+		
 		final String[] paragraphs = infoArticle.getParagraphs();
-		final JSONArray paraArray = new JSONArray();
+		final List<String> paraArray = new ArrayList<String>(paragraphs.length);
 		for (int j = 0; j < paragraphs.length; j++) {
 			paraArray.add(paragraphs[j]);
 		}
-		infoContent.put("status", true);
-		infoContent.put("paragraphs", paraArray);
-		infoContent.put("author", infoArticle.getAuther());
-		infoContent.put("date",
-				this.dateTimeDisplayConverter.convert(infoArticle.getDate()));
+		infoContent.setStatus(true);
+		infoContent.setParagraphs(paraArray);
+		infoContent.setAuthor(infoArticle.getAuther().getDisplayName());
+		infoContent.setDate(this.dateTimeDisplayConverter.convert(infoArticle.getDate()));
 
-		return infoContent.toString();
+		return infoContent;
 	}
 
 	public InformationManagementService getInformationManagementService() {

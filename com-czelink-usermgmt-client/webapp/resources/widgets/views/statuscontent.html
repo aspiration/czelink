@@ -63,6 +63,8 @@
 							<ul>
 								<li ng-show="registerForm.newusername.$error.required">请输入注册邮箱</li>
 								<li ng-show="registerForm.newusername.$error.email">邮箱格式错误</li>
+								<li ng-show="registerForm.newdisplayname.$error.required">请输入用户名</li>
+								<li ng-show="registerForm.newdisplayname.$error.maxlength">用户名不可以超过30位长度</li>
 								<li ng-show="registerForm.newpassword.$error.required">请输入登录密码</li>
 								<li ng-show="registerForm.newpassword.$error.maxlength">密码长度不可以超过12位数</li>
 								<li ng-show="registerForm.newpassword.$error.minlength">密码不可以小于6位数</li>
@@ -88,6 +90,15 @@
 									<input ng-disabled="disableDuringSubmit" type="email"
 										ng-model="newusername" name="newusername" id="newusername"
 										placeholder="请输入注册邮箱" required>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="newdisplayname">用户名称</label>
+								<div class="controls">
+									<input ng-disabled="disableDuringSubmit" type="text"
+										ng-maxlength="30" maxlength="30" ng-model="newdisplayname"
+										name="newdisplayname" id="newdisplayname" placeholder="请输入用户名"
+										required>
 								</div>
 							</div>
 							<div class="control-group">

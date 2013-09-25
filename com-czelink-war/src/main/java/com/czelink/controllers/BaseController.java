@@ -1,14 +1,12 @@
 package com.czelink.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.MessageSource;
@@ -20,7 +18,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.czelink.beans.FileUploadViewBean;
+import com.czelink.beans.NavigationItemViewModel;
+import com.czelink.beans.NavigationListViewBean;
 import com.czelink.common.intg.constants.CommonConstants;
+import com.czelink.server.base.beans.JsonBaseViewBean;
 import com.czelink.server.base.support.ConversationManager;
 import com.czelink.server.base.support.ConversationManager.ConversationTask;
 import com.czelink.utils.ComponentAvailabilityHook;
@@ -48,12 +50,13 @@ public class BaseController {
 	@Resource(name = "redisOperations")
 	private RedisOperations<Object, Object> redisOperations;
 
-	@RequestMapping("/navigationList")
+	@RequestMapping(value = "/navigationList", produces = "application/json")
 	public @ResponseBody
-	String getNavigationList(
+	NavigationListViewBean getNavigationList(
 			final HttpSession session,
 			@RequestParam(value = "activateInstance") final String activateInstance) {
-		final JSONObject result = new JSONObject();
+
+		final NavigationListViewBean response = new NavigationListViewBean();
 
 		final List<String> rolesList = (List<String>) session
 				.getAttribute(CommonConstants.ROLE_LIST_IN_SESSION_KEY);
@@ -93,22 +96,22 @@ public class BaseController {
 			}
 		}
 		if (StringUtils.isNotBlank(navStr)) {
-			result.put("status", true);
+			response.setStatus(true);
 			final String[] navArr = navStr.split(",");
-			final JSONArray navigationList = new JSONArray();
+			final List<NavigationItemViewModel> navigationList = new ArrayList<NavigationItemViewModel>();
 			for (int i = 0; i < navArr.length; i++) {
 				final String labelCode = StringUtils.substring(navArr[i], 1);
 				final String label = this.navigationLabelMessageSource
 						.getMessage(labelCode, null, Locale.getDefault());
 
-				final JSONObject navItem = new JSONObject();
-				navItem.put("hashLink", navArr[i]);
-				navItem.put("label", label);
+				final NavigationItemViewModel navItem = new NavigationItemViewModel();
+				navItem.setHashLink(navArr[i]);
+				navItem.setLabel(label);
 				navigationList.add(navItem);
 			}
 
-			result.put("navigationList", navigationList);
-			result.put("role", role);
+			response.setNavigationList(navigationList);
+			response.setRole(role);
 		} else {
 			throw new IllegalStateException(
 					"invalid security or navigation information provided in navigation.properites or hooks.properites.");
@@ -118,17 +121,17 @@ public class BaseController {
 			final String verifyKey = (String) this.redisOperations
 					.opsForValue().get(activateInstance);
 			if (StringUtils.isNotBlank(verifyKey)) {
-				result.put("verifyKey", verifyKey);
+				response.setVerifyKey(verifyKey);
 			}
 		}
 
-		return result.toString();
+		return response;
 	}
 
-	@RequestMapping("/getCurrentRole")
+	@RequestMapping(value="/getCurrentRole", produces = "application/json")
 	@ResponseBody
-	String getCurrentRole(final HttpSession session) {
-		final JSONObject result = new JSONObject();
+	NavigationListViewBean getCurrentRole(final HttpSession session) {
+		final NavigationListViewBean response = new NavigationListViewBean();
 
 		final List<String> rolesList = (List<String>) session
 				.getAttribute(CommonConstants.ROLE_LIST_IN_SESSION_KEY);
@@ -154,67 +157,67 @@ public class BaseController {
 				role = CommonConstants.ROLE_ANONYMOUS;
 			}
 		}
+		response.setRole(role);
 
-		result.put("role", role);
-
-		return result.toString();
+		return response;
 	}
 
-	@RequestMapping("/startUploadConversation")
+	@RequestMapping(value = "/startUploadConversation", produces = "application/json")
 	public @ResponseBody
-	String startUploadConversation() {
+	JsonBaseViewBean startUploadConversation() {
 		final String uid = this.uploadConversationManager.startConversation();
-		final JSONObject result = new JSONObject();
-		result.put("uid", uid);
+		final JsonBaseViewBean response = new JsonBaseViewBean();
+		response.setUid(uid);
+		response.setStatus(true);
 		this.uploadConversationManager.setConversationOnCompleteTask(uid,
 				new UploadConverstionTask(uid, this.uploadConversationManager));
-		return result.toString();
+		return response;
 	}
 
-	@RequestMapping("/endUploadConversation")
+	@RequestMapping(value = "/endUploadConversation", produces = "application/json")
 	public @ResponseBody
-	String endUploadConversation(
+	JsonBaseViewBean endUploadConversation(
 			@RequestParam("conversation-id") final String conversationID) {
 		this.uploadConversationManager.endConversation(conversationID);
-		final JSONObject result = new JSONObject();
-		result.put("status", true);
-		return result.toString();
+		final JsonBaseViewBean response = new JsonBaseViewBean();
+		response.setStatus(true);
+		return response;
 	}
 
-	@RequestMapping("/completeUploadConversation")
+	@RequestMapping(value = "/completeUploadConversation", produces = "application/json")
 	public @ResponseBody
-	String completeUploadConversation(
+	JsonBaseViewBean completeUploadConversation(
 			@RequestParam("conversation-id") final String conversationID) {
 		this.uploadConversationManager.completeConversation(conversationID);
-		final JSONObject result = new JSONObject();
-		result.put("status", true);
-		return result.toString();
+		final JsonBaseViewBean response = new JsonBaseViewBean();
+		response.setStatus(true);
+		return response;
 	}
 
-	@RequestMapping("/fileupload")
+	@RequestMapping(value="/fileupload", produces = "application/json")
 	public @ResponseBody
-	String uploadFileToRepository(
+	FileUploadViewBean uploadFileToRepository(
 			@RequestHeader("conversation-id") final String conversationID,
 			@RequestParam final MultipartFile file) {
 		final boolean result = this.uploadConversationManager
 				.putIntoConversation(conversationID,
 						file.getOriginalFilename(), file);
-		final JSONObject json = new JSONObject();
+		final FileUploadViewBean response = new FileUploadViewBean();
 		if (result) {
-			json.put("src",
+			response.setSrc(
 					this.uploadRepository.getRepositoryContextPath() + "/imgs/"
 							+ conversationID + "/" + file.getOriginalFilename());
 		} else {
 			throw new IllegalStateException("invalid conversationID: "
 					+ conversationID);
 		}
-		json.put("status", result);
-		return json.toString();
+		response.setStatus(result);
+		return response;
 	}
 
-	@RequestMapping("/cancelupload")
+	@RequestMapping(value="/cancelupload", produces = "application/json")
 	public @ResponseBody
-	String uploadFileToRepository(
+	JsonBaseViewBean uploadFileToRepository(
 			@RequestHeader("conversation-id") final String conversationID,
 			@RequestParam final String fileName) {
 		final boolean result = this.uploadConversationManager
@@ -223,9 +226,9 @@ public class BaseController {
 			throw new IllegalStateException("invalid conversationID: "
 					+ conversationID);
 		}
-		final JSONObject json = new JSONObject();
-		json.put("status", result);
-		return json.toString();
+		final JsonBaseViewBean response = new JsonBaseViewBean();
+		response.setStatus(true);
+		return response;
 	}
 
 	public ConversationManager getUploadConversationManager() {
