@@ -42,19 +42,19 @@ public class UsermgmtController {
 		final Map context = new HashMap();
 		final boolean result = this.userManagementService.activateNewUser(uid,
 				context);
+		final String verifyKey = UUID.randomUUID().toString();
 		if (result) {
 			final String username = (String) context
 					.get(UsermgmtConstants.USER_NAME);
-			final String verifyKey = UUID.randomUUID().toString();
 			this.redisOperations.opsForValue().set(username, verifyKey);
 			resultStr = resultStr.concat("=" + username);
 		} else {
-			resultStr = "redirect:/";
+			resultStr = resultStr.concat("=" + verifyKey);
 		}
 		return resultStr;
 	}
 
-	@RequestMapping(value="/register", produces = "application/json")
+	@RequestMapping(value = "/register", produces = "application/json")
 	@ResponseBody
 	JsonBaseViewBean register(@Valid final RegisterFormBean registerBean,
 			final BindingResult bindingResult,
@@ -63,7 +63,7 @@ public class UsermgmtController {
 		final String username = registerBean.getNewusername();
 		final String password = registerBean.getNewpassword();
 		final String displayname = registerBean.getNewdisplayname();
-		
+
 		final JsonBaseViewBean response = new JsonBaseViewBean();
 		boolean svcResult = false;
 
@@ -95,7 +95,7 @@ public class UsermgmtController {
 			final List<ObjectError> errors = bindingResult.getAllErrors();
 			final int length = errors.size();
 			final List validationErrors = new ArrayList<String>(length);
-			for(int i=0; i<length; i++) {
+			for (int i = 0; i < length; i++) {
 				final ObjectError error = errors.get(i);
 				validationErrors.add(error.getDefaultMessage());
 			}
@@ -107,7 +107,7 @@ public class UsermgmtController {
 		return response;
 	}
 
-	@RequestMapping(value="/checkActivateStatus", produces="application/json")
+	@RequestMapping(value = "/checkActivateStatus", produces = "application/json")
 	@ResponseBody
 	JsonBaseViewBean checkActivateStatus(
 			@RequestParam(value = "activateInstance") final String activateInstance,

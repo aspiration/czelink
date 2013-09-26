@@ -24,7 +24,6 @@ import org.springframework.ldap.NameAlreadyBoundException;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DistinguishedName;
 import org.springframework.ldap.core.LdapOperations;
-import org.springframework.mail.MailSender;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
@@ -87,80 +86,89 @@ public class UserManagementServiceImpl implements UserManagementService,
 		boolean result = false;
 
 		try {
+			// step1: remove potential legacy in redis.
+			// remove potential legacy from redis.
+			final String username = user.getUsername();
+			final String verfiyId = (String) this.redisOperations.opsForValue()
+					.get(username);
+			if (StringUtils.isNotBlank(verfiyId)) {
+				this.redisOperations.delete(verfiyId);
+			}
 
-			// step1: send mail and record in Redis.
-			final String uid = UUID.randomUUID().toString();
-			this.redisOperations.opsForValue().set(uid, user.getUsername());
+			this.redisOperations.delete(username);
+			this.redisOperations.delete(username + "_pass");
+			this.redisOperations.delete(username + "_display");
 
-			final MimeMessage message = this.mailSender.createMimeMessage();
-			final MimeMessageHelper helper = new MimeMessageHelper(message,
-					false, "UTF-8");
-			helper.setTo(user.getUsername());
-			helper.setFrom("czelink.com");
+			try {
+				// step2: check if user exists
+				if (null == this.getUserDetail(user, context)) {
 
-			final Map model = new HashMap();
-			model.put("username", user.getDisplayName());
-			final String activatelink = ((String) context
-					.get(UsermgmtConstants.ACTIVATE_URL_KEY)).concat("?uid="
-					+ uid);
-			model.put("activatelink", activatelink);
-			String text = VelocityEngineUtils.mergeTemplateIntoString(
-					this.velocityEngine, "external/template/mail.vm", "UTF-8",
-					model);
-			helper.setText(text, true);
-			helper.setSubject("感谢注册财智网，点击链接激活账户");
+					// step3: record in Redis and send mail.
+					final String uid = UUID.randomUUID().toString();
+					this.redisOperations.opsForValue().set(uid,
+							user.getUsername());
+					this.redisOperations.opsForValue().set(user.getUsername(),
+							uid);
+					this.redisOperations.opsForValue().set(
+							user.getUsername() + "_display",
+							user.getDisplayName());
+					this.redisOperations.opsForValue().set(
+							user.getUsername() + "_pass", user.getPassword());
 
-			this.mailSender.send(message);
+					final MimeMessage message = this.mailSender
+							.createMimeMessage();
+					final MimeMessageHelper helper = new MimeMessageHelper(
+							message, false, "UTF-8");
+					helper.setTo(user.getUsername());
+					helper.setFrom("czelink.com");
 
-			// step2: process on LDAP.
-			final DistinguishedName distinguisedName = new DistinguishedName();
-			distinguisedName.add("ou", "users");
-			distinguisedName.add("uid", user.getUsername());
+					final Map model = new HashMap();
+					model.put("username", user.getDisplayName());
+					final String activatelink = ((String) context
+							.get(UsermgmtConstants.ACTIVATE_URL_KEY))
+							.concat("?uid=" + uid);
+					model.put("activatelink", activatelink);
+					String text = VelocityEngineUtils.mergeTemplateIntoString(
+							this.velocityEngine, "external/template/mail.vm",
+							"UTF-8", model);
+					helper.setText(text, true);
+					helper.setSubject("感谢注册财智网，点击链接激活账户");
 
-			final Attributes userAttributes = new BasicAttributes();
-			userAttributes.put("displayName", user.getDisplayName());
-			userAttributes.put("sn", user.getUsername());
-			userAttributes.put("mail", user.getUsername());
-			userAttributes.put("cn", user.getUsername());
-			userAttributes.put("userPassword",
-					encryptLdapPassword(user.getPassword()));
-			userAttributes.put("destinationIndicator", "false");
+					this.mailSender.send(message);
 
-			final BasicAttribute classAttribute = new BasicAttribute(
-					"objectclass");
-			classAttribute.add("top");
-			classAttribute.add("person");
-			classAttribute.add("inetOrgPerson");
-			classAttribute.add("organizationalPerson");
-			userAttributes.put(classAttribute);
+					result = true;
+				} else {
+					// user exists.
+					result = false;
 
-			this.ldapOperations.bind(distinguisedName, null, userAttributes);
+					// EORROR_MSG_CDE: 002, user registered.
+					context.put(UsermgmtConstants.EORROR_MSG_CDE, "002");
+				}
 
-			final DirContextAdapter dirContextAdapter = (DirContextAdapter) this.ldapOperations
-					.lookup(distinguisedName);
-			final String fullName = dirContextAdapter.getNameInNamespace();
-			this.addToUserRole(fullName);
+			} catch (final Throwable th) {
+				// TODO: to add log here.
+				th.printStackTrace();
 
-			// will not store user password in MongoDB.
-			user.setPassword(StringUtils.EMPTY);
-
-			// step3: process on MongoDB.
-			user.setActivated(false);
-			this.mongoOperations.insert(user);
-
-			result = true;
-		} catch (final Throwable th) {
-			// TODO: to add log here.
-			th.printStackTrace();
-
-			result = false;
-			if (th instanceof NameAlreadyBoundException) {
-				// EORROR_MSG_CDE: 002, user registered.
-				context.put(UsermgmtConstants.EORROR_MSG_CDE, "002");
-			} else {
+				result = false;
 				// EORROR_MSG_CDE: 008, unknown issue, fatal error.
 				context.put(UsermgmtConstants.EORROR_MSG_CDE, "008");
+
+				// remove potential legacy in redis.
+				final String uid = (String) this.redisOperations.opsForValue()
+						.get(username);
+				if (StringUtils.isNotBlank(uid)) {
+					this.redisOperations.delete(uid);
+				}
+				this.redisOperations.delete(username);
+				this.redisOperations.delete(username + "_pass");
+				this.redisOperations.delete(username + "_display");
 			}
+		} catch (Throwable e) {
+			e.printStackTrace();
+
+			result = false;
+			// EORROR_MSG_CDE: 012, Memory database connection issue.
+			context.put(UsermgmtConstants.EORROR_MSG_CDE, "012");
 		}
 
 		return result;
@@ -170,40 +178,103 @@ public class UserManagementServiceImpl implements UserManagementService,
 
 		boolean result = false;
 
-		final String username = (String) this.redisOperations.opsForValue()
-				.get(registerUid);
-		// remove from data store.
-		this.redisOperations.delete(registerUid);
+		try {
+			final String username = (String) this.redisOperations.opsForValue()
+					.get(registerUid);
+			if (StringUtils.isNotBlank(username)) {
+				final String verfiyId = (String) this.redisOperations
+						.opsForValue().get(username);
+				final String displayName = (String) this.redisOperations
+						.opsForValue().get(username + "_display");
+				final String password = (String) this.redisOperations
+						.opsForValue().get(username + "_pass");
+				// remove from data store.
+				this.redisOperations.delete(registerUid);
+				if (StringUtils.isNotBlank(username)) {
+					this.redisOperations.delete(username);
+					this.redisOperations.delete(username + "_pass");
+					this.redisOperations.delete(username + "_display");
+				}
+				if (StringUtils.isNotBlank(verfiyId)) {
+					this.redisOperations.delete(verfiyId);
+				}
 
-		if (StringUtils.isNotBlank(username)) {
-			User user = new User();
-			user.setUsername(username);
+				if (StringUtils.isNotBlank(username)
+						&& StringUtils.isNotBlank(verfiyId)
+						&& verfiyId.equals(registerUid)
+						&& StringUtils.isNotBlank(password)) {
 
-			context.put(UsermgmtConstants.USER_NAME, username);
+					User user = new User();
+					user.setUsername(username);
+					user.setPassword(password);
+					user.setDisplayName(displayName);
+					user.setActivated(true);
 
-			user = this.getUserDetail(user, context);
+					context.put(UsermgmtConstants.USER_NAME, user.getUsername());
 
-			try {
-				final DistinguishedName distinguisedName = new DistinguishedName();
-				distinguisedName.add("ou", "users");
-				distinguisedName.add("uid", user.getUsername());
+					try {
+						// step1: process on LDAP.
+						final DistinguishedName distinguisedName = new DistinguishedName();
+						distinguisedName.add("ou", "users");
+						distinguisedName.add("uid", user.getUsername());
 
-				final Attribute destinationIndicator = new BasicAttribute(
-						"destinationIndicator", "true");
-				final ModificationItem destinationIndicatorItem = new ModificationItem(
-						DirContext.REPLACE_ATTRIBUTE, destinationIndicator);
+						final Attributes userAttributes = new BasicAttributes();
+						userAttributes
+								.put("displayName", user.getDisplayName());
+						userAttributes.put("sn", user.getUsername());
+						userAttributes.put("mail", user.getUsername());
+						userAttributes.put("cn", user.getUsername());
+						userAttributes.put("userPassword",
+								encryptLdapPassword(user.getPassword()));
 
-				this.ldapOperations.modifyAttributes(distinguisedName,
-						new ModificationItem[] { destinationIndicatorItem });
+						final BasicAttribute classAttribute = new BasicAttribute(
+								"objectclass");
+						classAttribute.add("top");
+						classAttribute.add("person");
+						classAttribute.add("inetOrgPerson");
+						classAttribute.add("organizationalPerson");
+						userAttributes.put(classAttribute);
 
-				user.setActivated(true);
-				this.mongoOperations.save(user);
+						this.ldapOperations.bind(distinguisedName, null,
+								userAttributes);
 
-				result = true;
-			} catch (final Throwable th) {
-				th.printStackTrace();
+						final DirContextAdapter dirContextAdapter = (DirContextAdapter) this.ldapOperations
+								.lookup(distinguisedName);
+						final String fullName = dirContextAdapter
+								.getNameInNamespace();
+						this.addToUserRole(fullName);
+
+						// will not store user password in MongoDB.
+						user.setPassword(StringUtils.EMPTY);
+
+						// step2: process on MongoDB.
+						this.mongoOperations.insert(user);
+
+						result = true;
+					} catch (final Throwable th) {
+						th.printStackTrace();
+						result = false;
+
+						if (th instanceof NameAlreadyBoundException) {
+							// EORROR_MSG_CDE: 002, user registered.
+							context.put(UsermgmtConstants.EORROR_MSG_CDE, "002");
+						} else {
+							// EORROR_MSG_CDE: 008, unknown issue, fatal error.
+							context.put(UsermgmtConstants.EORROR_MSG_CDE, "008");
+						}
+					}
+				}
+			} else {
 				result = false;
+				// EORROR_MSG_CDE: out-dated user activate transaction id.
+				context.put(UsermgmtConstants.EORROR_MSG_CDE, "012");
 			}
+		} catch (Throwable e) {
+			e.printStackTrace();
+
+			result = false;
+			// EORROR_MSG_CDE: 012, Memory database connection issue.
+			context.put(UsermgmtConstants.EORROR_MSG_CDE, "012");
 		}
 
 		return result;
@@ -266,6 +337,9 @@ public class UserManagementServiceImpl implements UserManagementService,
 		} catch (final Throwable th) {
 			// TODO: to add log
 			th.printStackTrace();
+
+			// EORROR_MSG_CDE: 008, unknown issue, fatal error.
+			context.put(UsermgmtConstants.EORROR_MSG_CDE, "008");
 			result = false;
 		}
 
@@ -273,8 +347,21 @@ public class UserManagementServiceImpl implements UserManagementService,
 	}
 
 	public boolean removeUser(final User user, final Map context) {
-		// TODO Not required at this moment.
-		return false;
+		boolean result = false;
+		try {
+			final User target = this.getUserDetail(user, context);
+			target.setActivated(false);
+			this.mongoOperations.save(target);
+			result = true;
+		} catch (Throwable th) {
+			// TODO: to add log
+			th.printStackTrace();
+
+			// EORROR_MSG_CDE: 010, application database connection issue.
+			context.put(UsermgmtConstants.EORROR_MSG_CDE, "010");
+			result = false;
+		}
+		return result;
 	}
 
 	public User getUserDetail(final User user, final Map context) {

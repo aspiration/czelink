@@ -2,3 +2,6 @@
 001: login fail (required)
 002: duplicated Ldap binding.
 008: server side unknow issue (fatal).
+010: application database connection issue.
+012: Memory database connection issue.
+014: out-dated user activate transaction id.

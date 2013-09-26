@@ -400,6 +400,9 @@ define(
 
 										$scope.refreshStatus = function() {
 
+											siteParams['activated'] = undefined;
+											siteParams['verifyKey'] = undefined;
+
 											var restoredFlashObjects = restoreFlashObjects();
 											var restoredSiteObjects = restoreSiteObjects();
 

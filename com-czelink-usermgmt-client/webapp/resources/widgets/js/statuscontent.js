@@ -202,7 +202,7 @@ define(function() {
 				secureDataRetriever.setData({
 					newusername : $scope.newusername,
 					newpassword : $scope.newpassword,
-					newdisplayname: $scope.newdisplayname,
+					newdisplayname : $scope.newdisplayname,
 					activatelinkRoot : activatelinkRoot
 				});
 
@@ -229,7 +229,9 @@ define(function() {
 										$scope.registerFailReason = "该邮箱已经注册";
 										$scope.registerFailRsnCde = "002";
 									}
-									if (data.statusCode == "008") {
+									if (data.statusCode == "008"
+											|| data.statusCode == "010"
+											|| data.statusCode == "012") {
 										$scope.registerFailReason = "服务器异常，请联系管理员";
 										$scope.registerFailRsnCde = "008";
 									}
