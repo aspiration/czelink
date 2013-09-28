@@ -4,12 +4,11 @@ import java.util.List;
 
 import org.springframework.data.mongodb.core.MongoOperations;
 
-import com.czelink.dbaccess.MongoOperationsAware;
 import com.czelink.infomgmt.intg.entities.InfoArticle;
 import com.czelink.infomgmt.intg.services.InformationManagementService;
 
 public class InformationManagementServiceImpl implements
-		InformationManagementService, MongoOperationsAware {
+		InformationManagementService {
 
 	/**
 	 * mongoTemplate

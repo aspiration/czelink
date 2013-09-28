@@ -5,9 +5,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Vector;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -16,12 +20,17 @@ public class ComponentClassLoader extends ClassLoader {
 	/**
 	 * scattered classes in classPath directory.
 	 */
-	private final List<String> scatteredClasses = new ArrayList<String>();
+	private final List<String> scatteredClasses;
 
 	/**
 	 * classPath as jar file.
 	 */
-	private final List<String> classpathJars = new ArrayList<String>();
+	private final List<String> classpathJars;
+
+	/**
+	 * resources under classPath.
+	 */
+	private final List<String> classpathResources;
 
 	/**
 	 * constructor.
@@ -33,6 +42,10 @@ public class ComponentClassLoader extends ClassLoader {
 
 		super(parent);
 
+		final List<String> scatteredClasses = new ArrayList<String>();
+		final List<String> classpathJars = new ArrayList<String>();
+		final List<String> classpathResources = new ArrayList<String>();
+
 		if (null == pClasspaths) {
 			throw new IllegalArgumentException("Classpath cannot be null!");
 		} else if (0 == pClasspaths.length) {
@@ -42,8 +55,14 @@ public class ComponentClassLoader extends ClassLoader {
 
 		for (int i = 0; i < pClasspaths.length; i++) {
 			final String classpath = pClasspaths[i];
-			this.resolveClasspaths(classpath);
+			this.resolveClasspaths(classpath, scatteredClasses, classpathJars,
+					classpathResources);
 		}
+
+		this.scatteredClasses = Collections.unmodifiableList(scatteredClasses);
+		this.classpathJars = Collections.unmodifiableList(classpathJars);
+		this.classpathResources = Collections
+				.unmodifiableList(classpathResources);
 	}
 
 	/**
@@ -51,17 +70,23 @@ public class ComponentClassLoader extends ClassLoader {
 	 * 
 	 * @param classpath
 	 */
-	private void resolveClasspaths(final String classpath) {
+	private void resolveClasspaths(final String classpath,
+			final List<String> scatteredClasses,
+			final List<String> classpathJars,
+			final List<String> classpathResources) {
 		if (classpath.endsWith(".jar")) {
-			this.classpathJars.add(classpath);
+			classpathJars.add(classpath);
 		} else if (classpath.endsWith(".class")) {
-			this.scatteredClasses.add(classpath);
+			scatteredClasses.add(classpath);
 		} else {
 			final File classpathFile = new File(classpath);
 			if (classpathFile.isDirectory()) {
 				for (File subFile : classpathFile.listFiles()) {
-					this.resolveClasspaths(subFile.getAbsolutePath());
+					this.resolveClasspaths(subFile.getAbsolutePath(),
+							scatteredClasses, classpathJars, classpathResources);
 				}
+			} else if (classpathFile.isFile()) {
+				classpathResources.add(classpath);
 			}
 		}
 	}
@@ -97,11 +122,6 @@ public class ComponentClassLoader extends ClassLoader {
 				final String jarPath = this.classpathJars.get(i);
 
 				final JarFile jarFile = new JarFile(jarPath);
-
-				final Enumeration<JarEntry> emumeration = jarFile.entries();
-				while (emumeration.hasMoreElements()) {
-					final JarEntry jarEntry = emumeration.nextElement();
-				}
 
 				final JarEntry jarEntry = (JarEntry) jarFile
 						.getEntry(classFileRelativePath);
@@ -161,6 +181,77 @@ public class ComponentClassLoader extends ClassLoader {
 					"No class defined in classpath as: " + className);
 		}
 		return result;
+	}
+
+	@Override
+	protected URL findResource(String name) {
+		URL result = null;
+
+		try {
+			final int length = this.classpathResources.size();
+			boolean isFound = false;
+			for (int i = 0; !isFound && i < length; i++) {
+				final File file = new File(this.classpathResources.get(i));
+				if (file.getAbsolutePath().endsWith(name)) {
+					isFound = true;
+					result = file.toURI().toURL();
+				}
+			}
+			// search as resource in jar
+			final int size = this.classpathJars.size();
+			for (int i = 0; !isFound && i < size; i++) {
+				final String jarPath = this.classpathJars.get(i);
+
+				final JarFile jarFile = new JarFile(jarPath);
+
+				final Enumeration<JarEntry> jarEntries = jarFile.entries();
+				while (jarEntries.hasMoreElements()) {
+					final JarEntry jarEntry = jarEntries.nextElement();
+					if (jarEntry.getName().endsWith(name)) {
+						isFound = true;
+						result = new URL("jar:file:/" + jarPath + "!/"
+								+ jarEntry.getName());
+					}
+				}
+			}
+		} catch (MalformedURLException e) {
+			result = null;
+			e.printStackTrace();
+		} catch (IOException e) {
+			result = null;
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	@Override
+	protected Enumeration<URL> findResources(final String name)
+			throws IOException {
+		final int length = this.classpathResources.size();
+		final Vector<URL> results = new Vector<URL>(length);
+		for (int i = 0; i < length; i++) {
+			final String targetPath = this.classpathResources.get(i);
+			if (targetPath.endsWith(name)) {
+				final URL targetURL = new File(targetPath).toURI().toURL();
+				results.add(targetURL);
+			}
+		}
+		// search as resource in jar
+		final int size = this.classpathJars.size();
+		for (int i = 0; i < size; i++) {
+			final String jarPath = this.classpathJars.get(i);
+
+			final JarFile jarFile = new JarFile(jarPath);
+			final Enumeration<JarEntry> jarEntries = jarFile.entries();
+			while (jarEntries.hasMoreElements()) {
+				final JarEntry jarEntry = jarEntries.nextElement();
+				if (jarEntry.getName().endsWith(name)) {
+					results.add(new URL("jar:file:/" + jarPath + "!/"
+							+ jarEntry.getName()));
+				}
+			}
+		}
+		return results.elements();
 	}
 
 }

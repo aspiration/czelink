@@ -14,9 +14,6 @@ import javax.naming.directory.ModificationItem;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.velocity.app.VelocityEngine;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.redis.core.RedisOperations;
@@ -30,16 +27,10 @@ import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import org.springframework.ui.velocity.VelocityEngineUtils;
 
 import com.czelink.common.intg.entities.User;
-import com.czelink.dbaccess.LdapOperationsAware;
-import com.czelink.dbaccess.MailSenderAware;
-import com.czelink.dbaccess.MongoOperationsAware;
-import com.czelink.dbaccess.RedisOperationsAware;
 import com.czelink.usermgmt.intg.constants.UsermgmtConstants;
 import com.czelink.usermgmt.intg.services.UserManagementService;
 
-public class UserManagementServiceImpl implements UserManagementService,
-		LdapOperationsAware, MongoOperationsAware, RedisOperationsAware,
-		MailSenderAware, ApplicationContextAware {
+public class UserManagementServiceImpl implements UserManagementService {
 
 	private static final ShaPasswordEncoder passwordEncoder = new ShaPasswordEncoder();
 
@@ -129,8 +120,8 @@ public class UserManagementServiceImpl implements UserManagementService,
 							.concat("?uid=" + uid);
 					model.put("activatelink", activatelink);
 					String text = VelocityEngineUtils.mergeTemplateIntoString(
-							this.velocityEngine, "external/template/mail.vm",
-							"UTF-8", model);
+							this.getVelocityEngine(),
+							"external/template/mail.vm", "UTF-8", model);
 					helper.setText(text, true);
 					helper.setSubject("感谢注册财智网，点击链接激活账户");
 
@@ -390,9 +381,11 @@ public class UserManagementServiceImpl implements UserManagementService,
 		this.redisOperations = redisOperations;
 	}
 
-	public void setApplicationContext(ApplicationContext applicationContext)
-			throws BeansException {
-		this.velocityEngine = (VelocityEngine) applicationContext
-				.getBean("velocityEngine");
+	public VelocityEngine getVelocityEngine() {
+		return velocityEngine;
+	}
+
+	public void setVelocityEngine(VelocityEngine velocityEngine) {
+		this.velocityEngine = velocityEngine;
 	}
 }

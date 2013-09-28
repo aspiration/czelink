@@ -1,20 +1,31 @@
 version: 1
 
+dn: dc=czelink,dc=com
+objectclass: domain
+objectclass: top
+dc: czelink
+
+dn: ou=roles,dc=czelink,dc=com
+objectClass: organizationalUnit
+objectClass: top
+ou: roles
+
+dn: ou=users,dc=czelink,dc=com
+objectClass: organizationalUnit
+objectClass: top
+ou: users
+
 dn: cn=admin,ou=roles,dc=czelink,dc=com
 objectClass: groupOfUniqueNames
 objectClass: top
 cn: admin
 uniqueMember: uid=superadmin@czelink.com,ou=users,dc=czelink,dc=com
 
-dn: dc=czelink,dc=com
-objectclass: domain
-objectclass: top
-dc: czelink
-
-dn: ou=users,dc=czelink,dc=com
-objectClass: organizationalUnit
+dn: cn=user,ou=roles,dc=czelink,dc=com
+objectClass: groupOfUniqueNames
 objectClass: top
-ou: users
+cn: user
+uniqueMember: uid=superadmin@czelink.com,ou=users,dc=czelink,dc=com
 
 dn: uid=superadmin@czelink.com,ou=users,dc=czelink,dc=com
 objectClass: organizationalPerson
@@ -26,15 +37,3 @@ sn: superadmin
 destinationIndicator: true
 uid: superadmin@czelink.com
 userPassword:: e3NoYX1pK1BKUTdGZ24vKy94UnF0Wm0wS0JLMzRQSjA9
-
-dn: cn=user,ou=roles,dc=czelink,dc=com
-objectClass: groupOfUniqueNames
-objectClass: top
-cn: user
-uniqueMember: uid=superadmin@czelink.com,ou=users,dc=czelink,dc=com
-
-dn: ou=roles,dc=czelink,dc=com
-objectClass: organizationalUnit
-objectClass: top
-ou: roles
-

@@ -130,10 +130,10 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 
 			final Method getComponentClassLoaderMethod = serviceRegistryBean
 					.getClass().getMethod("getComponentClassLoader",
-							new Class[0]);
+							new Class[] { String.class });
 
 			final ClassLoader componentClassLoader = (ClassLoader) getComponentClassLoaderMethod
-					.invoke(serviceRegistryBean, new Object[0]);
+					.invoke(serviceRegistryBean, this.serviceGroupName);
 
 			final Method getServiceInterfaceImplementMethod = serviceRegistryBean
 					.getClass().getMethod("getServiceInterfaceImplement",

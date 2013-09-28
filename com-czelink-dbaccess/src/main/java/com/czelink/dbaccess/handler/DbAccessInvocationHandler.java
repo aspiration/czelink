@@ -3,8 +3,6 @@ package com.czelink.dbaccess.handler;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
-import com.czelink.intg.utils.DbAccessUtil;
-
 /**
  * DbAccessInvocationHandler pre-handle the input parameters before execute on
  * real object.
