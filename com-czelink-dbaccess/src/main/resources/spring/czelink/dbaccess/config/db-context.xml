@@ -7,7 +7,9 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
 
 	<context:property-placeholder order="0"
-		location="classpath:/content/czelink/dbaccess/properties/mongo.properties,classpath:/content/czelink/dbaccess/properties/ldap.properties,classpath:/content/czelink/dbaccess/properties/redis.properties,classpath:/content/czelink/dbaccess/properties/mail.properties" />
+		location="classpath:/content/czelink/dbaccess/properties/mongo.properties,classpath:/content/czelink/dbaccess/properties/ldap.properties,classpath:/content/czelink/dbaccess/properties/redis.properties,classpath:/content/czelink/dbaccess/properties/mail.properties,classpath:/content/czelink/intg/jms.properties" />
+
+	<import resource="classpath*:/spring/czelink/intg/server.xml" />
 
 	<!-- mongo DB configuration -->
 	<mongo:mongo host="${mongo.host}" port="${mongo.port}">

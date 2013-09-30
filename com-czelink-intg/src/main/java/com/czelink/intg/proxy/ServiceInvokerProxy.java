@@ -6,9 +6,16 @@ import java.lang.reflect.Proxy;
 
 import javax.servlet.ServletContext;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.ServletContextAware;
 
+import com.czelink.intg.activators.ServiceActivator;
+import com.czelink.intg.messaging.RequestMessage;
+import com.czelink.intg.messaging.ResponseMessage;
 import com.czelink.intg.utils.DbAccessUtil;
 
 /**
@@ -18,7 +25,7 @@ import com.czelink.intg.utils.DbAccessUtil;
  * 
  */
 public class ServiceInvokerProxy implements FactoryBean<Object>,
-		InvocationHandler, ServletContextAware {
+		InvocationHandler, ServletContextAware, ApplicationContextAware {
 
 	/**
 	 * targetContextName
@@ -36,6 +43,16 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 	private static final String SERVICE_REGISTRY_BEAN = "dbAccessServiceRegistry";
 
 	/**
+	 * service activator bean name.
+	 */
+	private static final String SERVICE_ACTIVATOR_BEAN = "serviceActivator";
+
+	/**
+	 * Application Context.
+	 */
+	private ApplicationContext applicationContext;
+
+	/**
 	 * service group name.
 	 */
 	private String serviceGroupName;
@@ -50,59 +67,7 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 	 */
 	private ServletContext servletContext;
 
-	/**
-	 * get dynamic service interface implementation.
-	 */
-	public Object getObject() throws Exception {
-		final Class interfaceClass = Class.forName(this.getServiceInterface());
-		return Proxy.newProxyInstance(interfaceClass.getClassLoader(),
-				new Class[] { interfaceClass }, this);
-	}
-
-	/**
-	 * get interface class definition.
-	 */
-	public Class<?> getObjectType() {
-		Class interfaceClass = null;
-
-		try {
-			interfaceClass = Class.forName(this.getServiceInterface());
-		} catch (ClassNotFoundException e) {
-			throw new IllegalStateException("Cannot find class: "
-					+ this.getServiceInterface() + ".", e);
-		}
-
-		return interfaceClass;
-	}
-
-	/**
-	 * singleton bean.
-	 */
-	public boolean isSingleton() {
-		return true;
-	}
-
-	public void setServletContext(ServletContext pServletContext) {
-		this.servletContext = pServletContext;
-	}
-
-	public String getServiceGroupName() {
-		return serviceGroupName;
-	}
-
-	public void setServiceGroupName(String serviceGroupName) {
-		this.serviceGroupName = serviceGroupName;
-	}
-
-	public String getServiceInterface() {
-		return serviceInterface;
-	}
-
-	public void setServiceInterface(String serviceInterface) {
-		this.serviceInterface = serviceInterface;
-	}
-
-	public Object invoke(Object proxy, Method method, Object[] args)
+	private Object invokeLocal(Object proxy, Method method, Object[] args)
 			throws Throwable {
 		final String methodName = method.getName();
 		Object result = null;
@@ -171,7 +136,109 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 		} finally {
 			Thread.currentThread().setContextClassLoader(currentAppClassLoader);
 		}
+		return result;
+	}
 
+	private Object invokeRemote(Object proxy, Method method, Object[] args)
+			throws Throwable {
+		Object result = null;
+
+		ServiceActivator serviceActivator = null;
+
+		try {
+			serviceActivator = (ServiceActivator) this.applicationContext
+					.getBean(ServiceInvokerProxy.SERVICE_ACTIVATOR_BEAN);
+		} catch (final NoSuchBeanDefinitionException e) {
+			// suppress the exception.
+			serviceActivator = null;
+		}
+
+		if (null != serviceActivator) {
+			final RequestMessage requestMessage = new RequestMessage();
+			requestMessage.setOperationName(method.getName());
+			requestMessage.setOperationParameters(args);
+			requestMessage.setServiceInterface(this.serviceInterface);
+			requestMessage.setServiceName(this.serviceGroupName);
+
+			final ResponseMessage responseMessage = serviceActivator
+					.activate(requestMessage);
+			if (responseMessage.getStatus()) {
+				DbAccessUtil.resyncInputParameterStatusAfterProcess(
+						responseMessage.getOperationParameters(), args);
+
+				result = responseMessage.getReturnValue();
+			} else {
+				// TODO: Log the error message or throw the exception out by
+				// wrapper.
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * get dynamic service interface implementation.
+	 */
+	public Object getObject() throws Exception {
+		final Class interfaceClass = Class.forName(this.getServiceInterface());
+		return Proxy.newProxyInstance(interfaceClass.getClassLoader(),
+				new Class[] { interfaceClass }, this);
+	}
+
+	/**
+	 * get interface class definition.
+	 */
+	public Class<?> getObjectType() {
+		Class interfaceClass = null;
+
+		try {
+			interfaceClass = Class.forName(this.getServiceInterface());
+		} catch (ClassNotFoundException e) {
+			throw new IllegalStateException("Cannot find class: "
+					+ this.getServiceInterface() + ".", e);
+		}
+
+		return interfaceClass;
+	}
+
+	/**
+	 * singleton bean.
+	 */
+	public boolean isSingleton() {
+		return true;
+	}
+
+	public void setServletContext(ServletContext pServletContext) {
+		this.servletContext = pServletContext;
+	}
+
+	public String getServiceGroupName() {
+		return serviceGroupName;
+	}
+
+	public void setServiceGroupName(String serviceGroupName) {
+		this.serviceGroupName = serviceGroupName;
+	}
+
+	public String getServiceInterface() {
+		return serviceInterface;
+	}
+
+	public void setServiceInterface(String serviceInterface) {
+		this.serviceInterface = serviceInterface;
+	}
+
+	public void setApplicationContext(ApplicationContext pApplicationContext)
+			throws BeansException {
+		this.applicationContext = pApplicationContext;
+	}
+
+	public Object invoke(Object proxy, Method method, Object[] args)
+			throws Throwable {
+		Object result = null;
+		result = this.invokeRemote(proxy, method, args);
+		if (null == result) {
+			result = this.invokeLocal(proxy, method, args);
+		}
 		return result;
 	}
 }

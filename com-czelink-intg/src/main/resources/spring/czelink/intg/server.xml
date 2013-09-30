@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans profile="spring.integration.jms" xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-jms="http://www.springframework.org/schema/integration/jms"
+	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-2.2.xsd
+		http://www.springframework.org/schema/integration/jms http://www.springframework.org/schema/integration/jms/spring-integration-jms-2.2.xsd
+		http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream-2.2.xsd">
+
+	<import resource="infrastructure.xml" />
+
+	<int-jms:inbound-gateway request-destination="requestQueue"
+		default-reply-destination="responseQueue" request-channel="inboundJmsRequests"
+		reply-channel="outboundJmsResponses" />
+
+	<int:channel id="inboundJmsRequests">
+		<int:interceptors>
+			<int:wire-tap channel="requestsloggingChannel" />
+		</int:interceptors>
+	</int:channel>
+	<int:logging-channel-adapter id="requestsloggingChannel"
+		log-full-message="true" />
+
+	<int:channel id="outboundJmsResponses">
+		<int:interceptors>
+			<int:wire-tap channel="responseloggingChannel" />
+		</int:interceptors>
+	</int:channel>
+	<int:logging-channel-adapter id="responseloggingChannel"
+		log-full-message="true" />
+
+	<int:service-activator input-channel="inboundJmsRequests"
+		output-channel="outboundJmsResponses" ref="remoteServerServiceActivator" />
+
+</beans>
