@@ -1,6 +1,10 @@
 package com.czelink.usermgmt.intg.constants;
 
-public final class UsermgmtConstants {
+import java.io.Serializable;
+
+public final class UsermgmtConstants implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	public static final String LOGON_TOKEN_KEY = UsermgmtConstants.class
 			+ "_logon_token";

@@ -1,9 +1,11 @@
 package com.czelink.intg.messaging;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.czelink.intg.exceptions.ServiceInvocationException;
 
 public class ResponseMessage implements Serializable {
 
@@ -13,7 +15,7 @@ public class ResponseMessage implements Serializable {
 
 	private Object returnValue;
 
-	private final List<Object> exceptionList = new ArrayList<Object>();
+	private ServiceInvocationException exception;
 
 	public Object[] getOperationParameters() {
 		return operationParameters;
@@ -31,16 +33,15 @@ public class ResponseMessage implements Serializable {
 		this.returnValue = returnValue;
 	}
 
-	public List<Object> getExceptionList() {
-		return Collections.unmodifiableList(this.exceptionList);
+	public ServiceInvocationException getException() {
+		return exception;
 	}
 
-	public void addToExceptionList(final Object execption) {
-		this.exceptionList.add(execption);
+	public void setException(ServiceInvocationException exception) {
+		this.exception = exception;
 	}
 
 	public boolean getStatus() {
-		return (null != this.returnValue)
-				&& ((null == this.exceptionList) || (this.exceptionList.size() == 0));
+		return (null != this.returnValue) && (null == this.exception);
 	}
 }

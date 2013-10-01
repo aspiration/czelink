@@ -1,6 +1,7 @@
 package com.czelink.usermgmt.security.handlers;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -12,7 +13,9 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 public class AjaxAuthenticationFailureHandler implements
-		AuthenticationFailureHandler {
+		AuthenticationFailureHandler, Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	public void onAuthenticationFailure(HttpServletRequest request,
 			HttpServletResponse response, AuthenticationException exception)

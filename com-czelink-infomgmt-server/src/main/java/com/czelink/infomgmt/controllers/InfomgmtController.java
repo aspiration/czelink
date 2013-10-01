@@ -1,5 +1,6 @@
 package com.czelink.infomgmt.controllers;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,27 +19,30 @@ import com.czelink.infomgmt.intg.entities.InfoArticle;
 import com.czelink.infomgmt.intg.services.InformationManagementService;
 
 @Controller
-public class InfomgmtController {
+public class InfomgmtController implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@Resource(name = "baseDateTimeDisplayConverter")
-	private Converter<Date, String> dateTimeDisplayConverter;
+	private transient Converter<Date, String> dateTimeDisplayConverter;
 
 	@Resource(name = "infomgmtService")
-	private InformationManagementService informationManagementService;
+	private transient InformationManagementService informationManagementService;
 
-	@RequestMapping(value="/latestInfo", produces = "application/json")
+	@RequestMapping(value = "/latestInfo", produces = "application/json")
 	public @ResponseBody
 	InfoArticleResponse latestInfo() {
 		final List<InfoArticle> infoArticle = this.informationManagementService
 				.retrieveLatestInformationList(5);
-		
+
 		final InfoArticleResponse response = new InfoArticleResponse();
 
 		final int length = infoArticle.size();
-		final List<InfoContentResponse> array = new ArrayList<InfoContentResponse>(length);
+		final List<InfoContentResponse> array = new ArrayList<InfoContentResponse>(
+				length);
 		for (int i = 0; i < length; i++) {
 			final InfoContentResponse infoContent = new InfoContentResponse();
-			infoContent.setId( infoArticle.get(i).getId());
+			infoContent.setId(infoArticle.get(i).getId());
 			infoContent.setTitle(infoArticle.get(i).getTitle());
 			array.add(infoContent);
 		}
@@ -49,7 +53,7 @@ public class InfomgmtController {
 		return response;
 	}
 
-	@RequestMapping(value="/searchById", produces = "application/json")
+	@RequestMapping(value = "/searchById", produces = "application/json")
 	public @ResponseBody
 	InfoContentResponse searchById(
 			@RequestParam(value = "articleId", required = true) String articleId) {
@@ -60,7 +64,7 @@ public class InfomgmtController {
 
 		infoContent.setId(infoArticle.getId());
 		infoContent.setTitle(infoArticle.getTitle());
-		
+
 		final String[] paragraphs = infoArticle.getParagraphs();
 		final List<String> paraArray = new ArrayList<String>(paragraphs.length);
 		for (int j = 0; j < paragraphs.length; j++) {
@@ -69,7 +73,8 @@ public class InfomgmtController {
 		infoContent.setStatus(true);
 		infoContent.setParagraphs(paraArray);
 		infoContent.setAuthor(infoArticle.getAuther().getDisplayName());
-		infoContent.setDate(this.dateTimeDisplayConverter.convert(infoArticle.getDate()));
+		infoContent.setDate(this.dateTimeDisplayConverter.convert(infoArticle
+				.getDate()));
 
 		return infoContent;
 	}

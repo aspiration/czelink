@@ -1,6 +1,7 @@
 package com.czelink.usermgmt.security.entrypoints;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -11,7 +12,10 @@ import net.sf.json.JSONObject;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
-public class AjaxAuthenticationEntryPoint implements AuthenticationEntryPoint {
+public class AjaxAuthenticationEntryPoint implements AuthenticationEntryPoint,
+		Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	public void commence(HttpServletRequest request,
 			HttpServletResponse response, AuthenticationException authException)

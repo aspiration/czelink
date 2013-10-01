@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
@@ -19,7 +20,9 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.ClassUtils;
 
-public final class DbAccessUtil {
+public final class DbAccessUtil implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * private constructor.

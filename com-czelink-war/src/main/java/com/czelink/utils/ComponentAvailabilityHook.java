@@ -1,13 +1,19 @@
 package com.czelink.utils;
 
+import java.io.Serializable;
 import java.util.Locale;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.MessageSource;
 
-public final class ComponentAvailabilityHook {
+public final class ComponentAvailabilityHook implements Serializable {
 
-	private MessageSource hookMessageSource;
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * message source.
+	 */
+	private transient MessageSource hookMessageSource;
 
 	/**
 	 * 

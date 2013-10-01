@@ -1,9 +1,13 @@
 package com.czelink.server.base.support;
 
+import java.io.Serializable;
+
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.TaskScheduler;
 
-public class ConversationTaskDefinition {
+public class ConversationTaskDefinition implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private long maxLivePeriod;
 

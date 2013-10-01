@@ -1,6 +1,10 @@
 package com.czelink.common.intg.constants;
 
-public final class CommonConstants {
+import java.io.Serializable;
+
+public final class CommonConstants implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	public static final String ROLE_ANONYMOUS = "ROLE_ANONYMOUS";
 

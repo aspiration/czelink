@@ -2,6 +2,7 @@ package com.czelink.uploadrepo.intg.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,17 +11,23 @@ import java.util.Set;
 import javax.servlet.ServletContext;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.czelink.uploadrepo.intg.UploadRepository;
 
 public class UploadRepositoryImpl implements UploadRepository,
-		ServletContextAware {
+		ServletContextAware, Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	private static Log LOGGER = LogFactory.getLog(UploadRepositoryImpl.class);
 
 	private static final String TARGET_CONTEXT_NAME = "/com-czelink-uploadrepo-facade";
 
-	private ServletContext servletContext;
+	private transient ServletContext servletContext;
 
 	private String getRepositoryAbsolutePath() {
 		final ServletContext targetContext = this.servletContext
@@ -60,11 +67,15 @@ public class UploadRepositoryImpl implements UploadRepository,
 				result = true;
 			}
 		} catch (IllegalStateException e) {
-			e.printStackTrace();
-			throw e;
+			if (UploadRepositoryImpl.LOGGER.isErrorEnabled()) {
+				UploadRepositoryImpl.LOGGER.error(
+						"[FileUploadRepository: " + e.getMessage() + "]", e);
+			}
 		} catch (IOException e) {
-			e.printStackTrace();
-			throw e;
+			if (UploadRepositoryImpl.LOGGER.isErrorEnabled()) {
+				UploadRepositoryImpl.LOGGER.error(
+						"[FileUploadRepository: " + e.getMessage() + "]", e);
+			}
 		} finally {
 			result = false;
 		}

@@ -2,6 +2,7 @@ package com.czelink.dbaccess.loader;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,19 +15,21 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class ReloadableComponentClassLoader {
+public class ReloadableComponentClassLoader implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private static ReloadableComponentClassLoader instance;
 
-	private ApplicationContext parentAppContext;
+	private transient ApplicationContext parentAppContext;
 
 	private ClassLoader parent;
 
 	private String componentRepositoryPath;
 
-	private Map<String, ComponentClassLoader> coreLoaders = new HashMap<String, ComponentClassLoader>();
+	private transient Map<String, ComponentClassLoader> coreLoaders = new HashMap<String, ComponentClassLoader>();
 
-	private Map<String, ClassPathXmlApplicationContext> componentContexts = new HashMap<String, ClassPathXmlApplicationContext>();
+	private transient Map<String, ClassPathXmlApplicationContext> componentContexts = new HashMap<String, ClassPathXmlApplicationContext>();
 
 	/**
 	 * repository watcher.
@@ -139,7 +142,7 @@ public class ReloadableComponentClassLoader {
 
 			this.componentContexts.put(serviceName, componentContext);
 		} catch (BeansException e) {
-			e.printStackTrace();
+			throw new IllegalStateException(e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(preservedClassLoader);
 		}
@@ -183,11 +186,11 @@ public class ReloadableComponentClassLoader {
 			result = this.componentContexts.get(serviceName).getBean(
 					loader.loadClass(serviceInterfaceName));
 		} catch (BeansException e) {
-			e.printStackTrace();
 			result = null;
+			throw new IllegalStateException(e);
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
 			result = null;
+			throw new IllegalStateException(e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(preservedClassLoader);
 		}
@@ -195,7 +198,9 @@ public class ReloadableComponentClassLoader {
 	}
 
 	private class ComponentRepositoryWatcher extends
-			FileAlterationListenerAdaptor {
+			FileAlterationListenerAdaptor implements Serializable {
+
+		private static final long serialVersionUID = 1L;
 
 		private final FileAlterationMonitor monitor;
 

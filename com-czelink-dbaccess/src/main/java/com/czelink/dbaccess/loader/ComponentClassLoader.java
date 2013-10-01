@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -15,7 +16,9 @@ import java.util.Vector;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public class ComponentClassLoader extends ClassLoader {
+public class ComponentClassLoader extends ClassLoader implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * scattered classes in classPath directory.
@@ -133,7 +136,7 @@ public class ComponentClassLoader extends ClassLoader {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new IllegalStateException(e);
 		}
 		return classbytes;
 	}
@@ -152,17 +155,17 @@ public class ComponentClassLoader extends ClassLoader {
 			clazzbytes = new byte[bis.available()];
 			bis.read(clazzbytes);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new IllegalStateException(e);
 		} finally {
 			try {
 				bis.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				throw new IllegalStateException(e);
 			}
 			try {
 				classFileInputStream.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				throw new IllegalStateException(e);
 			}
 		}
 		return clazzbytes;
@@ -216,10 +219,10 @@ public class ComponentClassLoader extends ClassLoader {
 			}
 		} catch (MalformedURLException e) {
 			result = null;
-			e.printStackTrace();
+			throw new IllegalStateException(e);
 		} catch (IOException e) {
 			result = null;
-			e.printStackTrace();
+			throw new IllegalStateException(e);
 		}
 		return result;
 	}

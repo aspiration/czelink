@@ -1,6 +1,7 @@
 package com.czelink.usermgmt.security.handlers;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -19,7 +20,9 @@ import com.czelink.common.intg.constants.CommonConstants;
 import com.czelink.usermgmt.intg.constants.UsermgmtConstants;
 
 public class AjaxAuthenticationSuccessHandler implements
-		AuthenticationSuccessHandler {
+		AuthenticationSuccessHandler, Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	public void onAuthenticationSuccess(HttpServletRequest request,
 			HttpServletResponse response, Authentication auth)

@@ -1,11 +1,15 @@
 package com.czelink.server.base.converters;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.lang.time.FastDateFormat;
 import org.springframework.core.convert.converter.Converter;
 
-public class DateTimeDisplayConverter implements Converter<Date, String> {
+public class DateTimeDisplayConverter implements Converter<Date, String>,
+		Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * expected output format.

@@ -1,5 +1,6 @@
 package com.czelink.server.base.support;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,7 +13,9 @@ import java.util.UUID;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.TaskScheduler;
 
-public class ConversationManager implements Runnable {
+public class ConversationManager implements Runnable, Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private final Map<String, Conversation> conversationMap = Collections
 			.synchronizedMap(new HashMap<String, Conversation>());
@@ -144,7 +147,11 @@ public class ConversationManager implements Runnable {
 		return this.conversationMap.get(conversationID);
 	}
 
-	public static abstract class ConversationTask implements Runnable {
+	public static abstract class ConversationTask implements Runnable,
+			Serializable {
+
+		private static final long serialVersionUID = 1L;
+
 		private Conversation conversation;
 
 		protected final ConversationManager conversationManager;

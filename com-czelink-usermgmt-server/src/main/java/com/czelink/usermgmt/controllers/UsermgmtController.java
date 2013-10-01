@@ -1,5 +1,6 @@
 package com.czelink.usermgmt.controllers;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,13 +27,15 @@ import com.czelink.usermgmt.intg.constants.UsermgmtConstants;
 import com.czelink.usermgmt.intg.services.UserManagementService;
 
 @Controller
-public class UsermgmtController {
+public class UsermgmtController implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@Resource(name = "userManagementService")
-	private UserManagementService userManagementService;
+	private transient UserManagementService userManagementService;
 
 	@Resource(name = "redisOperations")
-	private RedisOperations<Object, Object> redisOperations;
+	private transient RedisOperations<Object, Object> redisOperations;
 
 	@RequestMapping("/activate")
 	String activate(@RequestParam final String uid) {

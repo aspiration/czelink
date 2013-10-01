@@ -5,3 +5,4 @@
 010: application database connection issue.
 012: Memory database connection issue.
 014: out-dated user activate transaction id.
+015: fatal system error.

@@ -4,16 +4,18 @@ import java.io.Serializable;
 import java.util.List;
 
 public class JsonBaseViewBean implements Serializable {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	private String uid;
 
 	private Boolean status;
-	
+
 	private String statusCode;
-	
+
 	private List<Object> validateErrors;
+
+	private String correlationId;
 
 	public Boolean getStatus() {
 		return status;
@@ -46,5 +48,13 @@ public class JsonBaseViewBean implements Serializable {
 	public void setUid(String uid) {
 		this.uid = uid;
 	}
-	
+
+	public String getCorrelationId() {
+		return correlationId;
+	}
+
+	public void setCorrelationId(String correlationId) {
+		this.correlationId = correlationId;
+	}
+
 }

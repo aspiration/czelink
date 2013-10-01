@@ -2,17 +2,27 @@ package com.czelink.dbaccess.activator;
 
 import java.beans.IntrospectionException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.UUID;
 
-import com.czelink.dbaccess.exceptions.ServiceInvocationException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.czelink.dbaccess.facade.DbAccessServiceRegistry;
 import com.czelink.intg.activators.ServiceActivator;
+import com.czelink.intg.exceptions.ServiceInvocationException;
 import com.czelink.intg.messaging.RequestMessage;
 import com.czelink.intg.messaging.ResponseMessage;
 import com.czelink.intg.utils.DbAccessUtil;
 
-public class RemoteServiceActivator implements ServiceActivator {
+public class RemoteServiceActivator implements ServiceActivator, Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	private static final Log LOGGER = LogFactory
+			.getLog(RemoteServiceActivator.class);
 
 	private DbAccessServiceRegistry dbAccessServiceRegistry;
 
@@ -55,41 +65,86 @@ public class RemoteServiceActivator implements ServiceActivator {
 			responseMessage.setReturnValue(rawResult);
 
 		} catch (SecurityException e) {
-			e.printStackTrace();
-			responseMessage.addToExceptionList(e);
-			throw new ServiceInvocationException(e);
+			final String correlationID = UUID.randomUUID().toString();
+			final ServiceInvocationException exception = new ServiceInvocationException(
+					correlationID, e);
+			responseMessage.setException(exception);
+			if (RemoteServiceActivator.LOGGER.isErrorEnabled()) {
+				RemoteServiceActivator.LOGGER.error("[CorrelationID: "
+						+ correlationID + "]", e);
+			}
 		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-			responseMessage.addToExceptionList(e);
-			throw new ServiceInvocationException(e);
+			final String correlationID = UUID.randomUUID().toString();
+			final ServiceInvocationException exception = new ServiceInvocationException(
+					correlationID, e);
+			responseMessage.setException(exception);
+			if (RemoteServiceActivator.LOGGER.isErrorEnabled()) {
+				RemoteServiceActivator.LOGGER.error("[CorrelationID: "
+						+ correlationID + "]", e);
+			}
 		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-			responseMessage.addToExceptionList(e);
-			throw new ServiceInvocationException(e);
+			final String correlationID = UUID.randomUUID().toString();
+			final ServiceInvocationException exception = new ServiceInvocationException(
+					correlationID, e);
+			responseMessage.setException(exception);
+			if (RemoteServiceActivator.LOGGER.isErrorEnabled()) {
+				RemoteServiceActivator.LOGGER.error("[CorrelationID: "
+						+ correlationID + "]", e);
+			}
 		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-			responseMessage.addToExceptionList(e);
-			throw new ServiceInvocationException(e);
+			final String correlationID = UUID.randomUUID().toString();
+			final ServiceInvocationException exception = new ServiceInvocationException(
+					correlationID, e);
+			responseMessage.setException(exception);
+			if (RemoteServiceActivator.LOGGER.isErrorEnabled()) {
+				RemoteServiceActivator.LOGGER.error("[CorrelationID: "
+						+ correlationID + "]", e);
+			}
 		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-			responseMessage.addToExceptionList(e);
-			throw new ServiceInvocationException(e);
+			final String correlationID = UUID.randomUUID().toString();
+			final ServiceInvocationException exception = new ServiceInvocationException(
+					correlationID, e);
+			responseMessage.setException(exception);
+			if (RemoteServiceActivator.LOGGER.isErrorEnabled()) {
+				RemoteServiceActivator.LOGGER.error("[CorrelationID: "
+						+ correlationID + "]", e);
+			}
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			responseMessage.addToExceptionList(e);
-			throw new ServiceInvocationException(e);
+			final String correlationID = UUID.randomUUID().toString();
+			final ServiceInvocationException exception = new ServiceInvocationException(
+					correlationID, e);
+			responseMessage.setException(exception);
+			if (RemoteServiceActivator.LOGGER.isErrorEnabled()) {
+				RemoteServiceActivator.LOGGER.error("[CorrelationID: "
+						+ correlationID + "]", e);
+			}
 		} catch (IOException e) {
-			e.printStackTrace();
-			responseMessage.addToExceptionList(e);
-			throw new ServiceInvocationException(e);
+			final String correlationID = UUID.randomUUID().toString();
+			final ServiceInvocationException exception = new ServiceInvocationException(
+					correlationID, e);
+			responseMessage.setException(exception);
+			if (RemoteServiceActivator.LOGGER.isErrorEnabled()) {
+				RemoteServiceActivator.LOGGER.error("[CorrelationID: "
+						+ correlationID + "]", e);
+			}
 		} catch (InstantiationException e) {
-			e.printStackTrace();
-			responseMessage.addToExceptionList(e);
-			throw new ServiceInvocationException(e);
+			final String correlationID = UUID.randomUUID().toString();
+			final ServiceInvocationException exception = new ServiceInvocationException(
+					correlationID, e);
+			responseMessage.setException(exception);
+			if (RemoteServiceActivator.LOGGER.isErrorEnabled()) {
+				RemoteServiceActivator.LOGGER.error("[CorrelationID: "
+						+ correlationID + "]", e);
+			}
 		} catch (IntrospectionException e) {
-			e.printStackTrace();
-			responseMessage.addToExceptionList(e);
-			throw new ServiceInvocationException(e);
+			final String correlationID = UUID.randomUUID().toString();
+			final ServiceInvocationException exception = new ServiceInvocationException(
+					correlationID, e);
+			responseMessage.setException(exception);
+			if (RemoteServiceActivator.LOGGER.isErrorEnabled()) {
+				RemoteServiceActivator.LOGGER.error("[CorrelationID: "
+						+ correlationID + "]", e);
+			}
 		}
 
 		return responseMessage;

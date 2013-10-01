@@ -1,5 +1,6 @@
 package com.czelink.controllers;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -30,25 +31,27 @@ import com.czelink.utils.ComponentAvailabilityHook.ComponentAvailabilityResult;
 import com.czelink.uploadrepo.intg.UploadRepository;
 
 @Controller
-public class BaseController {
+public class BaseController implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@Resource(name = "uploadConversationManager")
-	private ConversationManager uploadConversationManager;
+	private transient ConversationManager uploadConversationManager;
 
 	@Resource(name = "uploadRepository")
-	private UploadRepository uploadRepository;
+	private transient UploadRepository uploadRepository;
 
 	@Resource(name = "navigationMessageSource")
-	private MessageSource navigationMessageSource;
+	private transient MessageSource navigationMessageSource;
 
 	@Resource(name = "navigationLabelMessageSource")
-	private MessageSource navigationLabelMessageSource;
+	private transient MessageSource navigationLabelMessageSource;
 
 	@Resource(name = "componentAvailabilityHook")
-	private ComponentAvailabilityHook componentAvailabilityHook;
+	private transient ComponentAvailabilityHook componentAvailabilityHook;
 
 	@Resource(name = "redisOperations")
-	private RedisOperations<Object, Object> redisOperations;
+	private transient RedisOperations<Object, Object> redisOperations;
 
 	@RequestMapping(value = "/navigationList", produces = "application/json")
 	public @ResponseBody
@@ -128,7 +131,7 @@ public class BaseController {
 		return response;
 	}
 
-	@RequestMapping(value="/getCurrentRole", produces = "application/json")
+	@RequestMapping(value = "/getCurrentRole", produces = "application/json")
 	@ResponseBody
 	NavigationListViewBean getCurrentRole(final HttpSession session) {
 		final NavigationListViewBean response = new NavigationListViewBean();
@@ -194,7 +197,7 @@ public class BaseController {
 		return response;
 	}
 
-	@RequestMapping(value="/fileupload", produces = "application/json")
+	@RequestMapping(value = "/fileupload", produces = "application/json")
 	public @ResponseBody
 	FileUploadViewBean uploadFileToRepository(
 			@RequestHeader("conversation-id") final String conversationID,
@@ -204,9 +207,9 @@ public class BaseController {
 						file.getOriginalFilename(), file);
 		final FileUploadViewBean response = new FileUploadViewBean();
 		if (result) {
-			response.setSrc(
-					this.uploadRepository.getRepositoryContextPath() + "/imgs/"
-							+ conversationID + "/" + file.getOriginalFilename());
+			response.setSrc(this.uploadRepository.getRepositoryContextPath()
+					+ "/imgs/" + conversationID + "/"
+					+ file.getOriginalFilename());
 		} else {
 			throw new IllegalStateException("invalid conversationID: "
 					+ conversationID);
@@ -215,7 +218,7 @@ public class BaseController {
 		return response;
 	}
 
-	@RequestMapping(value="/cancelupload", produces = "application/json")
+	@RequestMapping(value = "/cancelupload", produces = "application/json")
 	public @ResponseBody
 	JsonBaseViewBean uploadFileToRepository(
 			@RequestHeader("conversation-id") final String conversationID,
@@ -276,6 +279,8 @@ public class BaseController {
 
 	private class UploadConverstionTask extends ConversationTask {
 
+		private static final long serialVersionUID = 1L;
+
 		public UploadConverstionTask(String pConversationId,
 				ConversationManager pConversationManager) {
 			super(pConversationId, pConversationManager);
@@ -290,7 +295,8 @@ public class BaseController {
 				getUploadRepository().saveFile(conversation,
 						"imgs/" + this.conversationId);
 			} catch (Exception e) {
-				e.printStackTrace();
+				throw new IllegalStateException("[uploadFile: "
+						+ e.getMessage() + "]", e);
 			}
 		}
 	}

@@ -1,5 +1,6 @@
 package com.czelink.dbaccess.handler;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
@@ -10,7 +11,10 @@ import java.lang.reflect.Method;
  * @author Lambert
  * 
  */
-public class DbAccessInvocationHandler implements InvocationHandler {
+public class DbAccessInvocationHandler implements InvocationHandler,
+		Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * target service implementation.

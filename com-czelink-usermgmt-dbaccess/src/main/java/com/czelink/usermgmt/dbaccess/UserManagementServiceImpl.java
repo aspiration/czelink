@@ -1,5 +1,6 @@
 package com.czelink.usermgmt.dbaccess;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -30,23 +31,26 @@ import com.czelink.common.intg.entities.User;
 import com.czelink.usermgmt.intg.constants.UsermgmtConstants;
 import com.czelink.usermgmt.intg.services.UserManagementService;
 
-public class UserManagementServiceImpl implements UserManagementService {
+public class UserManagementServiceImpl implements UserManagementService,
+		Serializable {
 
-	private static final ShaPasswordEncoder passwordEncoder = new ShaPasswordEncoder();
+	private static final long serialVersionUID = 1L;
+
+	private static transient final ShaPasswordEncoder passwordEncoder = new ShaPasswordEncoder();
 
 	static {
 		UserManagementServiceImpl.passwordEncoder.setEncodeHashAsBase64(true);
 	}
 
-	private LdapOperations ldapOperations;
+	private transient LdapOperations ldapOperations;
 
-	private MongoOperations mongoOperations;
+	private transient MongoOperations mongoOperations;
 
-	private RedisOperations<Object, Object> redisOperations;
+	private transient RedisOperations<Object, Object> redisOperations;
 
-	private JavaMailSender mailSender;
+	private transient JavaMailSender mailSender;
 
-	private VelocityEngine velocityEngine;
+	private transient VelocityEngine velocityEngine;
 
 	private String encryptLdapPassword(final String password) {
 
@@ -137,9 +141,6 @@ public class UserManagementServiceImpl implements UserManagementService {
 				}
 
 			} catch (final Throwable th) {
-				// TODO: to add log here.
-				th.printStackTrace();
-
 				result = false;
 				// EORROR_MSG_CDE: 008, unknown issue, fatal error.
 				context.put(UsermgmtConstants.EORROR_MSG_CDE, "008");
@@ -153,13 +154,17 @@ public class UserManagementServiceImpl implements UserManagementService {
 				this.redisOperations.delete(username);
 				this.redisOperations.delete(username + "_pass");
 				this.redisOperations.delete(username + "_display");
+
+				throw new IllegalStateException("[usermgmt: " + th.getMessage()
+						+ "]", th);
 			}
 		} catch (Throwable e) {
-			e.printStackTrace();
-
 			result = false;
 			// EORROR_MSG_CDE: 012, Memory database connection issue.
 			context.put(UsermgmtConstants.EORROR_MSG_CDE, "012");
+
+			throw new IllegalStateException("[usermgmt: " + e.getMessage()
+					+ "]", e);
 		}
 
 		return result;
@@ -243,7 +248,6 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 						result = true;
 					} catch (final Throwable th) {
-						th.printStackTrace();
 						result = false;
 
 						if (th instanceof NameAlreadyBoundException) {
@@ -253,6 +257,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 							// EORROR_MSG_CDE: 008, unknown issue, fatal error.
 							context.put(UsermgmtConstants.EORROR_MSG_CDE, "008");
 						}
+
+						throw new IllegalStateException("[usermgmt: "
+								+ th.getMessage() + "]", th);
 					}
 				}
 			} else {
@@ -261,11 +268,12 @@ public class UserManagementServiceImpl implements UserManagementService {
 				context.put(UsermgmtConstants.EORROR_MSG_CDE, "012");
 			}
 		} catch (Throwable e) {
-			e.printStackTrace();
-
 			result = false;
 			// EORROR_MSG_CDE: 012, Memory database connection issue.
 			context.put(UsermgmtConstants.EORROR_MSG_CDE, "012");
+
+			throw new IllegalStateException("[usermgmt: " + e.getMessage()
+					+ "]", e);
 		}
 
 		return result;
@@ -326,12 +334,12 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 			result = true;
 		} catch (final Throwable th) {
-			// TODO: to add log
-			th.printStackTrace();
-
 			// EORROR_MSG_CDE: 008, unknown issue, fatal error.
 			context.put(UsermgmtConstants.EORROR_MSG_CDE, "008");
 			result = false;
+
+			throw new IllegalStateException("[usermgmt: " + th.getMessage()
+					+ "]", th);
 		}
 
 		return result;
@@ -345,12 +353,12 @@ public class UserManagementServiceImpl implements UserManagementService {
 			this.mongoOperations.save(target);
 			result = true;
 		} catch (Throwable th) {
-			// TODO: to add log
-			th.printStackTrace();
-
 			// EORROR_MSG_CDE: 010, application database connection issue.
 			context.put(UsermgmtConstants.EORROR_MSG_CDE, "010");
 			result = false;
+
+			throw new IllegalStateException("[usermgmt: " + th.getMessage()
+					+ "]", th);
 		}
 		return result;
 	}

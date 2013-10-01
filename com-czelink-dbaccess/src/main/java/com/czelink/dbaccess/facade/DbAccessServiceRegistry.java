@@ -1,5 +1,7 @@
 package com.czelink.dbaccess.facade;
 
+import java.io.Serializable;
+
 import javax.servlet.ServletContext;
 
 import org.springframework.beans.BeansException;
@@ -16,7 +18,9 @@ import com.czelink.dbaccess.loader.ReloadableComponentClassLoader;
  * 
  */
 public class DbAccessServiceRegistry implements ServletContextAware,
-		ApplicationContextAware {
+		ApplicationContextAware, Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * WEB-INF.
@@ -26,12 +30,12 @@ public class DbAccessServiceRegistry implements ServletContextAware,
 	/**
 	 * servletContext.
 	 */
-	private ServletContext servletContext;
+	private transient ServletContext servletContext;
 
 	/**
 	 * applicationContext.
 	 */
-	private ApplicationContext appContext;
+	private transient ApplicationContext appContext;
 
 	/**
 	 * component classloader.

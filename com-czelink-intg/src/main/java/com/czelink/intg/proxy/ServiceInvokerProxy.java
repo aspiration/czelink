@@ -1,5 +1,6 @@
 package com.czelink.intg.proxy;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -25,7 +26,10 @@ import com.czelink.intg.utils.DbAccessUtil;
  * 
  */
 public class ServiceInvokerProxy implements FactoryBean<Object>,
-		InvocationHandler, ServletContextAware, ApplicationContextAware {
+		InvocationHandler, ServletContextAware, ApplicationContextAware,
+		Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * targetContextName
@@ -50,7 +54,7 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 	/**
 	 * Application Context.
 	 */
-	private ApplicationContext applicationContext;
+	private transient ApplicationContext applicationContext;
 
 	/**
 	 * service group name.
@@ -65,7 +69,7 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 	/**
 	 * servlet context.
 	 */
-	private ServletContext servletContext;
+	private transient ServletContext servletContext;
 
 	private Object invokeLocal(Object proxy, Method method, Object[] args)
 			throws Throwable {
@@ -131,8 +135,10 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 					parameterObjects, args);
 
 		} catch (Exception e) {
-			throw new IllegalStateException("Invokation of service: "
-					+ this.serviceInterface + "." + methodName + " fail.", e);
+			throw new IllegalStateException(
+					"[TYPE: Local][Invokation of service: "
+							+ this.serviceInterface + "." + methodName
+							+ " fail.]", e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(currentAppClassLoader);
 		}
@@ -168,8 +174,7 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 
 				result = responseMessage.getReturnValue();
 			} else {
-				// TODO: Log the error message or throw the exception out by
-				// wrapper.
+				throw responseMessage.getException();
 			}
 		}
 		return result;

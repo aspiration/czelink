@@ -1,0 +1,12 @@
+1. session manager:
+https://github.com/jcoleman/tomcat-redis-session-manager/downloads
+version:
+tomcat-redis-session-manager-1.1.jar — 1.1 Release JAR (Tomcat 7) 
+
+2. Apache commons pool:
+version:
+commons-pool-1.6.jar
+
+3. Jedis client:
+version:
+jedis-2.1.0.jar
