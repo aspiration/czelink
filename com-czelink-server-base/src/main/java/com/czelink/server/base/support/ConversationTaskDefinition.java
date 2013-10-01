@@ -1,15 +1,20 @@
 package com.czelink.server.base.support;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.TaskScheduler;
+
+import com.czelink.server.base.support.ConversationManager.Conversation;
 
 public class ConversationTaskDefinition implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	private long maxLivePeriod;
+
+	private Map<String, Conversation> conversationMap;
 
 	private TaskScheduler taskScheduler;
 
@@ -37,6 +42,14 @@ public class ConversationTaskDefinition implements Serializable {
 
 	public void setTaskExecutor(TaskExecutor taskExecutor) {
 		this.taskExecutor = taskExecutor;
+	}
+
+	public Map<String, Conversation> getConversationMap() {
+		return conversationMap;
+	}
+
+	public void setConversationMap(Map<String, Conversation> conversationMap) {
+		this.conversationMap = conversationMap;
 	}
 
 }

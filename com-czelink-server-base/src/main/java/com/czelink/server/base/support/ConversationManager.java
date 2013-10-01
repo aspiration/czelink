@@ -17,14 +17,13 @@ public class ConversationManager implements Runnable, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private final Map<String, Conversation> conversationMap = Collections
-			.synchronizedMap(new HashMap<String, Conversation>());
+	private Map<String, Conversation> conversationMap;
 
 	private long maxLivePeriod;
 
-	private TaskScheduler taskScheduler;
+	private transient TaskScheduler taskScheduler;
 
-	private TaskExecutor taskExecutor;
+	private transient TaskExecutor taskExecutor;
 
 	public void init() {
 		this.taskScheduler.scheduleAtFixedRate(this, this.maxLivePeriod);
@@ -120,6 +119,9 @@ public class ConversationManager implements Runnable, Serializable {
 		this.maxLivePeriod = conversationTaskDefinition.getMaxLivePeriod();
 		this.taskExecutor = conversationTaskDefinition.getTaskExecutor();
 		this.taskScheduler = conversationTaskDefinition.getTaskScheduler();
+		this.conversationMap = Collections
+				.synchronizedMap(conversationTaskDefinition
+						.getConversationMap());
 	}
 
 	@Override
@@ -152,9 +154,9 @@ public class ConversationManager implements Runnable, Serializable {
 
 		private static final long serialVersionUID = 1L;
 
-		private Conversation conversation;
+		private transient Conversation conversation;
 
-		protected final ConversationManager conversationManager;
+		protected transient final ConversationManager conversationManager;
 
 		protected final String conversationId;
 
@@ -191,7 +193,7 @@ public class ConversationManager implements Runnable, Serializable {
 	public static class Conversation extends HashMap<String, Object> {
 		private static final long serialVersionUID = 1L;
 		private long activateTime;
-		private Runnable onEnd;
-		private Runnable onComplete;
+		private transient Runnable onEnd;
+		private transient Runnable onComplete;
 	}
 }

@@ -9,7 +9,6 @@
 	<context:property-placeholder order="0"
 		location="classpath:/content/czelink/server/base/redis.properties, classpath:/content/czelink/usermgmt/security/ldap.properties, classpath:/content/czelink/intg/jms.properties, classpath:/content/czelink/intg/async.properties" />
 
-
 	<import resource="classpath:/spring/czelink/server/base/converters.xml" />
 
 	<import resource="classpath:/spring/czelink/server/base/support.xml" />

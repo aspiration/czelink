@@ -16,6 +16,7 @@ import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -55,6 +56,11 @@ public class UsermgmtController implements Serializable {
 			resultStr = resultStr.concat("=" + verifyKey);
 		}
 		return resultStr;
+	}
+
+	@ExceptionHandler(Throwable.class)
+	String handleException(final Throwable ex) {
+		return "redirect:/?activated=fail";
 	}
 
 	@RequestMapping(value = "/register", produces = "application/json")

@@ -4,17 +4,22 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.UUID;
 
 import javax.servlet.ServletContext;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.integration.MessageTimeoutException;
 import org.springframework.web.context.ServletContextAware;
 
 import com.czelink.intg.activators.ServiceActivator;
+import com.czelink.intg.exceptions.ServiceInvocationException;
 import com.czelink.intg.messaging.RequestMessage;
 import com.czelink.intg.messaging.ResponseMessage;
 import com.czelink.intg.utils.DbAccessUtil;
@@ -30,6 +35,9 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 		Serializable {
 
 	private static final long serialVersionUID = 1L;
+
+	private static final Log LOGGER = LogFactory
+			.getLog(ServiceInvokerProxy.class);
 
 	/**
 	 * targetContextName
@@ -149,33 +157,44 @@ public class ServiceInvokerProxy implements FactoryBean<Object>,
 			throws Throwable {
 		Object result = null;
 
-		ServiceActivator serviceActivator = null;
-
 		try {
-			serviceActivator = (ServiceActivator) this.applicationContext
-					.getBean(ServiceInvokerProxy.SERVICE_ACTIVATOR_BEAN);
-		} catch (final NoSuchBeanDefinitionException e) {
-			// suppress the exception.
-			serviceActivator = null;
-		}
+			ServiceActivator serviceActivator = null;
 
-		if (null != serviceActivator) {
-			final RequestMessage requestMessage = new RequestMessage();
-			requestMessage.setOperationName(method.getName());
-			requestMessage.setOperationParameters(args);
-			requestMessage.setServiceInterface(this.serviceInterface);
-			requestMessage.setServiceName(this.serviceGroupName);
-
-			final ResponseMessage responseMessage = serviceActivator
-					.activate(requestMessage);
-			if (responseMessage.getStatus()) {
-				DbAccessUtil.resyncInputParameterStatusAfterProcess(
-						responseMessage.getOperationParameters(), args);
-
-				result = responseMessage.getReturnValue();
-			} else {
-				throw responseMessage.getException();
+			try {
+				serviceActivator = (ServiceActivator) this.applicationContext
+						.getBean(ServiceInvokerProxy.SERVICE_ACTIVATOR_BEAN);
+			} catch (final NoSuchBeanDefinitionException e) {
+				// suppress the exception.
+				serviceActivator = null;
 			}
+
+			if (null != serviceActivator) {
+				final RequestMessage requestMessage = new RequestMessage();
+				requestMessage.setOperationName(method.getName());
+				requestMessage.setOperationParameters(args);
+				requestMessage.setServiceInterface(this.serviceInterface);
+				requestMessage.setServiceName(this.serviceGroupName);
+
+				final ResponseMessage responseMessage = serviceActivator
+						.activate(requestMessage);
+
+				if (responseMessage.getStatus()) {
+					DbAccessUtil.resyncInputParameterStatusAfterProcess(
+							responseMessage.getOperationParameters(), args);
+
+					result = responseMessage.getReturnValue();
+				} else {
+					throw responseMessage.getException();
+				}
+			}
+		} catch (MessageTimeoutException e) {
+			result = null;
+			final String correlationID = UUID.randomUUID().toString();
+			if (ServiceInvokerProxy.LOGGER.isErrorEnabled()) {
+				ServiceInvokerProxy.LOGGER.error("[correlationID: "
+						+ correlationID + ", JMS message timeout.]", e);
+			}
+			throw new ServiceInvocationException(correlationID, e);
 		}
 		return result;
 	}

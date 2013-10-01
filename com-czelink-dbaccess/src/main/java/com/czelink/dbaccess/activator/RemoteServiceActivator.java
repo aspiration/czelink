@@ -11,13 +11,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.czelink.dbaccess.facade.DbAccessServiceRegistry;
-import com.czelink.intg.activators.ServiceActivator;
 import com.czelink.intg.exceptions.ServiceInvocationException;
 import com.czelink.intg.messaging.RequestMessage;
 import com.czelink.intg.messaging.ResponseMessage;
 import com.czelink.intg.utils.DbAccessUtil;
 
-public class RemoteServiceActivator implements ServiceActivator, Serializable {
+public class RemoteServiceActivator implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
