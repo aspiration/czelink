@@ -11,6 +11,9 @@ public class Conversation extends ConcurrentHashMap<String, Object> {
 
 	private ConversationTask onComplete;
 
+	protected Conversation() {
+	}
+
 	protected long getActivateTime() {
 		return activateTime;
 	}
