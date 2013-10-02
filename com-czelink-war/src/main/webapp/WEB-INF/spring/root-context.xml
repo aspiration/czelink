@@ -11,9 +11,9 @@
 
 	<import resource="classpath:/spring/czelink/server/base/converters.xml" />
 
-	<import resource="classpath:/spring/czelink/server/base/support.xml" />
-
 	<import resource="classpath:/spring/czelink/server/base/db-context.xml" />
+
+	<import resource="classpath:/spring/czelink/server/base/support.xml" />
 
 	<import resource="classpath*:/spring/czelink/intg/client.xml" />
 

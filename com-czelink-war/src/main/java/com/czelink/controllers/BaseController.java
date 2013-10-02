@@ -25,7 +25,7 @@ import com.czelink.beans.NavigationListViewBean;
 import com.czelink.common.intg.constants.CommonConstants;
 import com.czelink.server.base.beans.JsonBaseViewBean;
 import com.czelink.server.base.support.ConversationManager;
-import com.czelink.server.base.support.ConversationManager.ConversationTask;
+import com.czelink.server.base.support.ConversationTask;
 import com.czelink.utils.ComponentAvailabilityHook;
 import com.czelink.utils.ComponentAvailabilityHook.ComponentAvailabilityResult;
 import com.czelink.uploadrepo.intg.UploadRepository;
@@ -35,7 +35,7 @@ public class BaseController implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Resource(name = "uploadConversationManager")
+	@Resource(name = "conversationManager")
 	private transient ConversationManager uploadConversationManager;
 
 	@Resource(name = "uploadRepository")
@@ -52,6 +52,40 @@ public class BaseController implements Serializable {
 
 	@Resource(name = "redisOperations")
 	private transient RedisOperations<Object, Object> redisOperations;
+
+	@RequestMapping(value = "/getCurrentRole", produces = "application/json")
+	@ResponseBody
+	public NavigationListViewBean getCurrentRole(final HttpSession session) {
+		final NavigationListViewBean response = new NavigationListViewBean();
+
+		final List<String> rolesList = (List<String>) session
+				.getAttribute(CommonConstants.ROLE_LIST_IN_SESSION_KEY);
+
+		String role = CommonConstants.ROLE_ANONYMOUS;
+
+		if (null != rolesList) {
+			if (rolesList.contains(CommonConstants.ROLE_ADMIN)) {
+				role = CommonConstants.ROLE_ADMIN;
+			} else if (rolesList.contains(CommonConstants.ROLE_USER)) {
+				role = CommonConstants.ROLE_USER;
+			} else {
+				role = CommonConstants.ROLE_ANONYMOUS;
+			}
+		} else {
+			if (componentAvailabilityHook.checkIfComponentAvailable("usermgmt")
+					.equals(ComponentAvailabilityResult.AVAILABLE)) {
+				role = CommonConstants.ROLE_ANONYMOUS;
+			} else if (componentAvailabilityHook.checkIfComponentAvailable(
+					"usermgmt").equals(ComponentAvailabilityResult.UNAVAILABLE)) {
+				role = CommonConstants.ROLE_ADMIN;
+			} else {
+				role = CommonConstants.ROLE_ANONYMOUS;
+			}
+		}
+		response.setRole(role);
+
+		return response;
+	}
 
 	@RequestMapping(value = "/navigationList", produces = "application/json")
 	public @ResponseBody
@@ -131,40 +165,6 @@ public class BaseController implements Serializable {
 		return response;
 	}
 
-	@RequestMapping(value = "/getCurrentRole", produces = "application/json")
-	@ResponseBody
-	NavigationListViewBean getCurrentRole(final HttpSession session) {
-		final NavigationListViewBean response = new NavigationListViewBean();
-
-		final List<String> rolesList = (List<String>) session
-				.getAttribute(CommonConstants.ROLE_LIST_IN_SESSION_KEY);
-
-		String role = CommonConstants.ROLE_ANONYMOUS;
-
-		if (null != rolesList) {
-			if (rolesList.contains(CommonConstants.ROLE_ADMIN)) {
-				role = CommonConstants.ROLE_ADMIN;
-			} else if (rolesList.contains(CommonConstants.ROLE_USER)) {
-				role = CommonConstants.ROLE_USER;
-			} else {
-				role = CommonConstants.ROLE_ANONYMOUS;
-			}
-		} else {
-			if (componentAvailabilityHook.checkIfComponentAvailable("usermgmt")
-					.equals(ComponentAvailabilityResult.AVAILABLE)) {
-				role = CommonConstants.ROLE_ANONYMOUS;
-			} else if (componentAvailabilityHook.checkIfComponentAvailable(
-					"usermgmt").equals(ComponentAvailabilityResult.UNAVAILABLE)) {
-				role = CommonConstants.ROLE_ADMIN;
-			} else {
-				role = CommonConstants.ROLE_ANONYMOUS;
-			}
-		}
-		response.setRole(role);
-
-		return response;
-	}
-
 	@RequestMapping(value = "/startUploadConversation", produces = "application/json")
 	public @ResponseBody
 	JsonBaseViewBean startUploadConversation() {
@@ -220,7 +220,7 @@ public class BaseController implements Serializable {
 
 	@RequestMapping(value = "/cancelupload", produces = "application/json")
 	public @ResponseBody
-	JsonBaseViewBean uploadFileToRepository(
+	JsonBaseViewBean cancelUploadFromRepository(
 			@RequestHeader("conversation-id") final String conversationID,
 			@RequestParam final String fileName) {
 		final boolean result = this.uploadConversationManager
@@ -287,7 +287,7 @@ public class BaseController implements Serializable {
 		}
 
 		@Override
-		public void run() {
+		public void onRun() {
 			// persist the uploaded file to disk.
 			final Map<String, MultipartFile> conversation = this
 					.getConversation(MultipartFile.class);

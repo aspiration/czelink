@@ -15,8 +15,8 @@
 	<!-- Default set of monitored resources -->
 	<WatchedResource>WEB-INF/web.xml</WatchedResource>
 
-	<Valve className="com.radiadesign.catalina.session.RedisSessionHandlerValve" />
-	<Manager className="com.radiadesign.catalina.session.RedisSessionManager"
+	<Valve className="com.czelink.catalina.session.RedisSessionHandlerValve" />
+	<Manager className="com.czelink.catalina.session.RedisSessionManager"
 		password="Password" host="localhost" port="6379" database="15"
 		maxInactiveInterval="300" />
 

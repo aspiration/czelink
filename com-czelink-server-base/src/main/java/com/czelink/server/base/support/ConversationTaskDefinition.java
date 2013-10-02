@@ -6,8 +6,6 @@ import java.util.Map;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.TaskScheduler;
 
-import com.czelink.server.base.support.ConversationManager.Conversation;
-
 public class ConversationTaskDefinition implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -16,9 +14,9 @@ public class ConversationTaskDefinition implements Serializable {
 
 	private Map<String, Conversation> conversationMap;
 
-	private TaskScheduler taskScheduler;
+	private transient TaskScheduler taskScheduler;
 
-	private TaskExecutor taskExecutor;
+	private transient TaskExecutor taskExecutor;
 
 	public long getMaxLivePeriod() {
 		return maxLivePeriod;

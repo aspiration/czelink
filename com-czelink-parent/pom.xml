@@ -263,6 +263,12 @@
 				<artifactId>velocity</artifactId>
 				<version>1.7</version>
 			</dependency>
+			<!-- commons-pool -->
+			<dependency>
+				<groupId>commons-pool</groupId>
+				<artifactId>commons-pool</artifactId>
+				<version>1.6</version>
+			</dependency>
 			<!-- AspectJ -->
 			<dependency>
 				<groupId>org.aspectj</groupId>
@@ -360,6 +366,14 @@
 						<artifactId>servlet-api</artifactId>
 					</exclusion>
 				</exclusions>
+			</dependency>
+
+			<!-- tomcat -->
+			<dependency>
+				<groupId>org.apache.tomcat</groupId>
+				<artifactId>tomcat-catalina</artifactId>
+				<version>7.0.42</version>
+				<scope>provided</scope>
 			</dependency>
 
 			<!-- Jackson JSON Processor -->

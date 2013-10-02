@@ -1,9 +1,7 @@
 package com.czelink.server.base.support;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -13,7 +11,8 @@ import java.util.UUID;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.TaskScheduler;
 
-public class ConversationManager implements Runnable, Serializable {
+public class ConversationManager extends RequestAwareRunnable implements
+		Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -35,7 +34,7 @@ public class ConversationManager implements Runnable, Serializable {
 		final Conversation conversation = this.conversationMap
 				.get(conversationID);
 		if (null != conversation) {
-			conversation.onEnd = task;
+			conversation.setOnEnd(task);
 			result = true;
 		}
 		return result;
@@ -47,7 +46,7 @@ public class ConversationManager implements Runnable, Serializable {
 		final Conversation conversation = this.conversationMap
 				.get(conversationID);
 		if (null != conversation) {
-			conversation.onComplete = task;
+			conversation.setOnComplete(task);
 			result = true;
 		}
 		return result;
@@ -56,7 +55,7 @@ public class ConversationManager implements Runnable, Serializable {
 	public String startConversation() {
 		final String conversationID = UUID.randomUUID().toString();
 		final Conversation conversation = new Conversation();
-		conversation.activateTime = new Date().getTime();
+		conversation.setActivateTime(new Date().getTime());
 		this.conversationMap.put(conversationID, conversation);
 		return conversationID;
 	}
@@ -66,7 +65,7 @@ public class ConversationManager implements Runnable, Serializable {
 		final Conversation conversation = this.conversationMap
 				.get(conversationID);
 		if (null != conversation) {
-			conversation.activateTime = new Date().getTime();
+			conversation.setActivateTime(new Date().getTime());
 			result = true;
 		}
 		return result;
@@ -75,16 +74,16 @@ public class ConversationManager implements Runnable, Serializable {
 	public void endConversation(final String conversationID) {
 		final Conversation conversation = this.conversationMap
 				.remove(conversationID);
-		if (null != conversation.onEnd) {
-			this.taskExecutor.execute(conversation.onEnd);
+		if (null != conversation.getOnEnd()) {
+			this.taskExecutor.execute(conversation.getOnEnd());
 		}
 	}
 
 	public void completeConversation(final String conversationID) {
 		final Conversation conversation = this.conversationMap
 				.remove(conversationID);
-		if (null != conversation.onComplete) {
-			this.taskExecutor.execute(conversation.onComplete);
+		if (null != conversation.getOnComplete()) {
+			this.taskExecutor.execute(conversation.getOnComplete());
 		}
 	}
 
@@ -94,8 +93,18 @@ public class ConversationManager implements Runnable, Serializable {
 		final Conversation conversation = this.conversationMap
 				.get(conversationID);
 		if (null != conversation) {
+
+			System.out
+					.println("========== inspecting putIntoConversation =========");
+			System.out.println("conversationID: " + conversationID);
+			System.out.println("conversation: " + conversation);
+			System.out.println("inputKey: " + key);
+			System.out.println("inputValue: " + value);
+			System.out
+					.println("========== inspecting putIntoConversation =========");
+
 			conversation.put(key, value);
-			conversation.activateTime = new Date().getTime();
+			conversation.setActivateTime(new Date().getTime());
 			result = true;
 		}
 		return result;
@@ -107,8 +116,17 @@ public class ConversationManager implements Runnable, Serializable {
 		final Conversation conversation = this.conversationMap
 				.get(conversationID);
 		if (null != conversation) {
+
+			System.out
+					.println("========== inspecting removeFromConversation =========");
+			System.out.println("conversationID: " + conversationID);
+			System.out.println("conversation: " + conversation);
+			System.out.println("inputKey: " + key);
+			System.out
+					.println("========== inspecting removeFromConversation =========");
+
 			conversation.remove(key);
-			conversation.activateTime = new Date().getTime();
+			conversation.setActivateTime(new Date().getTime());
 			result = true;
 		}
 		return result;
@@ -119,13 +137,10 @@ public class ConversationManager implements Runnable, Serializable {
 		this.maxLivePeriod = conversationTaskDefinition.getMaxLivePeriod();
 		this.taskExecutor = conversationTaskDefinition.getTaskExecutor();
 		this.taskScheduler = conversationTaskDefinition.getTaskScheduler();
-		this.conversationMap = Collections
-				.synchronizedMap(conversationTaskDefinition
-						.getConversationMap());
+		this.conversationMap = conversationTaskDefinition.getConversationMap();
 	}
 
-	@Override
-	public void run() {
+	public void onRun() {
 		final Set<Entry<String, Conversation>> entrySet = this.conversationMap
 				.entrySet();
 		for (final Iterator<Entry<String, Conversation>> it = entrySet
@@ -133,13 +148,13 @@ public class ConversationManager implements Runnable, Serializable {
 			final Entry<String, Conversation> entry = (Entry<String, Conversation>) it
 					.next();
 			final Conversation conversation = entry.getValue();
-			final long activateTime = conversation.activateTime;
+			final long activateTime = conversation.getActivateTime();
 			final long currentTime = new Date().getTime();
 			final long interval = currentTime - activateTime;
 			if (interval > this.maxLivePeriod) {
 				it.remove();
-				if (null != conversation.onEnd) {
-					this.taskExecutor.execute(conversation.onEnd);
+				if (null != conversation.getOnEnd()) {
+					this.taskExecutor.execute(conversation.getOnEnd());
 				}
 			}
 		}
@@ -147,53 +162,5 @@ public class ConversationManager implements Runnable, Serializable {
 
 	protected Conversation getConversation(final String conversationID) {
 		return this.conversationMap.get(conversationID);
-	}
-
-	public static abstract class ConversationTask implements Runnable,
-			Serializable {
-
-		private static final long serialVersionUID = 1L;
-
-		private transient Conversation conversation;
-
-		protected transient final ConversationManager conversationManager;
-
-		protected final String conversationId;
-
-		public ConversationTask(final String pConversationId,
-				final ConversationManager pConversationManager) {
-			this.conversationId = pConversationId;
-			this.conversationManager = pConversationManager;
-
-			final Conversation pConversation = this.conversationManager
-					.getConversation(pConversationId);
-			if (null != pConversation) {
-				this.conversation = pConversation;
-			} else {
-				throw new IllegalStateException("invalid conversation ID: "
-						+ pConversationId);
-			}
-		}
-
-		protected final <T> Map<String, T> getConversation(Class<T> className) {
-			final Map<String, T> result = new HashMap<String, T>();
-			final Set<Entry<String, Object>> entrySet = this.conversation
-					.entrySet();
-			for (final Iterator<Entry<String, Object>> it = entrySet.iterator(); it
-					.hasNext();) {
-				final Entry<String, Object> entry = it.next();
-				final String key = entry.getKey();
-				final T value = (T) entry.getValue();
-				result.put(key, value);
-			}
-			return result;
-		}
-	}
-
-	public static class Conversation extends HashMap<String, Object> {
-		private static final long serialVersionUID = 1L;
-		private long activateTime;
-		private transient Runnable onEnd;
-		private transient Runnable onComplete;
 	}
 }

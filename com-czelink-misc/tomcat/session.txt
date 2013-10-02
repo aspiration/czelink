@@ -1,7 +1,10 @@
-1. session manager:
-https://github.com/jcoleman/tomcat-redis-session-manager/downloads
-version:
-tomcat-redis-session-manager-1.1.jar — 1.1 Release JAR (Tomcat 7) 
+1.Tomcat version: 7.0.42
+
+
+2.Session Manager:
+com-czelink-tomcat
+
+referenced from: https://github.com/jcoleman/tomcat-redis-session-manager/
 
 2. Apache commons pool:
 version:

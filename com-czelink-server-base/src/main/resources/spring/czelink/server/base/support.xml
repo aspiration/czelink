@@ -9,20 +9,21 @@
 		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
 
-	<bean id="uploadConversationManager" init-method="init"
+	<bean id="conversationManager" init-method="init"
 		class="com.czelink.server.base.support.ConversationManager">
 		<property name="conversationTaskDefinition" ref="conversationTaskDefinition" />
 	</bean>
 
 	<bean id="conversationTaskDefinition"
 		class="com.czelink.server.base.support.ConversationTaskDefinition">
-		<property name="maxLivePeriod" value="1920000" />
+		<property name="maxLivePeriod" value="1320000" />
 		<property name="taskScheduler" ref="taskScheduler" />
 		<property name="taskExecutor" ref="taskExecutor" />
 		<property name="conversationMap" ref="conversationMap" />
 	</bean>
 
-	<bean id="conversationMap" class="java.util.HashMap" scope="session">
+	<bean id="conversationMap" class="java.util.concurrent.ConcurrentHashMap"
+		scope="session">
 		<aop:scoped-proxy />
 	</bean>
 
