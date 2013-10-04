@@ -2,8 +2,6 @@ define(
 		[ 'contentEditor', 'dropzone' ],
 		function(contentEditor, dropzone) {
 
-			console.log("called info_new.js!");
-
 			dropzone.autoDiscover = false;
 			var imgDropzones = [];
 			var initImgDropzones = function(widgetElement, fileParamName,
@@ -81,6 +79,8 @@ define(
 
 			return function($scope, secureDataRetriever, require,
 					orchestration, widgetElement) {
+
+				imgDropzones = [];
 
 				var articleContentArea = widgetElement
 						.querySelector("div.articleContentArea");
