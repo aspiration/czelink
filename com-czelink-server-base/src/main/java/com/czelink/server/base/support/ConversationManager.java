@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.TaskScheduler;
@@ -16,7 +17,7 @@ public class ConversationManager extends RequestAwareRunnable implements
 
 	private static final long serialVersionUID = 1L;
 
-	private Map<String, Conversation> conversationMap;
+	private Map<String, Map<String, Conversation>> conversationMap;
 
 	private long maxLivePeriod;
 
@@ -28,11 +29,22 @@ public class ConversationManager extends RequestAwareRunnable implements
 		this.taskScheduler.scheduleAtFixedRate(this, this.maxLivePeriod);
 	}
 
-	public boolean setConversatioinOnEndTask(final String conversationID,
-			final ConversationTask task) {
+	protected Conversation getConversation(final String conversationGroup,
+			final String conversationID) {
+		Conversation result = null;
+		final Map<String, Conversation> group = this.conversationMap
+				.get(conversationGroup);
+		if (null != group) {
+			result = group.get(conversationID);
+		}
+		return result;
+	}
+
+	public boolean setConversatioinOnEndTask(final String conversationGroup,
+			final String conversationID, final ConversationTask task) {
 		boolean result = false;
-		final Conversation conversation = this.conversationMap
-				.get(conversationID);
+		final Conversation conversation = this.getConversation(
+				conversationGroup, conversationID);
 		if (null != conversation) {
 			conversation.setOnEnd(task);
 			result = true;
@@ -40,11 +52,12 @@ public class ConversationManager extends RequestAwareRunnable implements
 		return result;
 	}
 
-	public boolean setConversationOnCompleteTask(final String conversationID,
+	public boolean setConversationOnCompleteTask(
+			final String conversationGroup, final String conversationID,
 			final ConversationTask task) {
 		boolean result = false;
-		final Conversation conversation = this.conversationMap
-				.get(conversationID);
+		final Conversation conversation = this.getConversation(
+				conversationGroup, conversationID);
 		if (null != conversation) {
 			conversation.setOnComplete(task);
 			result = true;
@@ -52,18 +65,29 @@ public class ConversationManager extends RequestAwareRunnable implements
 		return result;
 	}
 
-	public String startConversation() {
+	public String startConversation(final String converstionGroup,
+			boolean isMutlipleAllowed) {
 		final String conversationID = UUID.randomUUID().toString();
 		final Conversation conversation = new Conversation();
 		conversation.setActivateTime(new Date().getTime());
-		this.conversationMap.put(conversationID, conversation);
+		conversation.setGroupName(converstionGroup);
+		conversation.setId(conversationID);
+		Map<String, Conversation> group = this.conversationMap
+				.get(converstionGroup);
+		if (null == group || !isMutlipleAllowed) {
+			group = new ConcurrentHashMap<String, Conversation>();
+		}
+		group.put(conversationID, conversation);
+		this.conversationMap.put(converstionGroup, group);
+
 		return conversationID;
 	}
 
-	public boolean keepConversation(final String conversationID) {
+	public boolean keepConversation(final String conversationGroup,
+			final String conversationID) {
 		boolean result = false;
-		final Conversation conversation = this.conversationMap
-				.get(conversationID);
+		final Conversation conversation = this.getConversation(
+				conversationGroup, conversationID);
 		if (null != conversation) {
 			conversation.setActivateTime(new Date().getTime());
 			result = true;
@@ -71,27 +95,31 @@ public class ConversationManager extends RequestAwareRunnable implements
 		return result;
 	}
 
-	public void endConversation(final String conversationID) {
-		final Conversation conversation = this.conversationMap
-				.remove(conversationID);
+	public void endConversation(final String conversationGroup,
+			final String conversationID) {
+		final Conversation conversation = this.getConversation(
+				conversationGroup, conversationID);
 		if (null != conversation.getOnEnd()) {
 			this.taskExecutor.execute(conversation.getOnEnd());
 		}
+		this.conversationMap.get(conversationGroup).remove(conversationID);
 	}
 
-	public void completeConversation(final String conversationID) {
-		final Conversation conversation = this.conversationMap
-				.remove(conversationID);
+	public void completeConversation(final String conversationGroup,
+			final String conversationID) {
+		final Conversation conversation = this.getConversation(
+				conversationGroup, conversationID);
 		if (null != conversation.getOnComplete()) {
 			this.taskExecutor.execute(conversation.getOnComplete());
 		}
+		this.conversationMap.get(conversationGroup).remove(conversationID);
 	}
 
-	public boolean putIntoConversation(final String conversationID,
-			final String key, final Object value) {
+	public boolean putIntoConversation(final String conversationGroup,
+			final String conversationID, final String key, final Object value) {
 		boolean result = false;
-		final Conversation conversation = this.conversationMap
-				.get(conversationID);
+		final Conversation conversation = this.getConversation(
+				conversationGroup, conversationID);
 		if (null != conversation) {
 			conversation.put(key, value);
 			conversation.setActivateTime(new Date().getTime());
@@ -100,11 +128,22 @@ public class ConversationManager extends RequestAwareRunnable implements
 		return result;
 	}
 
-	public boolean removeFromConversation(final String conversationID,
-			final String key) {
+	public Object getFromConversation(final String conversationGroup,
+			final String conversationID, final String key) {
+		Object result = null;
+		final Conversation conversation = this.getConversation(
+				conversationGroup, conversationID);
+		if (null != conversation) {
+			result = conversation.get(key);
+		}
+		return result;
+	}
+
+	public boolean removeFromConversation(final String conversationGroup,
+			final String conversationID, final String key) {
 		boolean result = false;
-		final Conversation conversation = this.conversationMap
-				.get(conversationID);
+		final Conversation conversation = this.getConversation(
+				conversationGroup, conversationID);
 		if (null != conversation) {
 			conversation.remove(key);
 			conversation.setActivateTime(new Date().getTime());
@@ -122,26 +161,31 @@ public class ConversationManager extends RequestAwareRunnable implements
 	}
 
 	public void onRun() {
-		final Set<Entry<String, Conversation>> entrySet = this.conversationMap
+		final Set<Entry<String, Map<String, Conversation>>> conversationGroupSet = this.conversationMap
 				.entrySet();
-		for (final Iterator<Entry<String, Conversation>> it = entrySet
-				.iterator(); it.hasNext();) {
-			final Entry<String, Conversation> entry = (Entry<String, Conversation>) it
+		for (final Iterator<Entry<String, Map<String, Conversation>>> converIt = conversationGroupSet
+				.iterator(); converIt.hasNext();) {
+			final Entry<String, Map<String, Conversation>> converEntry = (Entry<String, Map<String, Conversation>>) converIt
 					.next();
-			final Conversation conversation = entry.getValue();
-			final long activateTime = conversation.getActivateTime();
-			final long currentTime = new Date().getTime();
-			final long interval = currentTime - activateTime;
-			if (interval > this.maxLivePeriod) {
-				it.remove();
-				if (null != conversation.getOnEnd()) {
-					this.taskExecutor.execute(conversation.getOnEnd());
+			final Map<String, Conversation> conversationGroup = converEntry
+					.getValue();
+			final Set<Entry<String, Conversation>> entrySet = conversationGroup
+					.entrySet();
+			for (final Iterator<Entry<String, Conversation>> it = entrySet
+					.iterator(); it.hasNext();) {
+				final Entry<String, Conversation> entry = (Entry<String, Conversation>) it
+						.next();
+				final Conversation conversation = entry.getValue();
+				final long activateTime = conversation.getActivateTime();
+				final long currentTime = new Date().getTime();
+				final long interval = currentTime - activateTime;
+				if (interval > this.maxLivePeriod) {
+					it.remove();
+					if (null != conversation.getOnEnd()) {
+						this.taskExecutor.execute(conversation.getOnEnd());
+					}
 				}
 			}
 		}
-	}
-
-	protected Conversation getConversation(final String conversationID) {
-		return this.conversationMap.get(conversationID);
 	}
 }

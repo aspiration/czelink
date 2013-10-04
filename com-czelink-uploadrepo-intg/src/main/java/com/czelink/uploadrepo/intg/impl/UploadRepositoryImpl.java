@@ -29,10 +29,53 @@ public class UploadRepositoryImpl implements UploadRepository,
 
 	private transient ServletContext servletContext;
 
-	private String getRepositoryAbsolutePath() {
+	private String buildTargetFilePath(final String subFolder,
+			final String fileName) {
+		String path = this.getRepositoryAbsolutePath();
+		if (null != subFolder) {
+			path = path.concat("/").concat(subFolder);
+		}
+		final File dir = new File(path);
+		dir.mkdirs();
+		if (!path.endsWith("/")) {
+			path = path.concat("/");
+		}
+		path = path.concat(fileName);
+
+		return path;
+	}
+
+	private File buildTargetFile(final String subFolder, final String fileName)
+			throws IOException {
+		final String path = this.buildTargetFilePath(subFolder, fileName);
+		final File targetFile = new File(path);
+		if (!targetFile.exists()) {
+			targetFile.createNewFile();
+		}
+		return targetFile;
+	}
+
+	public String getRepositoryAbsolutePath() {
 		final ServletContext targetContext = this.servletContext
 				.getContext(UploadRepositoryImpl.TARGET_CONTEXT_NAME);
-		return targetContext.getRealPath("/");
+		String targetPath = StringUtils.replace(targetContext.getRealPath("/"),
+				"\\", "/");
+		if (targetPath.endsWith("/")) {
+			targetPath = StringUtils.substring(targetPath, 0,
+					targetPath.length() - 1);
+		}
+		return targetPath;
+	}
+
+	public String getRepositoryContextPath() {
+		final ServletContext targetContext = this.servletContext
+				.getContext(UploadRepositoryImpl.TARGET_CONTEXT_NAME);
+		String targetPath = targetContext.getContextPath();
+		if (targetPath.endsWith("/")) {
+			targetPath = StringUtils.substring(targetPath, 0,
+					targetPath.length() - 1);
+		}
+		return targetPath;
 	}
 
 	public void setServletContext(ServletContext pServletContext) {
@@ -48,21 +91,8 @@ public class UploadRepositoryImpl implements UploadRepository,
 					.iterator(); it.hasNext();) {
 				final Entry<String, MultipartFile> entry = it.next();
 				final MultipartFile file = entry.getValue();
-				String path = StringUtils.replace(
-						this.getRepositoryAbsolutePath(), "\\", "/");
-				if (!path.endsWith("/")) {
-					path = path.concat("/");
-				}
-				if (null != subFolder) {
-					path = path.concat(subFolder);
-				}
-				final File dir = new File(path);
-				dir.mkdirs();
-				path = path.concat("/" + file.getOriginalFilename());
-				final File targetFile = new File(path);
-				if (!targetFile.exists()) {
-					targetFile.createNewFile();
-				}
+				final File targetFile = this.buildTargetFile(subFolder,
+						file.getOriginalFilename());
 				file.transferTo(targetFile);
 				result = true;
 			}
@@ -71,21 +101,41 @@ public class UploadRepositoryImpl implements UploadRepository,
 				UploadRepositoryImpl.LOGGER.error(
 						"[FileUploadRepository: " + e.getMessage() + "]", e);
 			}
+			result = false;
 		} catch (IOException e) {
 			if (UploadRepositoryImpl.LOGGER.isErrorEnabled()) {
 				UploadRepositoryImpl.LOGGER.error(
 						"[FileUploadRepository: " + e.getMessage() + "]", e);
 			}
-		} finally {
 			result = false;
 		}
 		return result;
 	}
 
-	public String getRepositoryContextPath() {
-		final ServletContext targetContext = this.servletContext
-				.getContext(UploadRepositoryImpl.TARGET_CONTEXT_NAME);
-		return targetContext.getContextPath();
+	public boolean saveFile(MultipartFile file, String subFolder)
+			throws Exception {
+		boolean result = false;
+		try {
+			final File targetFile = this.buildTargetFile(subFolder,
+					file.getOriginalFilename());
+			file.transferTo(targetFile);
+			result = true;
+		} catch (IOException e) {
+			if (UploadRepositoryImpl.LOGGER.isErrorEnabled()) {
+				UploadRepositoryImpl.LOGGER.error(
+						"[FileUploadRepository: " + e.getMessage() + "]", e);
+			}
+			result = false;
+		}
+		return result;
+	}
+
+	public boolean deleteFile(String fileName, String subFolder) {
+		boolean result = false;
+		final String filePath = this.buildTargetFilePath(subFolder, fileName);
+		final File file = new File(filePath);
+		result = file.delete();
+		return result;
 	}
 
 }

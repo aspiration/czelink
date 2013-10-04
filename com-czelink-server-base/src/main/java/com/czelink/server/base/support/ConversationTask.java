@@ -12,15 +12,19 @@ public abstract class ConversationTask extends RequestAwareRunnable {
 
 	private Conversation conversation;
 
-	protected final String conversationId;
+	protected String conversationGroup;
 
-	public ConversationTask(final String pConversationId,
+	protected String conversationID;
+
+	public ConversationTask(final String pConversationGroup,
+			final String pConversationId,
 			final ConversationManager pConversationManager) {
 		super();
-		this.conversationId = pConversationId;
 		final Conversation pConversation = pConversationManager
-				.getConversation(pConversationId);
+				.getConversation(pConversationGroup, pConversationId);
 		if (null != pConversation) {
+			this.conversationGroup = pConversationGroup;
+			this.conversationID = pConversationId;
 			this.conversation = pConversation;
 		} else {
 			throw new IllegalStateException("invalid conversation ID: "

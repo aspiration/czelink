@@ -12,7 +12,7 @@ public class ConversationTaskDefinition implements Serializable {
 
 	private long maxLivePeriod;
 
-	private Map<String, Conversation> conversationMap;
+	private Map<String, Map<String, Conversation>> conversationMap;
 
 	private transient TaskScheduler taskScheduler;
 
@@ -42,11 +42,12 @@ public class ConversationTaskDefinition implements Serializable {
 		this.taskExecutor = taskExecutor;
 	}
 
-	public Map<String, Conversation> getConversationMap() {
+	public Map<String, Map<String, Conversation>> getConversationMap() {
 		return conversationMap;
 	}
 
-	public void setConversationMap(Map<String, Conversation> conversationMap) {
+	public void setConversationMap(
+			Map<String, Map<String, Conversation>> conversationMap) {
 		this.conversationMap = conversationMap;
 	}
 

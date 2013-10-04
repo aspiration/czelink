@@ -327,51 +327,68 @@ define(
 										// options: location,
 										// flashObjs, siteObjs
 										$scope.navigate = function(options) {
-											flashParams = {};
+											var execute = function() {
+												flashParams = {};
 
-											var location = options.location;
-											var flashObjs = options.flashObjs;
-											var siteObjs = options.siteObjs;
+												var location = options.location;
+												var flashObjs = options.flashObjs;
+												var siteObjs = options.siteObjs;
 
-											$scope.currentHash = "#"
-													+ location
-															.slice(
-																	0,
-																	location
-																			.indexOf(".html"));
+												$scope.currentHash = "#"
+														+ location
+																.slice(
+																		0,
+																		location
+																				.indexOf(".html"));
 
-											if (!$scope.$$phase) {
-												$scope.$apply();
+												if (!$scope.$$phase) {
+													$scope.$apply();
+												}
+
+												if (flashObjs !== null
+														&& flashObjs !== undefined) {
+													flashParams = flashObjs;
+												}
+												flashParams['currentLocation'] = location;
+
+												if (siteObjs !== null
+														&& siteObjs !== undefined) {
+													angular.extend({},
+															siteParams,
+															siteObjs);
+												}
+
+												var main_content = document
+														.getElementById('main_content');
+												main_content.setAttribute(
+														"hidden", true);
+												var loadpath = "text!views/"
+														+ location + "!strip";
+												require(
+														[ loadpath ],
+														function(loadcontent) {
+															main_content.innerHTML = loadcontent;
+															// handle
+															// widgets
+															handleWidgets(orchestration);
+															main_content
+																	.removeAttribute("hidden");
+														});
+											};
+
+											var cleanup = flashParams['__cleanupExtension__'];
+											if (cleanup instanceof Function) {
+												cleanup(execute);
+											} else {
+												execute();
 											}
+										};
 
-											if (flashObjs !== null
-													&& flashObjs !== undefined) {
-												flashParams = flashObjs;
+										$scope.setCleanupExtension = function(
+												extension) {
+											if (extension instanceof Function) {
+												flashParams['__cleanupExtension__'] = extension;
 											}
-											flashParams['currentLocation'] = location;
-
-											if (siteObjs !== null
-													&& siteObjs !== undefined) {
-												angular.extend({}, siteParams,
-														siteObjs);
-											}
-
-											var main_content = document
-													.getElementById('main_content');
-											main_content.setAttribute("hidden",
-													true);
-											var loadpath = "text!views/"
-													+ location + "!strip";
-											require(
-													[ loadpath ],
-													function(loadcontent) {
-														main_content.innerHTML = loadcontent;
-														// handle
-														// widgets
-														handleWidgets(orchestration);
-														main_content
-																.removeAttribute("hidden");
-													});
 										};
 
 										$scope.getFlashObject = function(key) {
@@ -426,6 +443,9 @@ define(
 
 										// expose to
 										// orchestration
+										orchestrationManager.expose(
+												"registerCleanupExecute",
+												$scope.setCleanupExtension);
 										orchestrationManager.expose(
 												"navigateTo", $scope.navigate);
 										orchestrationManager.expose(

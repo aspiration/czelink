@@ -7,6 +7,10 @@ public class Conversation extends ConcurrentHashMap<String, Object> {
 
 	private long activateTime;
 
+	private String groupName;
+
+	private String id;
+
 	private ConversationTask onEnd;
 
 	private ConversationTask onComplete;
@@ -36,5 +40,21 @@ public class Conversation extends ConcurrentHashMap<String, Object> {
 
 	protected void setOnComplete(ConversationTask onComplete) {
 		this.onComplete = onComplete;
+	}
+
+	protected String getGroupName() {
+		return groupName;
+	}
+
+	protected void setGroupName(String groupName) {
+		this.groupName = groupName;
+	}
+
+	protected String getId() {
+		return id;
+	}
+
+	protected void setId(String id) {
+		this.id = id;
 	}
 }

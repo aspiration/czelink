@@ -367,10 +367,42 @@ define(
 							$scope.article.title.text = articleTitle;
 						});
 
-				orchestration.invoke("navigation", "getFlashObject",
-						"conversation_id", function(conversation_id) {
-							$scope.conversation_id = conversation_id;
-						});
+				orchestration
+						.invoke(
+								"navigation",
+								"getFlashObject",
+								"conversation_id",
+								function(conversation_id) {
+									$scope.conversation_id = conversation_id;
+
+									orchestration
+											.invoke(
+													"navigation",
+													"registerCleanupExecute",
+													function(execute) {
+														secureDataRetriever
+																.setData({
+																	"conversation-id" : $scope.conversation_id,
+																});
+
+														secureDataRetriever
+																.onSuccess(function(
+																		data) {
+																	execute();
+																	return false;
+																});
+
+														secureDataRetriever
+																.onFailure(function(
+																		data) {
+																	execute();
+																	return false;
+																});
+
+														secureDataRetriever
+																.post('app/endUploadConversation');
+													});
+								});
 
 				$scope.bold = function() {
 					if (isSelectedValid()) {

@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
@@ -34,6 +33,8 @@ import com.czelink.uploadrepo.intg.UploadRepository;
 public class BaseController implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+
+	private static final String UPLOAD_CONVERSATION_GROUP = "upload_conversation_group";
 
 	@Resource(name = "conversationManager")
 	private transient ConversationManager uploadConversationManager;
@@ -168,12 +169,37 @@ public class BaseController implements Serializable {
 	@RequestMapping(value = "/startUploadConversation", produces = "application/json")
 	public @ResponseBody
 	JsonBaseViewBean startUploadConversation() {
-		final String uid = this.uploadConversationManager.startConversation();
+		final String uid = this.uploadConversationManager.startConversation(
+				BaseController.UPLOAD_CONVERSATION_GROUP, false);
+		this.uploadConversationManager.setConversatioinOnEndTask(
+				BaseController.UPLOAD_CONVERSATION_GROUP, uid,
+				new ConversationTask(BaseController.UPLOAD_CONVERSATION_GROUP,
+						uid, this.uploadConversationManager) {
+					private static final long serialVersionUID = 1L;
+
+					@Override
+					protected void onRun() {
+						final String completePath = uploadRepository
+								.getRepositoryAbsolutePath()
+								+ "/imgs/"
+								+ BaseController.UPLOAD_CONVERSATION_GROUP;
+						final String fileName = uid;
+						final boolean result = uploadRepository
+								.deleteFile(
+										fileName,
+										"imgs/"
+												+ BaseController.UPLOAD_CONVERSATION_GROUP);
+						if (!result) {
+							throw new IllegalStateException(
+									"fail delete the conversation folder as: "
+											+ completePath + "/" + uid);
+						}
+					}
+
+				});
 		final JsonBaseViewBean response = new JsonBaseViewBean();
 		response.setUid(uid);
 		response.setStatus(true);
-		this.uploadConversationManager.setConversationOnCompleteTask(uid,
-				new UploadConverstionTask(uid, this.uploadConversationManager));
 		return response;
 	}
 
@@ -181,7 +207,8 @@ public class BaseController implements Serializable {
 	public @ResponseBody
 	JsonBaseViewBean endUploadConversation(
 			@RequestParam("conversation-id") final String conversationID) {
-		this.uploadConversationManager.endConversation(conversationID);
+		this.uploadConversationManager.endConversation(
+				BaseController.UPLOAD_CONVERSATION_GROUP, conversationID);
 		final JsonBaseViewBean response = new JsonBaseViewBean();
 		response.setStatus(true);
 		return response;
@@ -191,7 +218,8 @@ public class BaseController implements Serializable {
 	public @ResponseBody
 	JsonBaseViewBean completeUploadConversation(
 			@RequestParam("conversation-id") final String conversationID) {
-		this.uploadConversationManager.completeConversation(conversationID);
+		this.uploadConversationManager.completeConversation(
+				BaseController.UPLOAD_CONVERSATION_GROUP, conversationID);
 		final JsonBaseViewBean response = new JsonBaseViewBean();
 		response.setStatus(true);
 		return response;
@@ -202,17 +230,35 @@ public class BaseController implements Serializable {
 	FileUploadViewBean uploadFileToRepository(
 			@RequestHeader("conversation-id") final String conversationID,
 			@RequestParam final MultipartFile file) {
-		final boolean result = this.uploadConversationManager
-				.putIntoConversation(conversationID,
-						file.getOriginalFilename(), file);
 		final FileUploadViewBean response = new FileUploadViewBean();
-		if (result) {
-			response.setSrc(this.uploadRepository.getRepositoryContextPath()
-					+ "/imgs/" + conversationID + "/"
-					+ file.getOriginalFilename());
-		} else {
-			throw new IllegalStateException("invalid conversationID: "
+
+		final String filePath = this.uploadRepository
+				.getRepositoryAbsolutePath()
+				+ "/imgs/"
+				+ BaseController.UPLOAD_CONVERSATION_GROUP
+				+ "/"
+				+ conversationID + "/" + file.getOriginalFilename();
+		final String fileSrc = this.uploadRepository.getRepositoryContextPath()
+				+ "/imgs/" + BaseController.UPLOAD_CONVERSATION_GROUP + "/"
+				+ conversationID + "/";
+
+		boolean result = false;
+
+		try {
+			result = this.uploadRepository.saveFile(file, "imgs/"
+					+ BaseController.UPLOAD_CONVERSATION_GROUP + "/"
 					+ conversationID);
+			if (result) {
+				this.uploadConversationManager.putIntoConversation(
+						BaseController.UPLOAD_CONVERSATION_GROUP,
+						conversationID, file.getOriginalFilename(), filePath);
+				response.setSrc(fileSrc);
+			}
+		} catch (Exception e) {
+			result = false;
+			throw new IllegalStateException("File '"
+					+ file.getOriginalFilename()
+					+ "' upload fail with conversationID: " + conversationID);
 		}
 		response.setStatus(result);
 		return response;
@@ -223,11 +269,23 @@ public class BaseController implements Serializable {
 	JsonBaseViewBean cancelUploadFromRepository(
 			@RequestHeader("conversation-id") final String conversationID,
 			@RequestParam final String fileName) {
-		final boolean result = this.uploadConversationManager
-				.removeFromConversation(conversationID, fileName);
+		final String targetSrc = (String) this.uploadConversationManager
+				.getFromConversation(BaseController.UPLOAD_CONVERSATION_GROUP,
+						conversationID, fileName);
+		boolean result = false;
+		if (null != targetSrc) {
+			boolean deleteStatus = this.uploadRepository.deleteFile(fileName,
+					"imgs/" + BaseController.UPLOAD_CONVERSATION_GROUP + "/"
+							+ conversationID);
+			if (deleteStatus) {
+				result = this.uploadConversationManager.removeFromConversation(
+						BaseController.UPLOAD_CONVERSATION_GROUP,
+						conversationID, fileName);
+			}
+		}
 		if (!result) {
-			throw new IllegalStateException("invalid conversationID: "
-					+ conversationID);
+			throw new IllegalStateException("fail cancelling upload for file '"
+					+ fileName + "' with conversationID: " + conversationID);
 		}
 		final JsonBaseViewBean response = new JsonBaseViewBean();
 		response.setStatus(true);
@@ -275,29 +333,5 @@ public class BaseController implements Serializable {
 	public void setNavigationLabelMessageSource(
 			MessageSource navigationLabelMessageSource) {
 		this.navigationLabelMessageSource = navigationLabelMessageSource;
-	}
-
-	private class UploadConverstionTask extends ConversationTask {
-
-		private static final long serialVersionUID = 1L;
-
-		public UploadConverstionTask(String pConversationId,
-				ConversationManager pConversationManager) {
-			super(pConversationId, pConversationManager);
-		}
-
-		@Override
-		public void onRun() {
-			// persist the uploaded file to disk.
-			final Map<String, MultipartFile> conversation = this
-					.getConversation(MultipartFile.class);
-			try {
-				getUploadRepository().saveFile(conversation,
-						"imgs/" + this.conversationId);
-			} catch (Exception e) {
-				throw new IllegalStateException("[uploadFile: "
-						+ e.getMessage() + "]", e);
-			}
-		}
 	}
 }
