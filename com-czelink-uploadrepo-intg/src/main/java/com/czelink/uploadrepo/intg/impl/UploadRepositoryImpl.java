@@ -10,6 +10,7 @@ import java.util.Set;
 
 import javax.servlet.ServletContext;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,7 +28,9 @@ public class UploadRepositoryImpl implements UploadRepository,
 
 	private static final String TARGET_CONTEXT_NAME = "/com-czelink-uploadrepo-facade";
 
-	private transient ServletContext servletContext;
+	private String repositoryContextPath;
+
+	private String repositoryAbsolutePath;
 
 	private String buildTargetFilePath(final String subFolder,
 			final String fileName) {
@@ -55,31 +58,38 @@ public class UploadRepositoryImpl implements UploadRepository,
 		return targetFile;
 	}
 
-	public String getRepositoryAbsolutePath() {
-		final ServletContext targetContext = this.servletContext
-				.getContext(UploadRepositoryImpl.TARGET_CONTEXT_NAME);
+	private void setRepositoryAbsolutePath(final ServletContext targetContext) {
 		String targetPath = StringUtils.replace(targetContext.getRealPath("/"),
 				"\\", "/");
 		if (targetPath.endsWith("/")) {
 			targetPath = StringUtils.substring(targetPath, 0,
 					targetPath.length() - 1);
 		}
-		return targetPath;
+		this.repositoryAbsolutePath = targetPath;
 	}
 
-	public String getRepositoryContextPath() {
-		final ServletContext targetContext = this.servletContext
-				.getContext(UploadRepositoryImpl.TARGET_CONTEXT_NAME);
+	private void setRepositoryContextPath(final ServletContext targetContext) {
 		String targetPath = targetContext.getContextPath();
 		if (targetPath.endsWith("/")) {
 			targetPath = StringUtils.substring(targetPath, 0,
 					targetPath.length() - 1);
 		}
-		return targetPath;
+		this.repositoryContextPath = targetPath;
+	}
+
+	public String getRepositoryAbsolutePath() {
+		return this.repositoryAbsolutePath;
+	}
+
+	public String getRepositoryContextPath() {
+		return this.repositoryContextPath;
 	}
 
 	public void setServletContext(ServletContext pServletContext) {
-		this.servletContext = pServletContext;
+		final ServletContext targetContext = pServletContext
+				.getContext(UploadRepositoryImpl.TARGET_CONTEXT_NAME);
+		this.setRepositoryAbsolutePath(targetContext);
+		this.setRepositoryContextPath(targetContext);
 	}
 
 	public boolean saveFile(final Map<String, MultipartFile> files,
@@ -133,8 +143,19 @@ public class UploadRepositoryImpl implements UploadRepository,
 	public boolean deleteFile(String fileName, String subFolder) {
 		boolean result = false;
 		final String filePath = this.buildTargetFilePath(subFolder, fileName);
-		final File file = new File(filePath);
-		result = file.delete();
+
+		try {
+			final File file = new File(filePath);
+			if (file.isDirectory()) {
+				FileUtils.deleteDirectory(file);
+				result = true;
+			} else {
+				result = file.delete();
+			}
+		} catch (IOException e) {
+			result = false;
+		}
+
 		return result;
 	}
 

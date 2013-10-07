@@ -9,20 +9,25 @@ public abstract class RequestAwareRunnable implements Runnable, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private transient final RequestAttributes requestAttributes;
+	private transient RequestAttributes requestAttributes;
 
 	private transient Thread thread;
 
 	protected abstract void onRun();
 
 	public RequestAwareRunnable() {
-		this.requestAttributes = RequestContextHolder.getRequestAttributes();
 		this.thread = Thread.currentThread();
+	}
+
+	public void setRequestAttributesBeforeRun(
+			final RequestAttributes pRequestAttributes) {
+		this.requestAttributes = pRequestAttributes;
 	}
 
 	public final void run() {
 		try {
 			RequestContextHolder.setRequestAttributes(this.requestAttributes);
+
 			if (null != RequestContextHolder.getRequestAttributes()) {
 				onRun();
 			}

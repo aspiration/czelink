@@ -173,30 +173,9 @@ public class BaseController implements Serializable {
 				BaseController.UPLOAD_CONVERSATION_GROUP, false);
 		this.uploadConversationManager.setConversatioinOnEndTask(
 				BaseController.UPLOAD_CONVERSATION_GROUP, uid,
-				new ConversationTask(BaseController.UPLOAD_CONVERSATION_GROUP,
-						uid, this.uploadConversationManager) {
-					private static final long serialVersionUID = 1L;
-
-					@Override
-					protected void onRun() {
-						final String completePath = uploadRepository
-								.getRepositoryAbsolutePath()
-								+ "/imgs/"
-								+ BaseController.UPLOAD_CONVERSATION_GROUP;
-						final String fileName = uid;
-						final boolean result = uploadRepository
-								.deleteFile(
-										fileName,
-										"imgs/"
-												+ BaseController.UPLOAD_CONVERSATION_GROUP);
-						if (!result) {
-							throw new IllegalStateException(
-									"fail delete the conversation folder as: "
-											+ completePath + "/" + uid);
-						}
-					}
-
-				});
+				new UploadConversationTask(
+						BaseController.UPLOAD_CONVERSATION_GROUP, uid,
+						this.uploadConversationManager, this.uploadRepository));
 		final JsonBaseViewBean response = new JsonBaseViewBean();
 		response.setUid(uid);
 		response.setStatus(true);
@@ -333,5 +312,36 @@ public class BaseController implements Serializable {
 	public void setNavigationLabelMessageSource(
 			MessageSource navigationLabelMessageSource) {
 		this.navigationLabelMessageSource = navigationLabelMessageSource;
+	}
+
+	private class UploadConversationTask extends ConversationTask {
+		private static final long serialVersionUID = 1L;
+
+		private UploadRepository uploadRepository;
+
+		protected UploadConversationTask(final String pConversationGroup,
+				final String pConversationId,
+				final ConversationManager pConversationManager,
+				final UploadRepository uploadRepository) {
+			super(pConversationGroup, pConversationId, pConversationManager);
+			this.uploadRepository = uploadRepository;
+		}
+
+		@Override
+		protected void onRun() {
+			final String completePath = this.uploadRepository
+					.getRepositoryAbsolutePath()
+					+ "/imgs/"
+					+ BaseController.UPLOAD_CONVERSATION_GROUP;
+
+			final String fileName = this.conversationID;
+			final boolean result = uploadRepository.deleteFile(fileName,
+					"imgs/" + BaseController.UPLOAD_CONVERSATION_GROUP);
+			if (!result) {
+				throw new IllegalStateException(
+						"fail delete the conversation folder as: "
+								+ completePath + "/" + this.conversationID);
+			}
+		}
 	}
 }

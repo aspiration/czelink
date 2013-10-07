@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.web.context.request.RequestContextHolder;
 
 public class ConversationManager extends RequestAwareRunnable implements
 		Serializable {
@@ -99,8 +100,13 @@ public class ConversationManager extends RequestAwareRunnable implements
 			final String conversationID) {
 		final Conversation conversation = this.getConversation(
 				conversationGroup, conversationID);
+
 		if (null != conversation.getOnEnd()) {
-			this.taskExecutor.execute(conversation.getOnEnd());
+
+			final ConversationTask task = conversation.getOnEnd();
+			task.setRequestAttributesBeforeRun(RequestContextHolder
+					.getRequestAttributes());
+			this.taskExecutor.execute(task);
 		}
 		this.conversationMap.get(conversationGroup).remove(conversationID);
 	}
@@ -110,7 +116,10 @@ public class ConversationManager extends RequestAwareRunnable implements
 		final Conversation conversation = this.getConversation(
 				conversationGroup, conversationID);
 		if (null != conversation.getOnComplete()) {
-			this.taskExecutor.execute(conversation.getOnComplete());
+			final ConversationTask task = conversation.getOnComplete();
+			task.setRequestAttributesBeforeRun(RequestContextHolder
+					.getRequestAttributes());
+			this.taskExecutor.execute(task);
 		}
 		this.conversationMap.get(conversationGroup).remove(conversationID);
 	}
