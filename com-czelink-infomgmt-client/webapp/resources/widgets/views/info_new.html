@@ -143,19 +143,16 @@
 					<tbody>
 						<tr>
 							<td style="text-align: center;">
-								<button class="btn btn-info"
-									type="button"
+								<button class="btn btn-info" type="button"
 									ng-click="cancelArticle()">
 									<span>取消文章</span><i
 										class="icon-exclamation-sign icon-white pull-right"></i>
 								</button>
 							</td>
 							<td style="text-align: center;">
-								<button
-									ng-click="submitArticle()" class="btn btn-info"
+								<button ng-click="submitArticle()" class="btn btn-info"
 									type="button">
-									<span>提交文章</span><i
-										class="icon-rocket icon-white pull-right"></i>
+									<span>提交文章</span><i class="icon-rocket icon-white pull-right"></i>
 								</button>
 							</td>
 						</tr>
@@ -205,6 +202,26 @@
 		</div>
 		<div class="modal-footer">
 			<button class="btn btn-primary" ng-click="createLink()">确定</button>
+		</div>
+	</div>
+	<!-- keep conversation model -->
+	<div ng-post-render="registerKeepConversationModel"
+		class="modal hide fade" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal"
+				aria-hidden="true">×</button>
+			<h3 id="myModalLabel">温馨提示</h3>
+		</div>
+		<div class="modal-body">
+			<p>
+				会话将于{{conversationRemainTime}}秒后过期，点击<b>继续</b>保持会话，或者<b>取消</b>结束会话
+			</p>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-primary" ng-click="keepConversation()">继续</button>
+			<button class="btn btn-primary"
+				ng-click="endConversationFromConfirm()">结束</button>
 		</div>
 	</div>
 </div>

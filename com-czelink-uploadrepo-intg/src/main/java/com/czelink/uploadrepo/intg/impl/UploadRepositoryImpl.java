@@ -146,11 +146,15 @@ public class UploadRepositoryImpl implements UploadRepository,
 
 		try {
 			final File file = new File(filePath);
-			if (file.isDirectory()) {
-				FileUtils.deleteDirectory(file);
-				result = true;
+			if (file.exists()) {
+				if (file.isDirectory()) {
+					FileUtils.deleteDirectory(file);
+					result = true;
+				} else {
+					result = file.delete();
+				}
 			} else {
-				result = file.delete();
+				result = true;
 			}
 		} catch (IOException e) {
 			result = false;

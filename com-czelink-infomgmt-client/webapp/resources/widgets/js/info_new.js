@@ -362,6 +362,70 @@ define(
 					}
 				};
 
+				$scope.registerKeepConversationModel = function(element,
+						context) {
+					$scope.conversationModelElement = element[0];
+
+					$($scope.conversationModelElement).on("hidden", function() {
+						if ($scope.conversationInvalid === true) {
+							$scope.endConversation();
+						} else if ($scope.conversationInvalid !== false) {
+							$($scope.conversationModelElement).modal("show");
+						}
+					});
+
+					orchestration.expose("confirmUploadConversation", function(
+							uid) {
+						$scope.conversationRemainTime = 60;
+						$scope.conversationID = uid;
+
+						$($scope.conversationModelElement).modal("show");
+
+						var int = setInterval(function() {
+							if ($scope.conversationRemainTime > 0) {
+								$scope.conversationRemainTime--;
+								if (!$scope.$$phase) {
+									$scope.$apply();
+								}
+							} else {
+								clearInterval(int);
+								$scope.conversationInvalid = true;
+								$($scope.conversationModelElement)
+										.modal("hide");
+							}
+						}, 1000);
+					});
+				};
+
+				$scope.keepConversation = function() {
+					$scope.conversationInvalid = false;
+					secureDataRetriever.setData({
+						"conversation-id" : $scope.conversationID
+					});
+					secureDataRetriever.onSuccess(function() {
+						$($scope.conversationModelElement).modal("hide");
+					});
+					secureDataRetriever.post("app/keepUploadConversation");
+				};
+
+				$scope.endConversation = function() {
+					orchestration.invoke("navigation", "getFlashObject",
+							"confirm_conversation_interval", function(
+									confirm_conversation_interval) {
+								clearInterval(confirm_conversation_interval);
+								var options = {
+									location : 'information.html'
+								};
+								orchestration.invoke('navigation',
+										'navigateTo', options);
+							});
+				};
+
+				$scope.endConversationFromConfirm = function() {
+					$scope.conversationInvalid = true;
+					$($scope.conversationModelElement).modal("hide");
+				};
+
 				orchestration.invoke("navigation", "getFlashObject",
 						"new_article_title", function(articleTitle) {
 							$scope.article.title.text = articleTitle;
@@ -378,29 +442,41 @@ define(
 									orchestration
 											.invoke(
 													"navigation",
-													"registerCleanupExecute",
-													function(execute) {
-														secureDataRetriever
-																.setData({
-																	"conversation-id" : $scope.conversation_id,
-																});
+													"getFlashObject",
+													"confirm_conversation_interval",
+													function(
+															confirm_conversation_interval) {
 
-														secureDataRetriever
-																.onSuccess(function(
-																		data) {
-																	execute();
-																	return false;
-																});
+														orchestration
+																.invoke(
+																		"navigation",
+																		"registerCleanupExecute",
+																		function(
+																				execute) {
+																			secureDataRetriever
+																					.setData({
+																						"conversation-id" : $scope.conversation_id,
+																					});
 
-														secureDataRetriever
-																.onFailure(function(
-																		data) {
-																	execute();
-																	return false;
-																});
+																			secureDataRetriever
+																					.onSuccess(function(
+																							data) {
+																						clearInterval(confirm_conversation_interval);
+																						execute();
+																						return false;
+																					});
 
-														secureDataRetriever
-																.post('app/endUploadConversation');
+																			secureDataRetriever
+																					.onFailure(function(
+																							data) {
+																						clearInterval(confirm_conversation_interval);
+																						execute();
+																						return false;
+																					});
+
+																			secureDataRetriever
+																					.post('app/endUploadConversation');
+																		});
 													});
 								});
 
@@ -592,19 +668,10 @@ define(
 				};
 
 				$scope.cancelArticle = function() {
-
-					secureDataRetriever.setData({
-						"conversation-id" : $scope.conversation_id,
-					});
-
-					secureDataRetriever.onSuccess(function(data) {
-						if (data.status === true) {
-							// TODO: to finish.
-							console.log("end!");
-						}
-					});
-
-					secureDataRetriever.post('app/endUploadConversation');
+					var options = {
+						location : 'information.html'
+					};
+					orchestration.invoke('navigation', 'navigateTo', options);
 				};
 
 				$scope.submitArticle = function() {

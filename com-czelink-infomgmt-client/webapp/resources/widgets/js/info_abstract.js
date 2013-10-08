@@ -3,19 +3,28 @@ define(function() {
 
 		$scope.createNewInfoArticle = function(newArticleTitle) {
 
-			secureDataRetriever.onSuccess(function(data) {
-				var uid = data.uid;
+			secureDataRetriever
+					.onSuccess(function(data) {
+						var uid = data.uid;
 
-				var options = {
-					location : 'information.html',
-					flashObjs : {
-						new_article_title : newArticleTitle,
-						conversation_id : uid,
-						info_new : true
-					},
-				};
-				orchestration.invoke('navigation', 'navigateTo', options);
-			});
+						var confirm_conversation_interval = setInterval(
+								function() {
+									orchestration.invoke('info_new',
+											'confirmUploadConversation', uid);
+								}, 1200000);
+
+						var options = {
+							location : 'information.html',
+							flashObjs : {
+								new_article_title : newArticleTitle,
+								conversation_id : uid,
+								info_new : true,
+								confirm_conversation_interval : confirm_conversation_interval
+							},
+						};
+						orchestration.invoke('navigation', 'navigateTo',
+								options);
+					});
 
 			secureDataRetriever.get("app/startUploadConversation");
 		};

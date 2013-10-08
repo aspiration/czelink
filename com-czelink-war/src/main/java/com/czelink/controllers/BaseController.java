@@ -185,6 +185,19 @@ public class BaseController implements Serializable {
 		return response;
 	}
 
+	@RequestMapping(value = "/keepUploadConversation", produces = "application/json")
+	public @ResponseBody
+	JsonBaseViewBean keepUploadConversation(
+			@RequestParam("conversation-id") final String conversationID) {
+		boolean result = false;
+		result = this.uploadConversationManager.keepConversation(
+				BaseController.UPLOAD_CONVERSATION_GROUP, conversationID);
+		final JsonBaseViewBean response = new JsonBaseViewBean();
+		response.setUid(conversationID);
+		response.setStatus(result);
+		return response;
+	}
+
 	@RequestMapping(value = "/endUploadConversation", produces = "application/json")
 	public @ResponseBody
 	JsonBaseViewBean endUploadConversation(

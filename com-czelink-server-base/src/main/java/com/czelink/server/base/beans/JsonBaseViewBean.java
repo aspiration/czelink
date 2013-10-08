@@ -56,5 +56,4 @@ public class JsonBaseViewBean implements Serializable {
 	public void setCorrelationId(String correlationId) {
 		this.correlationId = correlationId;
 	}
-
 }
