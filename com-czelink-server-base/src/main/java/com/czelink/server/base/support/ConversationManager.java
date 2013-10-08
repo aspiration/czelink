@@ -20,6 +20,8 @@ public class ConversationManager extends RequestAwareRunnable implements
 
 	private Map<String, Map<String, Conversation>> conversationMap;
 
+	private boolean isInit = false;
+
 	private long maxLivePeriod;
 
 	private transient TaskScheduler taskScheduler;
@@ -27,7 +29,12 @@ public class ConversationManager extends RequestAwareRunnable implements
 	private transient TaskExecutor taskExecutor;
 
 	public void init() {
-		this.taskScheduler.scheduleAtFixedRate(this, this.maxLivePeriod);
+		if (!isInit) {
+			this.setRequestAttributesBeforeRun(RequestContextHolder
+					.getRequestAttributes());
+			this.taskScheduler.scheduleAtFixedRate(this, this.maxLivePeriod);
+			isInit = true;
+		}
 	}
 
 	protected Conversation getConversation(final String conversationGroup,
@@ -170,6 +177,7 @@ public class ConversationManager extends RequestAwareRunnable implements
 	}
 
 	public void onRun() {
+
 		final Set<Entry<String, Map<String, Conversation>>> conversationGroupSet = this.conversationMap
 				.entrySet();
 		for (final Iterator<Entry<String, Map<String, Conversation>>> converIt = conversationGroupSet
@@ -191,7 +199,10 @@ public class ConversationManager extends RequestAwareRunnable implements
 				if (interval > this.maxLivePeriod) {
 					it.remove();
 					if (null != conversation.getOnEnd()) {
-						this.taskExecutor.execute(conversation.getOnEnd());
+						final ConversationTask task = conversation.getOnEnd();
+						task.setRequestAttributesBeforeRun(this
+								.getRequestAttributes());
+						this.taskExecutor.execute(task);
 					}
 				}
 			}

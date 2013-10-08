@@ -9,8 +9,7 @@
 		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
 
-	<bean id="conversationManager" init-method="init"
-		class="com.czelink.server.base.support.ConversationManager">
+	<bean id="conversationManager" class="com.czelink.server.base.support.ConversationManager">
 		<property name="conversationTaskDefinition" ref="conversationTaskDefinition" />
 	</bean>
 

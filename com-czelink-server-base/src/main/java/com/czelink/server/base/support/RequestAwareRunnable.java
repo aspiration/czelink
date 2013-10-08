@@ -15,6 +15,10 @@ public abstract class RequestAwareRunnable implements Runnable, Serializable {
 
 	protected abstract void onRun();
 
+	protected RequestAttributes getRequestAttributes() {
+		return this.requestAttributes;
+	}
+
 	public RequestAwareRunnable() {
 		this.thread = Thread.currentThread();
 	}

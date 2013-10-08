@@ -163,6 +163,9 @@ public class BaseController implements Serializable {
 			}
 		}
 
+		// start back work of conversationManager.
+		this.uploadConversationManager.init();
+
 		return response;
 	}
 
