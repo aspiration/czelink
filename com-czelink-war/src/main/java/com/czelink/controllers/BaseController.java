@@ -98,6 +98,8 @@ public class BaseController implements Serializable {
 
 		final List<String> rolesList = (List<String>) session
 				.getAttribute(CommonConstants.ROLE_LIST_IN_SESSION_KEY);
+		final String userID = (String) session
+				.getAttribute(CommonConstants.USER_ID);
 
 		String navStr = StringUtils.EMPTY;
 		String role = CommonConstants.ROLE_ANONYMOUS;
@@ -161,6 +163,10 @@ public class BaseController implements Serializable {
 			if (StringUtils.isNotBlank(verifyKey)) {
 				response.setVerifyKey(verifyKey);
 			}
+		}
+
+		if (StringUtils.isNotBlank(userID)) {
+			response.setUid(userID);
 		}
 
 		// start back work of conversationManager.
@@ -235,7 +241,7 @@ public class BaseController implements Serializable {
 				+ conversationID + "/" + file.getOriginalFilename();
 		final String fileSrc = this.uploadRepository.getRepositoryContextPath()
 				+ "/imgs/" + BaseController.UPLOAD_CONVERSATION_GROUP + "/"
-				+ conversationID + "/";
+				+ conversationID + "/" + file.getOriginalFilename();
 
 		boolean result = false;
 

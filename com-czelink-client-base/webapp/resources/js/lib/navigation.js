@@ -48,6 +48,8 @@ define(
 						siteParams['verifyKey'] = data.verifyKey;
 					}
 
+					siteParams["userId"] = data.uid;
+
 					var candidates = [];
 
 					navList.forEach(function(item) {
@@ -353,9 +355,10 @@ define(
 
 												if (siteObjs !== null
 														&& siteObjs !== undefined) {
-													angular.extend({},
-															siteParams,
-															siteObjs);
+													siteParams = angular
+															.extend({},
+																	siteParams,
+																	siteObjs);
 												}
 
 												var main_content = document
@@ -415,7 +418,16 @@ define(
 											return angular.copy(siteParams);
 										};
 
-										$scope.refreshStatus = function() {
+										$scope.refreshStatus = function(options) {
+
+											var flashObjs = options.flashObjs;
+											var siteObjs = options.siteObjs;
+
+											flashParams = angular.extend({},
+													flashParams, flashObjs);
+
+											siteParams = angular.extend({},
+													siteParams, siteObjs);
 
 											siteParams['activated'] = undefined;
 											siteParams['verifyKey'] = undefined;

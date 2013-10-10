@@ -20,9 +20,15 @@ public class InfoArticle implements Serializable {
 
 	private String title;
 
+	private String titlePicUrl;
+
 	private String[] paragraphs;
 
+	private String[] paragraphsPicUrl;
+
 	private Date date;
+
+	private Boolean reviewed;
 
 	@DBRef
 	private User auther;
@@ -59,6 +65,38 @@ public class InfoArticle implements Serializable {
 		this.auther = auther;
 	}
 
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public Boolean getReviewed() {
+		return reviewed;
+	}
+
+	public void setReviewed(Boolean reviewed) {
+		this.reviewed = reviewed;
+	}
+
+	public String getTitlePicUrl() {
+		return titlePicUrl;
+	}
+
+	public void setTitlePicUrl(String titlePicUrl) {
+		this.titlePicUrl = titlePicUrl;
+	}
+
+	public String[] getParagraphsPicUrl() {
+		return paragraphsPicUrl;
+	}
+
+	public void setParagraphsPicUrl(String[] paragraphsPicUrl) {
+		this.paragraphsPicUrl = paragraphsPicUrl;
+	}
+
 	public String toString() {
 		final ToStringBuilder tsb = new ToStringBuilder(this);
 		tsb.append("id", this.getId());
@@ -66,10 +104,9 @@ public class InfoArticle implements Serializable {
 		tsb.append("date", this.date);
 		tsb.append("paragraphs", this.paragraphs);
 		tsb.append("title", this.title);
+		tsb.append("reviewed", this.reviewed);
+		tsb.append("titlePicUrl", this.titlePicUrl);
+		tsb.append("paragraphsPicUrl", this.paragraphsPicUrl);
 		return tsb.toString();
-	}
-
-	public String getId() {
-		return id;
 	}
 }

@@ -64,7 +64,7 @@ define([ 'jquery', 'angular' ], function(jquery, angular) {
 			}
 		};
 
-		instance.post = function(url) {
+		instance.post = function(url, contentType) {
 			var configuration = {
 				type : "post",
 				dataType : "json",
@@ -72,6 +72,11 @@ define([ 'jquery', 'angular' ], function(jquery, angular) {
 				success : doSuccess,
 				error : doFailure,
 			};
+
+			if (contentType !== undefined && contentType !== null
+					&& contentType !== "") {
+				configuration.contentType = contentType;
+			}
 
 			if (instance.data !== undefined) {
 				configuration.data = instance.data;

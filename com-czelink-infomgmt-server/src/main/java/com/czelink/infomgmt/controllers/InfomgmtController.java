@@ -3,20 +3,27 @@ package com.czelink.infomgmt.controllers;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.czelink.common.intg.entities.User;
 import com.czelink.infomgmt.beans.InfoArticleResponse;
 import com.czelink.infomgmt.beans.InfoContentResponse;
+import com.czelink.infomgmt.beans.NewInfoArticleRequest;
 import com.czelink.infomgmt.intg.entities.InfoArticle;
 import com.czelink.infomgmt.intg.services.InformationManagementService;
+import com.czelink.server.base.beans.JsonBaseViewBean;
+import com.czelink.usermgmt.intg.services.UserManagementService;
 
 @Controller
 public class InfomgmtController implements Serializable {
@@ -28,6 +35,9 @@ public class InfomgmtController implements Serializable {
 
 	@Resource(name = "infomgmtService")
 	private transient InformationManagementService informationManagementService;
+
+	@Resource(name = "userManagementService")
+	private transient UserManagementService userManagementService;
 
 	@RequestMapping(value = "/latestInfo", produces = "application/json")
 	public @ResponseBody
@@ -79,6 +89,33 @@ public class InfomgmtController implements Serializable {
 		return infoContent;
 	}
 
+	@RequestMapping(value = "/saveNewArticle")
+	public @ResponseBody
+	JsonBaseViewBean saveNewArticle(
+			final @RequestBody NewInfoArticleRequest request) {
+		final JsonBaseViewBean response = new JsonBaseViewBean();
+		response.setStatus(false);
+
+		final InfoArticle infoArticle = new InfoArticle();
+		infoArticle.setTitle(request.getTitle().getText());
+		infoArticle.setTitlePicUrl(request.getTitle().getPicUrl());
+		infoArticle.setParagraphs(request.getParagraphs());
+		infoArticle.setParagraphsPicUrl(request.getPicUrls());
+		// update the author.
+		User user = new User();
+		user.setUsername(request.getUserId());
+		final Map contextMap = new HashMap();
+		user = this.userManagementService.getUserDetail(user, contextMap);
+		infoArticle.setAuther(user);
+		infoArticle.setDate(new Date());
+		infoArticle.setReviewed(Boolean.FALSE);
+		final boolean result = this.informationManagementService
+				.saveNewInfoArticle(infoArticle);
+		response.setStatus(result);
+
+		return response;
+	}
+
 	public InformationManagementService getInformationManagementService() {
 		return informationManagementService;
 	}
@@ -86,6 +123,15 @@ public class InfomgmtController implements Serializable {
 	public void setInformationManagementService(
 			InformationManagementService informationManagementService) {
 		this.informationManagementService = informationManagementService;
+	}
+
+	public UserManagementService getUserManagementService() {
+		return userManagementService;
+	}
+
+	public void setUserManagementService(
+			UserManagementService userManagementService) {
+		this.userManagementService = userManagementService;
 	}
 
 	public Converter<Date, String> getDateTimeDisplayConverter() {

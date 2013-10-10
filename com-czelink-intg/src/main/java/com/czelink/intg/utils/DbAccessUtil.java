@@ -11,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -235,6 +236,8 @@ public final class DbAccessUtil implements Serializable {
 					targetMap.put(targetKey, targetValue);
 				}
 				return targetMap;
+			} else if (obj instanceof Date || obj instanceof String) {
+				return obj;
 			} else {
 				// work for custom class type - which should have loader
 				// provided.

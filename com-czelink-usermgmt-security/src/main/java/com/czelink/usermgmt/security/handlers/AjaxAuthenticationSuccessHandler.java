@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -28,14 +27,9 @@ public class AjaxAuthenticationSuccessHandler implements
 			HttpServletResponse response, Authentication auth)
 			throws IOException, ServletException {
 
-		final String token = UUID.randomUUID().toString();
-
 		final JSONObject result = new JSONObject();
 		result.put("status", true);
-		result.put("token", token);
-
-		request.getSession().setAttribute(UsermgmtConstants.LOGON_TOKEN_KEY,
-				token);
+		result.put("userId", auth.getName());
 
 		final List<GrantedAuthority> authoritiesList = (List<GrantedAuthority>) auth
 				.getAuthorities();
@@ -47,6 +41,8 @@ public class AjaxAuthenticationSuccessHandler implements
 		}
 		request.getSession().setAttribute(
 				CommonConstants.ROLE_LIST_IN_SESSION_KEY, rolesList);
+		request.getSession().setAttribute(CommonConstants.USER_ID,
+				auth.getName());
 
 		response.getWriter().print(result.toString());
 		response.getWriter().flush();

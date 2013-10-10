@@ -9,4 +9,6 @@ public interface InformationManagementService {
 	public List<InfoArticle> retrieveLatestInformationList(final Integer amount);
 
 	public InfoArticle retrieveInformationById(final String objectId);
+
+	public boolean saveNewInfoArticle(final InfoArticle infoArticle);
 }

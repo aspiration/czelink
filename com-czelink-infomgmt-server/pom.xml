@@ -18,6 +18,10 @@
 			<groupId>com.czelink</groupId>
 			<artifactId>com-czelink-infomgmt-intg</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.czelink</groupId>
+			<artifactId>com-czelink-usermgmt-intg</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>

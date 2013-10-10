@@ -12,6 +12,8 @@ public final class CommonConstants implements Serializable {
 
 	public static final String ROLE_ADMIN = "ROLE_ADMIN";
 
+	public static final String USER_ID = "USER_ID";
+
 	public static final String ROLE_LIST_IN_SESSION_KEY = CommonConstants.class
 			+ "_role_list_in_session";
 

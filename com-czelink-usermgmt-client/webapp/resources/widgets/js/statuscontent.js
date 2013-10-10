@@ -105,7 +105,13 @@ define(function() {
 
 						$scope.loginfailedMessage = false;
 
-						orchestration.invoke('navigation', 'refreshStatus');
+						var userId = data.userId;
+
+						orchestration.invoke('navigation', 'refreshStatus', {
+							siteObjs : {
+								userId : userId
+							}
+						});
 					} else {
 						$scope.loginfailedMessage = true;
 					}

@@ -30,6 +30,11 @@ public class InformationManagementServiceImpl implements
 		return this.mongoOperations.findById(objectId, InfoArticle.class);
 	}
 
+	public boolean saveNewInfoArticle(InfoArticle infoArticle) {
+		this.mongoOperations.insert(infoArticle);
+		return true;
+	}
+
 	public void setMongoOperations(final MongoOperations pMongoOperations) {
 		this.mongoOperations = pMongoOperations;
 	}

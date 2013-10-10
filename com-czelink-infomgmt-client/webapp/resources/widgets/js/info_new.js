@@ -300,6 +300,7 @@ define(
 								$scope.isInsertPicDisabled = false;
 								imgDropzones[0].disable();
 								imgDropzones[0].removeAllFiles();
+								imgDropzones[0].src = undefined;
 								$scope.restPicNum++;
 
 								if (!$scope.$$phase) {
@@ -343,6 +344,7 @@ define(
 							if (data.status === true) {
 								imgDropzones[index + 1].disable();
 								imgDropzones[index + 1].removeAllFiles();
+								imgDropzones[index + 1].src = undefined;
 								paraPicInsertStatus[index] = false;
 								$scope.restPicNum++;
 
@@ -429,6 +431,11 @@ define(
 				orchestration.invoke("navigation", "getFlashObject",
 						"new_article_title", function(articleTitle) {
 							$scope.article.title.text = articleTitle;
+						});
+
+				orchestration.invoke("navigation", "getSiteObject", "userId",
+						function(userId) {
+							$scope.article.userId = userId;
 						});
 
 				orchestration
@@ -680,12 +687,61 @@ define(
 						"conversation-id" : $scope.conversation_id,
 					});
 
-					secureDataRetriever.onSuccess(function(data) {
-						if (data.status === true) {
-							// TODO: to finish.
-							console.log("complete!");
-						}
-					});
+					secureDataRetriever
+							.onSuccess(function(data) {
+								if (data.status === true) {
+									// TODO: to finish.
+									if (imgDropzones.length > 0) {
+										if (imgDropzones[0].src === undefined
+												|| imgDropzones[0].src == null) {
+											imgDropzones[0].src == "";
+										}
+										$scope.article.title.picUrl = imgDropzones[0].src;
+										angular.forEach(imgDropzones, function(
+												value, key) {
+											if (key !== 0) {
+												if (value.src === undefined
+														|| value.src === null) {
+													value.src = "";
+												}
+												$scope.article.picUrls
+														.push(value.src);
+											}
+										});
+									}
+									var paragraphs = document
+											.querySelectorAll("div[articleeditable]>p[contenteditable]");
+									angular.forEach(paragraphs, function(value,
+											key) {
+										$scope.article.paragraphs
+												.push(value.innerHTML);
+									});
+
+									secureDataRetriever.setData(JSON
+											.stringify($scope.article));
+
+									secureDataRetriever.onSuccess(function(
+											response) {
+										if (response.status === true) {
+											// TODO: on success.
+
+										} else {
+											// TODO: on operational failure.
+										}
+									});
+
+									secureDataRetriever.onFailure(function() {
+										// TODO: on failure.
+									});
+
+									secureDataRetriever.post(
+											"infomgmt/saveNewArticle",
+											"application/json; charset=UTF-8");
+
+								} else {
+									// complete conversation fail process.
+								}
+							});
 
 					secureDataRetriever.post('app/completeUploadConversation');
 				};
